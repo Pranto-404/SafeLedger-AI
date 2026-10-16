@@ -1,0 +1,105 @@
+{
+  "source_commit": "05d6df104fd21793c416501b17093c946a0b5a4f",
+  "verified_at_utc": "2026-10-16T22:11:12.848016+00:00",
+  "milestone": "M0 bootstrap only",
+  "python": "3.12.14",
+  "node": "v24.19.0",
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "../.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "--junitxml=evidence/m0/pytest.xml"
+      ],
+      "exit_code": 0,
+      "log": "evidence/m0/pytest.log"
+    },
+    {
+      "label": "live-smoke",
+      "command": [
+        "../.venv/bin/python",
+        "scripts/verify_bootstrap.py"
+      ],
+      "exit_code": 0,
+      "log": "evidence/m0/live-smoke.log"
+    },
+    {
+      "label": "pip-check",
+      "command": [
+        "../.venv/bin/python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "log": "evidence/m0/pip-check.log"
+    },
+    {
+      "label": "compile",
+      "command": [
+        "../.venv/bin/python",
+        "-m",
+        "compileall",
+        "-q",
+        "api",
+        "scripts"
+      ],
+      "exit_code": 0,
+      "log": "evidence/m0/compile.log"
+    },
+    {
+      "label": "diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "evidence/m0/diff-check.log"
+    }
+  ],
+  "frontend": {
+    "commands": [
+      "npm install --package-lock-only --ignore-scripts",
+      "npm ci --ignore-scripts",
+      "npm run build"
+    ],
+    "exit_codes": [
+      0,
+      0,
+      0
+    ],
+    "results": "TypeScript check + Vite build passed; 28 modules transformed",
+    "logs": [
+      "evidence/m0/npm-ci.log",
+      "evidence/m0/web-build.log"
+    ],
+    "tested_source_files": {
+      "web/index.html": "8beaf9932711c4c351bbac36424ed467a4a5cac5e4de6760b7ad118e323c006b",
+      "web/package-lock.json": "a9de148484d1b0215d327bb985db80e6131a54a692f1ffab60e503ce41160443",
+      "web/package.json": "6a47c7350515f533b49d62365d222e93679cb103bb734e362d864812a64294ac",
+      "web/src/main.tsx": "de8a2f98e901ac141ce1274b62bd781f9c6a124b074c340760b43fc74a479527",
+      "web/src/style.css": "c8cb76ae052b615a642d76d04ac78973111520fdc0a579032907dfe1a1064b4b",
+      "web/tsconfig.json": "6093c30d3e77f279474b97fe0ecd32bee191931c88dc821017f36090afb5d602",
+      "web/vite.config.ts": "5a3466f21183ebd2813a89e7144ea5358a35567a219741883253c89f21bb0cb3"
+    }
+  },
+  "known_warnings": [
+    "Starlette TestClient httpx deprecation",
+    "npm environment http-proxy option"
+  ],
+  "initial_failure": "Separate-process live smoke failed connection refused; retained live-smoke-first-attempt.log. Self-contained lifecycle runner passed.",
+  "not_run": [
+    "financial correctness engine tests (not built)",
+    "secure execution/security flow tests (not built)",
+    "Playwright/device/keyboard tests",
+    "real provider evaluation",
+    "independent audit",
+    "dependency vulnerability scan",
+    "public deployment",
+    "fresh-clone full-stack verification"
+  ]
+}

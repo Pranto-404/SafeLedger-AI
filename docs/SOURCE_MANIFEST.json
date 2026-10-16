@@ -1,0 +1,17 @@
+{
+  "authority": "organizer rules take precedence",
+  "read_on": "2026-10-17 Asia/Dhaka",
+  "sources": [
+    {
+      "filename": "PBCSF Appendix 2-Problem Description and Competition Rules for International Tr_2.pdf",
+      "sha256": "9005e42629435a1e129a8367c8d3d5e3714b6ea0bbab30713cd6be2f2bdd0c5a",
+      "pages": 4
+    },
+    {
+      "filename": "SafeLedger_AI_Competition_Work_Execution_Playbook.pdf",
+      "sha256": "13cef050dc58c2812de974820abbd4b65ff1fe414d25a6c8cb760707cbd42079",
+      "pages": 24
+    }
+  ],
+  "note": "No PDFs copied into public-source tree. Full text read once; requirements preserved in REQUIREMENTS.md."
+}

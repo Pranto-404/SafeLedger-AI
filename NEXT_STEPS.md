@@ -1,0 +1,8 @@
+# Resume SafeLedger AI
+1. Read PROJECT_STATUS.md, this file and git log. Verify current branch/status; do not overwrite or restart. Read docs/REQUIREMENTS.md instead of the PDFs.
+2. Run `.venv/bin/python -m pytest -q` after installing `api/requirements-dev.txt`; `cd web && npm ci && npm run build`. Keep evidence of failures and fixes.
+3. M1 only: implement pure deterministic finance services and SQLite staging imports with fixed synthetic fixtures (seed2026), exact expected totals, source IDs/checksums, exact/near duplicate detection, 7/30-day cash scenarios, three fictional offers/cost/affordability calculations. Bind invoice events to prevent double counting. Authenticated business endpoints remain closed until M2.
+4. Test invalid/float/negative/mixed-currency inputs, atomic rejection, reconciliation, forecast boundary/overlap/delay, fee conventions and missing assumptions. Record real output, commit and update status. Do not mark planned features done.
+5. Owner: registration remains unconfirmed; obtain Appendix3 and verify delivery requirements privately. No outbound registration or IDs without explicit authorization.
+6. GitHub authorized: Pranto-404/SafeLedger-AI; origin configured, preserve merged initial history. Push verified milestone commits and verify remote main SHA. Owner still needs to select authorized persistent backend/deployment account.
+7. M2 follows passing M1: tenant sessions, policy, independent approval, atomic idempotent sandbox posting, audit; M3 constrained real LLM; M4 integrated UI; M5 security/browser regression; M6 reproducibility/deploy/submission.
