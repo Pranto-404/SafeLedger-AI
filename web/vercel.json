@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://safeledger-api.onrender.com/api/:path*"
+      "destination": "https://safeledger-ai.onrender.com/api/:path*"
     }
   ],
   "headers": [
