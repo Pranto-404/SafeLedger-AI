@@ -1,0 +1,58 @@
+{
+  "milestone": "M4",
+  "verified_at_utc": "2026-10-17T07:32:57.311863+00:00",
+  "repository": "https://github.com/Pranto-404/SafeLedger-AI",
+  "source_commit": "0b0c183bd8f6d3c4e8173ddbc8a2f9c6781f3872",
+  "source_tree_sha": "a68608d4f11517cbf1950bdbc7bfc8bd19a11ae5",
+  "publication": "Connected GitHub tree matched full staged Git tree before expected-HEAD non-force publication.",
+  "backend_pytest": {
+    "passed": 225,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 2,
+    "log": "evidence/m4/pytest.log",
+    "junit": "evidence/m4/pytest.xml"
+  },
+  "browser": {
+    "passed_scenarios": 10,
+    "page_errors": 0,
+    "driver": "Playwright1.62.1",
+    "chromium": "153.0.8010.0",
+    "result": "evidence/m4/browser-final/browser-results.json",
+    "viewport_widths": [
+      360,
+      390,
+      768,
+      1366
+    ],
+    "actual_browser_api_sqlite_flow": true,
+    "mock_financial_responses": false,
+    "live_ai_used": false
+  },
+  "other_checks": {
+    "frontend_typescript_vite_build": "passed",
+    "live_backend_concurrent_approval_restart_regression": "passed",
+    "compileall": "passed",
+    "pip_check": "passed",
+    "staged_diff_check": "passed"
+  },
+  "commands_and_retained_failures": "evidence/m4/checks.log",
+  "source_sha256": {
+    "scripts/m4_browser_demo.cjs": "e8a1d17449d481e906abe559e6308abfa4014f630e94a1458c4a883c2c6f03ec",
+    "scripts/m4_browser_demo.py": "e9a79edd12a5af2a608478ecf27af88483640b0bc0c907fcdba578b3de8741c0",
+    "web/package-lock.json": "c86e9f88ad0d4a79ce92bccf3becb39e86446f908076f210004696d4f7e705b4",
+    "web/package.json": "98fdbd577c8c9ad2494157dd708e2a6c44acefbebbee44a0ddafeb1a40a9b4d1",
+    "web/src/App.tsx": "c77aef43ede066ec9a72f77c168b9b33a3dfe036661d29715ee6ef612f2782c5",
+    "web/src/api.ts": "04d696610e56298f5055398302283af196403824fe3efb93e94a0c6292ba36d4",
+    "web/src/main.tsx": "67bc2fb3ad2c68a4089708fe8bd4956b6808b14f64aeb9553be0175ac375301f",
+    "web/src/style.css": "7354e48bfdad94c1a96b9a57dd303b9f173fc5ff1843b0b6ee9ce6e4be8fdbac",
+    "web/src/types.ts": "5bd9deb7cb9e4b75380a029e024ce62abb666fcc21f7bbfe4b1534f704b108cd",
+    "web/vite.config.ts": "9d04dfd92f4cfb3d29a2d225ab64f6c6a2fb49a05656f0bb2db6fb598c59c27d"
+  },
+  "release_limits": [
+    "Live model configuration/evaluation absent;AI503 fallback verified",
+    "No public HTTPS deployment;Vercel Git-project creation previously403;durable Python/SQLite host absent",
+    "M5 independent/adversarial/accessibility/dependency checks and M6 reproducibility/submission remain",
+    "Owner registration pending;owner handling,no external action authorized"
+  ]
+}
