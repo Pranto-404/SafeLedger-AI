@@ -1,0 +1,37 @@
+{
+  "milestone": "M3 finite live-evaluation runner readiness;live gate blocked",
+  "verified_at_utc": "2026-10-17T08:53:53.876547+00:00",
+  "source_commit": "6a9c2bd9bdbedfabeec333f07cf1c03b459c2f46",
+  "source_tree_sha": "3c10ad4808eca29836b47f919fedbeb28a422d89",
+  "publication": "Exact staged tree matched GitHub before expected-HEAD non-force ref update.",
+  "results": {
+    "pytest_passed": 255,
+    "pytest_failed": 0,
+    "pytest_skipped": 0,
+    "known_warnings": 2,
+    "new_evaluator_provider_mock_tests": 29,
+    "live_llm_calls": 0,
+    "live_model_evaluation_status": "blocked:AI_NOT_CONFIGURED",
+    "published_preflight_exit_code": 3,
+    "published_preflight_clean_source": true,
+    "http_concurrency_restart_replay": "passed",
+    "compileall": "passed",
+    "pip_check": "passed",
+    "staged_diff_check": "passed"
+  },
+  "logs": "evidence/m3-evaluation/checks.log",
+  "pytest": "evidence/m3-evaluation/pytest-final.xml",
+  "preflight": "evidence/m3-evaluation/published-preflight/evaluation.json",
+  "scope": "Mock/MockTransport tests validate runner/scoring/accounting only;not real-model accuracy,cost or injection evidence. No new frontend/dependency changes;M6 clean clone/browser/artifacts remain historical at their exact source commits.",
+  "remaining": [
+    "Privately configured compatible provider/model/current rates/budget and explicit actual live run",
+    "Prior Vercel403,durable backend and HTTPS/Git-trigger verification",
+    "Independent reviewer/device qualification and owner registration/license/final submission"
+  ],
+  "source_sha256": {
+    "api/app/agents/provider.py": "03fa7df513c676eab9f610f759d1595a232b40377a39d27e92f60adde70c350e",
+    "api/tests/test_live_evaluation.py": "de832b61c875afd20b77780e9e406c05af422659b49eec8643e5631da0d7c90b",
+    "scripts/evaluate_live_agent.py": "abaf2879e9f0ca5d5ba9509551c10fc33bdd9f7459636d6fa7ba5763abc20596",
+    "docs/LIVE_AGENT_EVALUATION.md": "cbacfac3ae9d536b806d12f3a9d326439c30a9a19230fb4bf766d98c3ddee6a7"
+  }
+}

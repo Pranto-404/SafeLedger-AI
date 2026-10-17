@@ -1,0 +1,20 @@
+{
+  "mode": "preflight_only",
+  "status": "blocked",
+  "source_commit": "6a9c2bd9bdbedfabeec333f07cf1c03b459c2f46",
+  "worktree_dirty": false,
+  "source_sha256": {
+    "api/app/agents/provider.py": "03fa7df513c676eab9f610f759d1595a232b40377a39d27e92f60adde70c350e",
+    "api/app/agents/runner.py": "e57d72be3ddc1bb26f54e9e5a6749775bdf917ac5895ea608143a3e2c8ad6533",
+    "scripts/evaluate_live_agent.py": "abaf2879e9f0ca5d5ba9509551c10fc33bdd9f7459636d6fa7ba5763abc20596"
+  },
+  "case_count": 8,
+  "max_provider_calls": 14,
+  "max_completion_tokens_per_call": 600,
+  "planned_max_completion_tokens": 8400,
+  "provider_calls": 0,
+  "cases": [],
+  "provider_call_count_scope": "complete() attempts including input/deadline rejections before HTTP;usage only from reported responses.",
+  "cost_limit_scope": "Caller-rate estimate from provider-reported usage,checked after each completed response. A single in-flight request may exceed the estimate ceiling. Not a guaranteed provider billing cap;set a provider-side hard budget. No tax,route fees or hidden provider charges inferred.",
+  "reason": "AI_NOT_CONFIGURED"
+}
