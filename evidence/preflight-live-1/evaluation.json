@@ -1,0 +1,22 @@
+{
+  "mode": "preflight_only",
+  "status": "blocked",
+  "source_commit": "dc4236a64639ff55a64f0b345193a56885a67d5c",
+  "worktree_dirty": true,
+  "source_sha256": {
+    "api/app/agents/provider.py": "8679ff41772f1438c6158c0dbe3796a9777a287c41ec8ddc773db6fb9b8108ae",
+    "api/app/agents/runner.py": "9d542f7052a77c8ca764bd2c3adcbfdd008336ea07a849629e6b2441c8cdf90f",
+    "scripts/evaluate_live_agent.py": "1239c67adddd643ba82daea3344d2b069ad83da8bf9cef5a7e50b0028a2ba1ea"
+  },
+  "case_count": 8,
+  "max_provider_calls": 14,
+  "max_completion_tokens_per_call": 600,
+  "planned_max_completion_tokens": 8400,
+  "provider_calls": 0,
+  "cases": [],
+  "provider_call_count_scope": "complete() attempts including input/deadline rejections before HTTP;usage only from reported responses.",
+  "cost_limit_scope": "Caller-rate estimate from provider-reported usage,checked after each completed response. A single in-flight request may exceed the estimate ceiling. Not a guaranteed provider billing cap;set a provider-side hard budget. No tax,route fees or hidden provider charges inferred.",
+  "requested_model": "gemini-3.5-flash-lite",
+  "provider_host": "generativelanguage.googleapis.com",
+  "reason": "LIVE_OPT_IN_REQUIRED"
+}

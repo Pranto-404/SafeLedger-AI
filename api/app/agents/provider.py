@@ -39,14 +39,14 @@ class ChatProvider:
             allowed={x.strip().lower() for x in os.environ.get('SAFELEDGER_LLM_ALLOWED_HOSTS','generativelanguage.googleapis.com' if free else 'api.openai.com,ai-gateway.vercel.sh').split(',') if x.strip()}
             expected_path='/v1beta/openai' if free else '/v1'
             invalid=parts.scheme!='https' or not parts.hostname or parts.hostname not in allowed or parts.username or parts.password or parts.query or parts.fragment or parts.port not in (None,443) or parts.path!=expected_path
-            if free:invalid=invalid or parts.hostname!='generativelanguage.googleapis.com' or self.model!='gemini-3.8-flash'
+            if free:invalid=invalid or parts.hostname!='generativelanguage.googleapis.com' or self.model not in {'gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite', 'gemini-3.5-flash-lite'}
         except ValueError:raise ProviderError('AI_CONFIGURATION_INVALID') from None
         if invalid:raise ProviderError('AI_CONFIGURATION_INVALID')
         if not 1<=len(self.model)<=120 or len(self.key)>1024:raise ProviderError('AI_CONFIGURATION_INVALID')
         # A model name cannot establish account billing status. Owner must check
         # AI Studio shows Free tier with billing disabled before enabling calls.
         if free and os.environ.get('SAFELEDGER_LLM_FREE_TIER_CONFIRMED')!='1':raise ProviderError('AI_FREE_TIER_CONFIRMATION_REQUIRED')
-        self.calls=0;self.deadline=time.monotonic()+20
+        self.calls=0;self.deadline=time.monotonic()+90
         self.telemetry=[]  # Metadata only;never request bodies,keys or model prose.
         self.transport=transport
         self.is_mock=transport is not None
@@ -69,16 +69,20 @@ class ChatProvider:
         encoded=json.dumps(payload)
         if len(encoded.encode())>24000:raise ProviderError('AI_INPUT_BUDGET_EXCEEDED')
         try:
-            with httpx.Client(transport=self.transport,trust_env=False,follow_redirects=False,timeout=min(8,remaining)) as client:
-                with client.stream('POST',self.base+'/chat/completions',headers={'Authorization':'Bearer '+self.key},json=payload) as response:
-                    if response.status_code==429:raise ProviderError('AI_QUOTA_EXHAUSTED')
-                    if response.status_code!=200:raise ProviderError('AI_PROVIDER_REJECTED')
-                    chunks=[];size=0
-                    for chunk in response.iter_bytes():
-                        size+=len(chunk)
-                        if size>65536:raise ProviderError('AI_OUTPUT_BUDGET_EXCEEDED')
-                        if time.monotonic()>self.deadline:raise ProviderError('AI_TIMEOUT')
-                        chunks.append(chunk)
+            with httpx.Client(transport=self.transport,trust_env=False,follow_redirects=False,timeout=min(30,remaining)) as client:
+                for attempt in range(2):
+                    with client.stream('POST',self.base+'/chat/completions',headers={'Authorization':'Bearer '+self.key},json=payload) as response:
+                        if response.status_code==429:raise ProviderError('AI_QUOTA_EXHAUSTED')
+                        if response.status_code in {500,502,503,504} and attempt==0 and not self.is_mock:
+                            time.sleep(2);continue
+                        if response.status_code!=200:raise ProviderError('AI_PROVIDER_REJECTED')
+                        chunks=[];size=0
+                        for chunk in response.iter_bytes():
+                            size+=len(chunk)
+                            if size>65536:raise ProviderError('AI_OUTPUT_BUDGET_EXCEEDED')
+                            if time.monotonic()>self.deadline:raise ProviderError('AI_TIMEOUT')
+                            chunks.append(chunk)
+                        break
             raw=strict_json(b''.join(chunks).decode('utf-8'))
             if not isinstance(raw,dict):raise ProviderError('AI_INVALID_RESPONSE')
             def tag(value):
@@ -86,7 +90,10 @@ class ChatProvider:
             usage=raw.get('usage')
             valid=isinstance(usage,dict) and all(type(usage.get(k)) is int and 0<=usage[k]<=10**9 for k in ('prompt_tokens','completion_tokens'))
             if valid and 'total_tokens' in usage:
-                valid=type(usage['total_tokens']) is int and usage['total_tokens']==usage['prompt_tokens']+usage['completion_tokens']
+                if self.profile=='gemini_free':
+                    valid=type(usage['total_tokens']) is int and usage['total_tokens']>=usage['prompt_tokens']+usage['completion_tokens']
+                else:
+                    valid=type(usage['total_tokens']) is int and usage['total_tokens']==usage['prompt_tokens']+usage['completion_tokens']
             self.telemetry.append({'requested_model':tag(self.model),'reported_model':tag(raw.get('model')),'response_id':tag(raw.get('id')),'usage':{k:usage[k] for k in ('prompt_tokens','completion_tokens')} if valid else None})
             choices=raw.get('choices')
             if not isinstance(choices,list) or len(choices)!=1:raise ProviderError('AI_INVALID_RESPONSE')

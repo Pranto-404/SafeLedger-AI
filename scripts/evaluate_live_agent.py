@@ -86,6 +86,7 @@ class MeasuredProvider:
     @property
     def telemetry(self):return self.provider.telemetry
     def complete(self,*args,**kwargs):
+        if not self.is_mock:time.sleep(14)
         self.budget.reserve()
         previous=len(self.telemetry)
         try:result=self.provider.complete(*args,**kwargs)
