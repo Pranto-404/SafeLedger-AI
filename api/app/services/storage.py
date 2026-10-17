@@ -9,6 +9,9 @@ def create_schema(connection):
     connection.executescript("""
     CREATE TABLE IF NOT EXISTS financial_datasets (
       business_id TEXT PRIMARY KEY, dataset_sha256 TEXT NOT NULL, payload TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS dataset_versions (business_id TEXT NOT NULL, dataset_sha256 TEXT NOT NULL, payload TEXT NOT NULL, PRIMARY KEY(business_id,dataset_sha256));
+    CREATE TRIGGER IF NOT EXISTS immutable_dataset_version_update BEFORE UPDATE ON dataset_versions BEGIN SELECT RAISE(ABORT,'immutable dataset version'); END;
+    CREATE TRIGGER IF NOT EXISTS immutable_dataset_version_delete BEFORE DELETE ON dataset_versions BEGIN SELECT RAISE(ABORT,'immutable dataset version'); END;
     CREATE TABLE IF NOT EXISTS source_records (
       business_id TEXT NOT NULL REFERENCES financial_datasets(business_id),
       source_record_id TEXT NOT NULL, kind TEXT NOT NULL, record_id TEXT NOT NULL,

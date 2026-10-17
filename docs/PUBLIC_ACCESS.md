@@ -1,9 +1,19 @@
+# Finalization update — 18 October 2026
+
+New accounts start at BDT0 with no sample invoices. Workspace & teammates can create a separate practice demo (sample BDT120000) or another empty personal workspace. Existing accounts/data stay intact.
+
+Data supports own cash activity and unpaid supplier invoices, with server date/strict integer validation and explicit payee permission. Cleared cash affects current balance; scheduled cash/unpaid invoices affect the forecast. Cash records are self-reported, not bank-verified, and do not execute transfers. Do not independently record an invoice payment as cash if using its sandbox approval flow. Inputs are append-only; a new workspace provides a clean corrected scenario. Complete Dataset JSON imports are only allowed into untouched empty workspaces and do not trust vendors automatically.
+
+Input retries use a stable request UUID and expected dataset revision; atomic transactions prevent duplicate replay and stale overwrite. Immutable historical dataset revisions preserve old signed proposals/postings; invoice continuity is checked against current evidence. Existing proposals, ledger entries and audit signatures are never rewritten.
+
+Passwords require8–128 exact characters (spaces preserved), server scrypt and rate limits retained; UI shows an estimated strength meter and allows password visibility. No recovery yet. UI uses local system fonts, no new runtime dependencies, CSS transform/opacity transitions and reduced-motion override. Assistant has task suggestions plus deterministic balance/forecast/risk insights available without model quota. AI still cannot approve/execute. No paid fallback.
+
 # Public access and testing
 
 Public frontend: https://safeledger-ai.vercel.app. Backend: https://safeledger-ai.onrender.com.
 
 - **Explore the demo** opens a read-only example without asking for credentials. Visitors can inspect invoices, forecasts, fictional financing and audit. Guest sessions cannot create proposals, approve, import or use the model quota.
-- **Create account** uses a username (3–32 letters, numbers or underscores) and a unique passphrase (15–128 characters). No email service is required. A new isolated workspace starts with synthetic sample data. No password recovery is currently provided; the entry screen discloses this.
+- **Create account** uses a username (3–32 letters, numbers or underscores) and a unique passphrase (8–128 characters). No email service is required. A new isolated personal workspace starts at zero; practice sample data is explicitly optional and isolated. No password recovery is currently provided; the entry screen discloses this.
 - **Sign in** restores the account's own workspace. Cookies are host-only, HttpOnly, Secure in deployment, SameSite=Lax and expire after 24 hours. Sign-out revokes the current server session. No password or account bearer is returned to frontend JavaScript or saved in localStorage.
 - **Workspace & teammates** lets an owner create an approver invitation. A second registered account enters this one-time, one-hour code to join that workspace as approver. The invitation does not create an owner or let the proposer approve their own proposal. Members can switch between their own and shared workspaces.
 - The old private token form remains under a collapsed compatibility section; public users do not need it.

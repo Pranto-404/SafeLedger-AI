@@ -1,0 +1,36 @@
+{
+  "phase": "one",
+  "status": "locally_verified_pending_publication",
+  "backend_tests": 312,
+  "additional_input_tests": 8,
+  "browser_scenarios": 14,
+  "accessibility_scans": 5,
+  "viewports": [
+    360,
+    390,
+    768,
+    1366
+  ],
+  "browser_errors": [],
+  "new_default_balance_minor": 0,
+  "password_minimum": 8,
+  "paid_services_created": false,
+  "source_sha256": {
+    "api/app/accounts.py": "9dc6aa2f2cb85220b6af6cd51cd16bd264e1fec1ca013fea3807f49a779e4fc2",
+    "api/app/inputs.py": "46018055df0cdd71938a1dc0cd511e7ec4369ced008d32ed840fc7014b2d02a7",
+    "api/app/security.py": "6d2852634c0dacaba6dada736b82138b3775e344045ae627a73fd7ba1733e62c",
+    "api/app/services/storage.py": "c2f1beb55fd457d4e97f0e474a44eebf3bc1190fc542ffde32a8c1fa6b440a8f",
+    "api/app/routes.py": "00bfe47e0b8d9e45f9bc28972f271b0e248c351df8a05c5d0d38056074d87984",
+    "web/src/App.tsx": "da13b9c4e085a7d90d350dc796bbd547baacf29dc70f769e62802f55f4095e58",
+    "web/src/DataEntry.tsx": "ed54f2b7ba98b71a3d1b8c1c17c512249f23bbbb7aab957ef305e4498e7cf1d8",
+    "web/src/PasswordStrength.tsx": "70fbf30dc573b342f75d3907e82e4afed19af37805d72e1c2c983becffe16810",
+    "web/src/ImportEvidence.tsx": "bc5be75f46de18b7c4b8e33c5f2a21fc4379ce3e5736e314919f98c85346db95",
+    "web/src/style.css": "6ce4595146ed967c38f83c8156fcbbd1b55fef01d437b7e5de21388b412087c1"
+  },
+  "limits": [
+    "Synthetic sandbox, no bank connection or real transfers",
+    "Append-only source entries; use a new workspace for corrected scenarios",
+    "No account recovery or independent security certification",
+    "Chromium emulation is not physical device qualification"
+  ]
+}

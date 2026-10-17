@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "steps": [
+    "one-click guest entry",
+    "guest payment controls unavailable",
+    "guest deterministic forecast",
+    "new personal account starts with zero and no fake invoice",
+    "manual cash and unpaid invoice preserve exact cents and no premature cash deduction",
+    "explicit isolated practice demo",
+    "refresh restores HttpOnly session",
+    "owner proposal, independent approval still required",
+    "separate account joins via one-time approver invitation",
+    "one posting, 85000 balance, verified audit",
+    "owner sees independently approved balance",
+    "360/390/768/1366px workspace layouts",
+    "logout revokes session and refresh remains signed out",
+    "responsive account entry"
+  ],
+  "page_errors": [],
+  "simulation_only": true
+}

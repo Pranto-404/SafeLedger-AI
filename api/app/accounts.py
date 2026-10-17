@@ -2,6 +2,7 @@
 No email delivery or external identity service is required for this zero-budget demo.
 """
 from contextlib import closing
+from datetime import datetime, timezone, timedelta, date
 import hashlib
 import hmac
 import json
@@ -35,6 +36,8 @@ def schema(db):
     db.executescript('''
     CREATE TABLE IF NOT EXISTS auth_accounts(account_id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, created_at INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS account_members(account_id TEXT NOT NULL REFERENCES auth_accounts(account_id), business_id TEXT NOT NULL, user_id TEXT UNIQUE NOT NULL REFERENCES security_users(user_id), PRIMARY KEY(account_id,business_id));
+    CREATE TABLE IF NOT EXISTS workspace_meta(business_id TEXT PRIMARY KEY, name TEXT NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('personal','demo')));
+    CREATE TABLE IF NOT EXISTS workspace_input_requests(business_id TEXT NOT NULL, request_id TEXT NOT NULL, body_sha256 TEXT NOT NULL, PRIMARY KEY(business_id,request_id));
     CREATE TABLE IF NOT EXISTS workspace_invites(code_hash TEXT PRIMARY KEY, business_id TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('approver','viewer')), created_by TEXT NOT NULL, expires_at INTEGER NOT NULL, used_by TEXT);
     ''')
 
@@ -94,12 +97,21 @@ def set_cookie(response, token):
 
 def identity(db, actor):
     row=db.execute('SELECT a.username FROM auth_accounts a JOIN account_members m ON m.account_id=a.account_id WHERE m.user_id=?',(actor.user_id,)).fetchone()
-    return dict(user_id=actor.user_id,business_id=actor.business_id,role=actor.role,username=row[0] if row else None,guest=actor.business_id in PUBLIC_TEMPLATES,simulation_only=True)
+    meta=db.execute('SELECT name,kind FROM workspace_meta WHERE business_id=?',(actor.business_id,)).fetchone()
+    return dict(workspace_name=meta[0] if meta else ('Example workspace' if actor.business_id in PUBLIC_TEMPLATES else 'Existing workspace'), workspace_kind=meta[1] if meta else 'demo',user_id=actor.user_id,business_id=actor.business_id,role=actor.role,username=row[0] if row else None,guest=actor.business_id in PUBLIC_TEMPLATES,simulation_only=True)
 
 
 class Credentials(Contract):
+    model_config = {"extra":"forbid", "str_strip_whitespace":False}
     username: str = Field(min_length=3,max_length=32)
-    password: str = Field(min_length=15,max_length=128)
+    password: str = Field(min_length=8,max_length=128,strict=True)
+    @field_validator('password',mode='before')
+    @classmethod
+    def preserve_password(cls,value):
+        # Credentials are exact strings: never silently trim user passwords.
+        if not isinstance(value,str):raise ValueError('Expected password text')
+        return value
+
     @field_validator('username')
     @classmethod
     def normalize(cls,value):
@@ -111,20 +123,17 @@ class Credentials(Contract):
 @router.post('/auth/signup',status_code=201)
 def signup(body:Credentials, request:Request, response:Response, db=Depends(db_connection)):
     browser_origin(request);rate(request,db,'signup',4)
-    if db.execute('SELECT count(*) FROM auth_accounts').fetchone()[0]>=1000:sec.fail(503,'DEMO_ACCOUNT_CAPACITY_REACHED')
     hashed=password_hash(body.password)
     account=uuid.uuid4().hex;business='workspace-'+uuid.uuid4().hex;user='user-'+uuid.uuid4().hex
     try:
         with sec.transaction(db):
+            if db.execute('SELECT count(*) FROM auth_accounts').fetchone()[0]>=1000:sec.fail(503,'DEMO_ACCOUNT_CAPACITY_REACHED')
             db.execute('INSERT INTO auth_accounts VALUES (?,?,?,?)',(account,body.username,hashed,sec.now()))
             db.execute("INSERT INTO security_users VALUES (?,?, 'owner',1)",(user,business))
             db.execute('INSERT INTO account_members VALUES (?,?,?)',(account,business,user))
-            db.execute('INSERT INTO financial_datasets SELECT ?,dataset_sha256,payload FROM financial_datasets WHERE business_id=?',(business,TEMPLATE))
-            db.execute('INSERT INTO source_records SELECT ?,source_record_id,kind,record_id,record_sha256,payload FROM source_records WHERE business_id=?',(business,TEMPLATE))
-            db.execute('INSERT INTO security_policies SELECT ?,reserve_minor,payment_limit_minor FROM security_policies WHERE business_id=?',(business,TEMPLATE))
-            db.execute('INSERT INTO trusted_vendors SELECT ?,vendor_id,enabled FROM trusted_vendors WHERE business_id=?',(business,TEMPLATE))
+            create_workspace_data(db,business,'personal','My workspace')
             token=issue(db,user)
-            sec.audit(db,sec.authenticate(db,token),'account-'+account,'WORKSPACE_CREATED',{'sample_data':True})
+            sec.audit(db,sec.authenticate(db,token),'account-'+account,'WORKSPACE_CREATED',{'sample_data':False})
     except sqlite3.IntegrityError:sec.fail(409,'USERNAME_UNAVAILABLE')
     set_cookie(response,token)
     return identity(db,sec.authenticate(db,token))
@@ -165,8 +174,8 @@ def logout(request:Request,response:Response,db=Depends(db_connection)):
 @router.get('/account/workspaces')
 def workspaces(actor=Depends(principal),db=Depends(db_connection)):
     member=db.execute('SELECT account_id FROM account_members WHERE user_id=?',(actor.user_id,)).fetchone()
-    rows=db.execute('SELECT m.business_id,u.role FROM account_members m JOIN security_users u ON u.user_id=m.user_id WHERE m.account_id=? AND u.active=1',(member[0],)).fetchall() if member else []
-    return {'workspaces':[{'business_id':r[0],'role':r[1]} for r in rows],'simulation_only':True}
+    rows=db.execute("SELECT m.business_id,u.role,COALESCE(w.name,'Existing workspace'),COALESCE(w.kind,'demo') FROM account_members m JOIN security_users u ON u.user_id=m.user_id LEFT JOIN workspace_meta w ON w.business_id=m.business_id WHERE m.account_id=? AND u.active=1",(member[0],)).fetchall() if member else []
+    return {'workspaces':[{'business_id':r[0],'role':r[1],'name':r[2],'kind':r[3]} for r in rows],'simulation_only':True}
 
 
 class WorkspaceChoice(Contract):
@@ -220,3 +229,42 @@ def join(body:AcceptRequest,response:Response,actor=Depends(principal),db=Depend
         token=issue(db,user)
         sec.audit(db,sec.authenticate(db,token),'join-'+uuid.uuid4().hex,'WORKSPACE_JOINED',{'role':invitation[1],'invited_by':invitation[2]})
     set_cookie(response,token);return identity(db,sec.authenticate(db,token))
+
+
+def today_bd():
+    return datetime.now(timezone(timedelta(hours=6))).date()
+
+
+def create_workspace_data(db,business,kind,name):
+    from api.app.services.finance import Dataset
+    if kind=='demo':
+        db.execute('INSERT INTO financial_datasets SELECT ?,dataset_sha256,payload FROM financial_datasets WHERE business_id=?',(business,TEMPLATE))
+        db.execute('INSERT INTO source_records SELECT ?,source_record_id,kind,record_id,record_sha256,payload FROM source_records WHERE business_id=?',(business,TEMPLATE))
+        db.execute('INSERT INTO trusted_vendors SELECT ?,vendor_id,enabled FROM trusted_vendors WHERE business_id=?',(business,TEMPLATE))
+    else:
+        ds=Dataset(opening_source_id='opening-zero',opening_on=date(1970,1,1),as_of=today_bd(),opening_balance_minor=0,currency='BDT',invoices=[],events=[])
+        db.execute('INSERT INTO financial_datasets VALUES (?,?,?)',(business,fingerprint(ds),ds.model_dump_json()))
+    db.execute('INSERT INTO security_policies VALUES (?,?,?)',(business,0 if kind=='personal' else 1000000,10000000))
+    db.execute('INSERT INTO workspace_meta VALUES (?,?,?)',(business,name,kind))
+
+
+class NewWorkspace(Contract):
+    kind: str = Field(pattern='^(personal|demo)$')
+    name: str = Field(min_length=1,max_length=60)
+
+
+@router.post('/account/workspaces',status_code=201)
+def new_workspace(body:NewWorkspace,response:Response,actor=Depends(principal),db=Depends(db_connection)):
+    member=db.execute('SELECT account_id FROM account_members WHERE user_id=?',(actor.user_id,)).fetchone()
+    if not member:sec.fail(403,'ACCOUNT_REQUIRED')
+    sec.budget(db,'new-workspace:'+member[0],3)
+    with sec.transaction(db):
+        if db.execute('SELECT count(*) FROM account_members WHERE account_id=?',(member[0],)).fetchone()[0]>=20:sec.fail(409,'WORKSPACE_LIMIT_REACHED')
+        business='workspace-'+uuid.uuid4().hex;user='user-'+uuid.uuid4().hex
+        db.execute("INSERT INTO security_users VALUES (?,?,'owner',1)",(user,business))
+        db.execute('INSERT INTO account_members VALUES (?,?,?)',(member[0],business,user))
+        create_workspace_data(db,business,body.kind,body.name)
+        token=issue(db,user)
+        sec.audit(db,sec.authenticate(db,token),'workspace-'+business,'WORKSPACE_CREATED',{'sample_data':body.kind=='demo'})
+    set_cookie(response,token)
+    return identity(db,sec.authenticate(db,token))

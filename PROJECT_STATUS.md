@@ -1,3 +1,7 @@
+# Active finalization request — 18 October 2026
+
+The user authorized additional product work after the prior completed release. Read FINALIZATION_CHECKPOINT.md and evidence/finalization/verification.json. Phase one adds zero-start personal workspaces, separate optional demos, manual input, 8-character exact passwords/strength estimate and lightweight futuristic UI. Locally verified; new source is not yet published/deployed. Phase two Vercel backend preview follows phase one acceptance. Budget BDT0; preserve old accounts/signing identity/database.
+
 # RELEASE COMPLETE — 18 October 2026
 
 Public site: https://safeledger-ai.vercel.app/. Final application source 65fca730c9b2a3f8678a954b4be9a363ade54c82, Render deploy dep-db9vu81srm7s73a075ug LIVE, Vercel SUCCESS. No further release gate remains open for the requested public competition prototype. Git auto-deploy demonstrated on multiple actual main-branch updates. Documentation-only checkpoint commits may be newer; application source remains the qualified revision.

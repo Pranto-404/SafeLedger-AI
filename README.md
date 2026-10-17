@@ -2,7 +2,7 @@
 
 Explore **https://safeledger-ai.vercel.app**. Choose **Explore the demo** without an account, or create a free username/passphrase account for an isolated synthetic workspace. To test approval, invite a teammate from **Workspace & teammates**; they register separately and join with your one-time code. No real funds move.
 
-Public users do not need session tokens. Account passwords require 15+ characters; use a unique passphrase. Password recovery is not available in this competition prototype. Render Free may need time to wake. The free assistant has quotas; financial calculations and approval controls work independently.
+New accounts start at BDT0. Add cash/invoices in Data, or explicitly open a separate practice demo from Workspace & teammates. Guest examples stay read-only. Public users do not need session tokens. Account passwords require 8–128 characters; use a unique passphrase. Password recovery is not available in this competition prototype. Render Free may need time to wake. The free assistant has quotas; financial calculations and approval controls work independently.
 
 See [public access and verification](docs/PUBLIC_ACCESS.md). Local development and trusted legacy-token instructions below remain available for reproducibility.
 

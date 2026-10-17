@@ -13,7 +13,7 @@ from api.app.routes import router
 from api.app.agents import runner
 from api.app.agents.provider import ProviderError
 from api.app.database import connect
-from api.app import accounts
+from api.app import accounts, inputs
 
 def _cors_origins() -> list[str]:
     """Read allowed origins from env; default to localhost dev ports only."""
@@ -49,6 +49,7 @@ app.add_middleware(
 )
 app.include_router(router)
 app.include_router(accounts.router)
+app.include_router(inputs.router)
 
 @app.exception_handler(ProviderError)
 async def ai_error(request,exc):

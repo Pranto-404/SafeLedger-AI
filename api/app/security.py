@@ -216,6 +216,15 @@ def verify_proposal(db, row, dataset=None):
         if digest != row['action_hash'] or not hmac.compare_digest(row['signature'],signature('proposal',digest)):
             fail(409,'PROPOSAL_INTEGRITY_FAILURE')
         ds = dataset or original_dataset(db,row['business_id'])
+        if fingerprint(ds)!=payload['dataset_sha256']:
+            version=db.execute('SELECT payload FROM dataset_versions WHERE business_id=? AND dataset_sha256=?',(row['business_id'],payload['dataset_sha256'])).fetchone()
+            if version is None:fail(409,'SOURCE_CHANGED')
+            historical=validated(json.loads(version[0]))
+            if fingerprint(historical)!=payload['dataset_sha256']:fail(409,'SOURCE_CHANGED')
+            old=next((x for x in historical.invoices if x.invoice_id==row['invoice_id']),None)
+            current=next((x for x in ds.invoices if x.invoice_id==row['invoice_id']),None)
+            if old is None or current is None or fingerprint(old)!=fingerprint(current):fail(409,'SOURCE_CHANGED')
+            ds=historical
         invoice = next((x for x in ds.invoices if x.invoice_id==row['invoice_id']),None)
         if invoice is None:
             fail(409,'SOURCE_CHANGED')

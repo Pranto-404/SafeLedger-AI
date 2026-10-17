@@ -33,7 +33,7 @@ def test_signup_cookie_restore_logout_hashing_and_isolation(world):
     cookie=c.cookies.get(COOKIE)
     assert 'HttpOnly' in c.get('/api/session').request.headers.get('Cookie','') or cookie
     assert c.get('/api/session').json()['business_id']==first['business_id']
-    data=c.get('/api/workspace').json();assert data['snapshot']['balance_minor']==12000000
+    data=c.get('/api/workspace').json();assert data['snapshot']['balance_minor']==0
     with sqlite3.connect(path) as db:
         hashed=db.execute('SELECT password_hash FROM auth_accounts').fetchone()[0]
         assert hashed.startswith('scrypt-v1$') and PASSWORD not in hashed
@@ -68,7 +68,8 @@ def test_guest_read_only_financial_exploration_and_no_ai(world):
 
 def test_separate_registered_approver_single_posting_and_invite_replay(world):
     c,path=world
-    owner=signup(c,'owner_person');owner_cookie=c.cookies.get(COOKIE)
+    signup(c,'owner_person')
+    owner=c.post('/api/account/workspaces',json={'kind':'demo','name':'Practice demo'}).json();owner_cookie=c.cookies.get(COOKIE)
     proposal=c.post('/api/proposals',json={'invoice_id':'INV-105'});assert proposal.status_code==201
     p=proposal.json();body={'proposal_hash':p['action_hash'],'decision':'approve'}
     route='/api/proposals/'+p['proposal_id']+'/approve'
@@ -88,6 +89,7 @@ def test_separate_registered_approver_single_posting_and_invite_replay(world):
     signup(c,'third_person')
     assert c.post('/api/account/join',json={'code':code}).status_code==409
     assert c.post('/api/auth/login',json={'username':'owner_person','password':PASSWORD}).status_code==200
+    assert c.post('/api/account/switch',json={'business_id':owner['business_id']}).status_code==200
     assert c.get('/api/workspace').json()['snapshot']['balance_minor']==8500000
     c.cookies.clear();c.cookies.set(COOKIE,owner_cookie)
     assert c.get('/api/session').json()['role']=='owner'
