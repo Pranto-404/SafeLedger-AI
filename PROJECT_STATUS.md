@@ -1,3 +1,33 @@
+# Active public-access release — 18 October 2026
+
+User explicitly authorized publishing/deployment and requested simple public testing, signup and guest access. Work continues from reviewed commit 73a4b76 and preserves fetched GitHub main f606f9f. Earlier publication approval block is resolved by this explicit instruction; do not ask again for the same scope.
+
+IMPLEMENTED: one-click guest example (read-only), username/passphrase accounts with isolated sample workspaces, HttpOnly cookie sessions, restored login, server-revoked logout, one-time approver invitations and workspace switching. Private token login is optional/collapsed. Added per-IP/account/global AI limits, scrypt hashing, origin/header CSRF checks and CSP. Initial dashboard reads are combined into one consistent workspace snapshot. Free backend wake-up is explained in the UI.
+
+VERIFIED LOCALLY: 304 tests pass (2 known warnings), production frontend build, 12 browser scenarios, 4 axe scans and four viewport widths. Actual persistent Turso smoke: public guest, signup/login, isolated workspaces, separate invited approver, one posting/replay, BDT85000 balance, verified audit, separate-connection persistence; no AI calls. Final browser run: evidence/public-access/browser-qualified. User-supplied eight-case real-model report remains source-hash verified historical evidence.
+
+CONNECTED RENDER: workspace tea-db9ul2uq1p3s739lefm0, service srv-db9uts7btjjs73d55ppg (SafeLedger-AI), free plan/Oregon, main branch auto-deploy on commit. Existing env values preserved while merging Turso URL/token and secure-cookie configuration via plugin. Prior synthetic run (1 executed proposal, 7 audit events) exported privately and retained durably before cutover; it is a historical archive, not new-account data.
+
+RELEASE IN PROGRESS: commit and push exact qualified source to existing GitHub main without force, observe Render/Vercel terminal deployment state, verify public cookies/guest/signup/invitation/single-post/audit and persistence. Do not call the update live until actually verified. No paid plan, disk, API credit or billing activation authorized. Budget BDT0 persists.
+
+## Previous review and historical evidence
+
+# Current review checkpoint — 18 October 2026
+
+User-provided ZIP and fetched GitHub main match commit f606f9f (except the generated fixture manifest; CRLF ignored). The user's changes supersede older deployment plans below. Public frontend https://safeledger-ai.vercel.app and Render backend https://safeledger-ai.onrender.com are connected: health/ready returned HTTP 200 on both. Reported build ID 4a334b3 was a manual value and did not prove which commit was running.
+
+The supplied live-eval-1 report contains 5/5 task, 2/2 attack and 1/1 viewer cases passed, 14 provider calls; its three exact source hashes match the uploaded CRLF source bytes. This is preserved historical evidence, not a new run or billing verification.
+
+Review fixes (local, not published): fixture LF/hash reproducibility; no hidden provider retry; Render build ID from RENDER_GIT_COMMIT; stable signing identity with unchanged legacy 32-character compatibility; seed credentials written to private file instead of logs; trusted renewal CLI preserving existing identities, 24-hour maximum, dataset and ledger; optional primary-only Turso HTTP support with fail-closed transaction handling. Current user Render/Vercel topology retained.
+
+VERIFIED: 298 pytest tests passed (2 known warnings), frontend production build passed. Previous cloud adapter's actual remote check passed with 4 concurrent approvals, 1 posting, balanced ledger, audit verification and separate-connection persistence. The integrated reviewed source real-cloud run also PASSED: 4 concurrent approvals, 1 posting, balance reconciliation, balanced ledger, audit and separate-connection persistence. Log: evidence/deployment-review/cloud-finance.log. This is not a deployed Render test.
+
+OPEN: Render production still uses ephemeral local SQLite. Enabling Turso requires preserving/migrating current synthetic ledger and using the same signing identity; do not silently replace it with a previously seeded cloud demo. Vercel and Render dashboards both requested sign-in in the currently available browser; the user's local extension control was not exposed. Public authenticated financial workflow, deployed source/auto-update and persistence are not verified by health checks.
+
+Publication dry-run was rejected by automatic approval review as outside inspection authorization. No push or deployment performed. Prepare concrete patch/package and obtain explicit approval to publish to Pranto-404/SafeLedger-AI before any retry. Credentials are excluded from packages and commits. Budget remains BDT0; no paid service or billing change.
+
+## Historical checkpoint (superseded where stated above)
+
 # SafeLedger AI — preserved checkpoint
 Updated:2026-10-17 UTC/18 BD. Deadline:2026-10-20 21:59 BD/15:59 UTC.
 

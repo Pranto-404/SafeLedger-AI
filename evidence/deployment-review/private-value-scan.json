@@ -1,0 +1,6 @@
+{
+  "status": "passed",
+  "scanned_files": 350,
+  "matching_paths": [],
+  "scope": "Exact private API/database/signing values only; no matching values emitted."
+}

@@ -1,3 +1,7 @@
 *.csv text eol=lf
 # Raw test/command logs are evidence; preserve output verbatim.
 *.log -whitespace
+
+# Generated fixture hashes must be identical on Windows and Linux.
+data/fixtures/*.json text eol=lf
+*.sh text eol=lf

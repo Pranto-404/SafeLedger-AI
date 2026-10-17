@@ -1,3 +1,30 @@
+# Active public account release — next actions
+
+Explicit user approval to publish/deploy is now present. Do not repeat the previous permission question. Source in safeledger-review; public access implemented and qualified. Read docs/PUBLIC_ACCESS.md and evidence/public-access/.
+
+1. Publish qualified code to Pranto-404/SafeLedger-AI main after fetching/checking expected f606f9f; preserve concurrent edits and never force-push.
+2. Render environment has been merged with existing Turso credentials and secure cookie setting; signing/model settings preserved. Service srv-db9uts7btjjs73d55ppg, workspace tea-db9ul2uq1p3s739lefm0. Inspect automatic deployment caused by push; do not also trigger a duplicate deploy.
+3. Observe Render live status and actual commit; verify /api/ready reports libsql. Inspect Vercel changed asset and production UI. Use browser for one-click guest and account flow, supported APIs for deployment status. No repeated 403 requests or browser sign-in is needed for Render now.
+4. Verify real public account cookie flags, signup, separate approval, single posting and audit. Confirm account/ledger persists after a deliberate deployment; no real money or customer data.
+5. Save final deployment/public verification evidence and update this checkpoint. Complete final clean source package without .env/.git/.private/database/runtime files.
+
+The previous synthetic demo was archived privately before cutover, including its executed posting and seven-event audit. New public example/workspaces are deliberately isolated; do not merge archived audit into new accounts or change signing keys casually. No paid services or email delivery. Password recovery is disclosed as unavailable.
+
+## Superseded review handoff
+
+# Continue the reviewed user changes — 18 October 2026
+
+1. Worktree safeledger-review is based on actual GitHub main f606f9f. Original safeledger-ai worktree and uploaded ZIP were preserved. Do not overwrite either or revert the user's Render/Vercel topology.
+2. Review docs/DEPLOYMENT_REVIEW_20261018.md and evidence/deployment-review/. Local regression 298 passed; frontend build passed. The final integrated real-cloud run passed; the public Render cutover remains pending.
+3. Git publication was rejected by automatic approval review. Obtain explicit approval for the concrete patch to Pranto-404/SafeLedger-AI before trying publication; no force push. Re-fetch/check expected HEAD to preserve concurrent edits.
+4. Hosting admin access is blocked by sign-in. Verify the user's connected local Browser control is exposed, or securely authenticate the available browser. Do not ask for keys/passwords in chat. Neither provider has been changed during this review.
+5. Render is currently local/ephemeral SQLite. Inspect and preserve actual deployed ledger, signing identity and sessions before switching TURSO_DATABASE_URL/TURSO_AUTH_TOKEN; do not replace data with an old cloud demo. Optional HTTP adapter is now supported, but env connection/migration is pending. Recheck financial concurrency/audit against the public site after migration and redeploy.
+6. Session tokens expire within 24h by policy. Trusted operator command: python scripts/renew_demo_sessions.py --output .private/render/renewed-sessions.json --ttl-seconds 86400. Run with the existing DB and stable normalized signing key; this does not reset data or change roles. Keep file private. Seed writes initial credentials privately, not logs.
+7. Existing live-model evidence is source-hash verified for the prior implementation. No new provider calls/billing have been performed in this review. Keep free-tier constraints and no automatic paid fallback.
+8. Verify actual Git auto-deploy and reported Render commit match, public login -> proposal -> independent approval -> exactly one posting -> audit, persistence across restart, then update final submission materials. Do not submit the uploaded ZIP with .env/.git/local database.
+
+## Historical handoff
+
 # Continue SafeLedger AI
 1. Inspect status/history;read PROJECT_STATUS.md,evidence/m3-evaluation/verification.json. AuthorizedPranto-404/SafeLedger-AI. Latest zero-money extension is in git log;read evidence/free-ai/verification.json and its source hashes.273tests pass;M3 live-model/M6 public release gates remain open. Do not rebuild/re-readPDFs/repeat completed work.
 2. Owner budget is BDT0. No paid service,billing activation or credit purchase. Follow docs/FREE_AI_SETUP.md:private Google AI Studio project showing Free tier,billing disabled,private key and SAFELEDGER_LLM_FREE_TIER_CONFIRMED=1. Default gemini_free profile pins endpoint/model. Never request a key in chat;model eligibility does not verify account billing. No private key exists here. Legacy compatible profile is not a paid-use authorization or fallback.

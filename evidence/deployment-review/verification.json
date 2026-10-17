@@ -1,0 +1,42 @@
+{
+  "reviewed_at_utc": "2026-10-17T22:31:23.958036+00:00",
+  "base_commit": "f606f9f",
+  "pytest_passed": 298,
+  "pytest_known_warnings": 2,
+  "frontend_build": "passed",
+  "live_model_rerun": false,
+  "published": false,
+  "source_sha256": {
+    "api/app/main.py": "57e907fc09780d16fc20b652bd160d54ef643443a4b22db275b481d334b7cf60",
+    "api/app/database.py": "e114e98f706118b2d5e656ac5335abc30613ecc596f52340adf3db48d1435481",
+    "api/app/agents/provider.py": "a3385bee6e1c98208c70bfdb5c266efd321213d4fc282c3bee2c314a3409f2c1",
+    "api/app/agents/runner.py": "c98c7bedafa0276c6b294f270e126d5a9bbae8f7930e025fab390b0bd0f5026f",
+    "render_start.sh": "975acc1dfcdd05dfcbdfffa40f20df04ab71b3ceee3340cd9750778b06d16826",
+    "scripts/production_seed.py": "e06920db5cc425547af92ddf2ef6f8343b1ef8e791c7a1828ed69b463f592724",
+    "scripts/renew_demo_sessions.py": "1db6b72b9640ff9b445eb6f0b28b4ffdd3d214bf0c3b5bf97f654de10434ff09",
+    "scripts/verify_remote_finance.py": "d72bcf4583b8aafc7cbe2cda5f62a184c031c7f219a0c3ab7b854d23372975a5",
+    "data/fixtures/manifest.json": "3892079687cbce924b4daff09e85b24be2619f4eb86014ebd7d6f075357a0d09",
+    "vercel.json": "5367d3b362371cdceb0bfa14d89d1768fe98f244ce831d6e5326973cd35c4cbb",
+    "render.yaml": "51bde25125df0accafd05db3b2369bf36abfbfa13c7e6dd98ba46ade09a1916a"
+  },
+  "public_health_readiness": "HTTP 200 Vercel and Render",
+  "public_unauthenticated_dashboard": "HTTP 401 both origins",
+  "hosting_admin_access": "blocked by sign-in",
+  "render_production_storage": "local SQLite, ephemeral; remote cutover not performed",
+  "publication": "auto-review rejected dry-run; explicit approval required",
+  "actual_remote_finance": {
+    "status": "passed",
+    "target": "local FastAPI with real remote Turso",
+    "business_id": "cloud-qa-696a6597348842008e020945a65ef865",
+    "concurrent_approvals": 4,
+    "posting_count": 1,
+    "before_minor": 12000000,
+    "after_minor": 8500000,
+    "balanced_ledger": true,
+    "audit_verified": true,
+    "unauthorized_and_forged_denied": true,
+    "separate_connection_persistence": true,
+    "simulation_only": true,
+    "live_ai_used": false
+  }
+}

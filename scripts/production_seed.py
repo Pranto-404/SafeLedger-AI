@@ -2,17 +2,18 @@
 
 Called by Render's startCommand before uvicorn via render_start.sh.
 Reads SAFELEDGER_SIGNING_KEY from environment (Render generates it).
-Writes session tokens to stdout ONLY once — capture them in Render logs.
+Writes initial session tokens to a private file, never to server logs.
 If DB already has data, does nothing (idempotent safe restart).
 """
 from pathlib import Path
 import json
 import os
-import sqlite3
+from contextlib import closing
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from api.app import security as sec
+from api.app.database import connect
 from api.app.services.intake import parse_json
 from api.app.services.storage import store_dataset, create_schema as storage_schema
 from api.app.agents import runner
@@ -28,9 +29,10 @@ def seed_if_empty():
         sys.exit(1)
 
     # Ensure data directory exists
-    Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+    if not os.environ.get("TURSO_DATABASE_URL"):
+        Path(db_path).parent.mkdir(parents=True, exist_ok=True)
 
-    with sqlite3.connect(db_path, timeout=10) as db:
+    with closing(connect()) as db:
         db.execute("PRAGMA foreign_keys=ON")
         # Create schema tables (idempotent)
         db.execute("CREATE TABLE IF NOT EXISTS schema_meta (version INTEGER PRIMARY KEY)")
@@ -54,17 +56,20 @@ def seed_if_empty():
             db.executemany("INSERT OR IGNORE INTO trusted_vendors VALUES (?,?,1)",
                            [("synthetic-demo", v) for v in sorted({i.vendor_id for i in ds.invoices})])
 
-        # Provision long-lived demo sessions (30 days for competition)
+        # Provision sessions within the existing 24-hour policy.
         tokens = {}
         for role in ["owner", "approver", "viewer", "agent"]:
             tokens[role] = sec.provision_session(
                 db, f"demo-{role}", "synthetic-demo", role, ttl_seconds=86400
             )
 
-        # Print tokens ONCE to Render logs — judge captures them
-        print("[seed] === DEMO SESSION TOKENS (copy from Render logs, do not share publicly) ===", flush=True)
-        print(json.dumps({"simulation_only": True, "bearer_tokens": tokens}, indent=2), flush=True)
-        print("[seed] === END TOKENS ===", flush=True)
+        destination = Path(os.environ.get("SAFELEDGER_SESSION_FILE", ".private/render/sessions.json"))
+        destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        # Exclusive create prevents overwriting the owner's only access copy.
+        fd = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w") as output:
+            json.dump({"simulation_only": True, "expires_after_hours": 24, "bearer_tokens": tokens}, output, indent=2)
+        print("[seed] Private session file created; credentials are not logged.", flush=True)
         print("[seed] Seed complete.", flush=True)
 
 

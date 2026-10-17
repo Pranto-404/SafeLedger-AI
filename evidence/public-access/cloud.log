@@ -1,0 +1,16 @@
+/workspace/scratch/1afbddeb34fe/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+{
+  "status": "passed",
+  "target": "local API with actual persistent Turso",
+  "guest_read_only": true,
+  "signup_and_login": true,
+  "workspace_isolation": true,
+  "independent_invitation_approval": true,
+  "posting_count": 1,
+  "balance_minor": 8500000,
+  "audit_verified": true,
+  "separate_connection_persistence": true,
+  "provider_calls": 0,
+  "simulation_only": true
+}

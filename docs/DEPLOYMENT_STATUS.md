@@ -1,3 +1,9 @@
+# Current deployment status — 18 October 2026
+
+Public frontend and Render API are now connected. See DEPLOYMENT_REVIEW_20261018.md for current evidence and blockers. The older 403-only description below is historical. Hosting account access, persistent cutover and public authenticated workflow remain unverified in this review; code fixes are local pending explicit publication approval.
+
+## Historical deployment attempts
+
 # Vercel deployment/automatic updates — authorized but blocked
 Owner explicitly requested Vercel deployment after completion and updates on future changes. Repository:Pranto-404/SafeLedger-AI. Intended new project:safeledger-ai,frontend root:web. Backend remains FastAPI/SQLite and requires a durable host; static React deployment alone is not the full application. Never put authoritative SQLite state on ephemeral serverless storage.
 

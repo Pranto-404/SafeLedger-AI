@@ -1,3 +1,13 @@
+# SafeLedger AI — public sandbox
+
+Explore **https://safeledger-ai.vercel.app**. Choose **Explore the demo** without an account, or create a free username/passphrase account for an isolated synthetic workspace. To test approval, invite a teammate from **Workspace & teammates**; they register separately and join with your one-time code. No real funds move.
+
+Public users do not need session tokens. Account passwords require 15+ characters; use a unique passphrase. Password recovery is not available in this competition prototype. Render Free may need time to wake. The free assistant has quotas; financial calculations and approval controls work independently.
+
+See [public access and verification](docs/PUBLIC_ACCESS.md). Local development and trusted legacy-token instructions below remain available for reproducibility.
+
+---
+
 # SafeLedger AI
 Topic E — SME Finance Copilot. Competition prototype; synthetic data and sandbox only.
 

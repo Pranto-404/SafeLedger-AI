@@ -1,0 +1,26 @@
+{
+  "checked_at_utc": "2026-10-17T22:29:54.853653+00:00",
+  "checks": [
+    {
+      "url": "https://safeledger-ai.vercel.app/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "body": "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>SafeLedger AI</title>  <script type=\"module\" crossorigin src=\"/assets/index-BiSwvU1o.js\"></script>\n  <link rel=\"stylesheet\" crossorigin href=\"/assets/index-zcsd-_3v.css\">\n</head><body><div id=\"root\"></div></body></html>"
+    },
+    {
+      "url": "https://safeledger-ai.vercel.app/api/dashboard",
+      "status": 401,
+      "content_type": "application/json",
+      "cache_control": "no-store",
+      "body": "{\"error\":{\"code\":\"AUTHENTICATION_REQUIRED\"}}"
+    },
+    {
+      "url": "https://safeledger-ai.onrender.com/api/dashboard",
+      "status": 401,
+      "content_type": "application/json",
+      "cache_control": "no-store",
+      "body": "{\"error\":{\"code\":\"AUTHENTICATION_REQUIRED\"}}"
+    }
+  ]
+}

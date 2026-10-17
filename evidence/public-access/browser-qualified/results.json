@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "steps": [
+    "one-click guest entry",
+    "guest payment controls unavailable",
+    "guest deterministic forecast",
+    "self-service account and seeded isolated workspace",
+    "refresh restores HttpOnly session",
+    "owner proposal, independent approval still required",
+    "separate account joins via one-time approver invitation",
+    "one posting, 85000 balance, verified audit",
+    "owner sees independently approved balance",
+    "360/390/768/1366px workspace layouts",
+    "logout revokes session and refresh remains signed out",
+    "responsive account entry"
+  ],
+  "page_errors": [],
+  "simulation_only": true
+}

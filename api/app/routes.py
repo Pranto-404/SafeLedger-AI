@@ -25,8 +25,14 @@ def principal(request: Request, db=Depends(db_connection)):
     authorization=request.headers.get('Authorization','')
     try:
         parts=authorization.split()
-        if len(parts)!=2 or parts[0].lower()!='bearer':sec.fail(401,'AUTHENTICATION_REQUIRED')
-        actor=sec.authenticate(db,parts[1])
+        if authorization:
+            if len(parts)!=2 or parts[0].lower()!='bearer':sec.fail(401,'AUTHENTICATION_REQUIRED')
+            token=parts[1]
+        else:
+            from api.app.accounts import COOKIE,browser_origin
+            token=request.cookies.get(COOKIE,'')
+            if token and request.method not in {'GET','HEAD','OPTIONS'}:browser_origin(request)
+        actor=sec.authenticate(db,token)
     except sec.PolicyError:
         peer=request.client.host if request.client else 'unknown'
         sec.budget(db,'auth-failure:'+hashlib.sha256(peer.encode()).hexdigest(),20)
@@ -36,8 +42,9 @@ def principal(request: Request, db=Depends(db_connection)):
 
 
 @router.get('/session')
-def session(actor=Depends(principal)):
-    return dict(user_id=actor.user_id,business_id=actor.business_id,role=actor.role,simulation_only=True)
+def session(actor=Depends(principal),db=Depends(db_connection)):
+    from api.app.accounts import identity
+    return identity(db,actor)
 
 
 @router.post('/invoices/import',status_code=201)
@@ -140,4 +147,26 @@ from api.app.agents import runner
 
 @router.post('/agent/tasks')
 def agent_task(body: TaskRequest,actor=Depends(principal),db=Depends(db_connection)):
+    if actor.business_id=='public-demo-v2':sec.fail(403,'CREATE_ACCOUNT_FOR_ASSISTANT')
+    if db.execute('SELECT 1 FROM account_members WHERE user_id=?',(actor.user_id,)).fetchone():
+        sec.budget(db,'public-ai-global',8)
     return runner.run_task(db,actor,body)
+
+@router.get('/workspace')
+def workspace_bundle(actor=Depends(principal),db=Depends(db_connection)):
+    """One consistent read snapshot avoids seven repeated remote database loads."""
+    from pathlib import Path
+    db.execute('BEGIN')
+    with db:
+        events=sec.verified_audit(db,actor.business_id)
+        ds=sec.runtime_dataset(db,actor.business_id)
+        rows=db.execute('SELECT * FROM proposals WHERE business_id=? ORDER BY rowid DESC LIMIT 200',(actor.business_id,)).fetchall()
+        for row in rows:sec.verify_proposal(db,row)
+        week=project_cashflow(ds,ScenarioRequest(as_of=ds.as_of,horizon_days=7,reserve_minor=1000000,delay_inflows_days=0))
+        month=project_cashflow(ds,ScenarioRequest(as_of=ds.as_of,horizon_days=30,reserve_minor=1000000,delay_inflows_days=0))
+        zero_reserve=project_cashflow(ds,ScenarioRequest(as_of=ds.as_of,horizon_days=30,reserve_minor=0))
+        policy=db.execute('SELECT reserve_minor FROM security_policies WHERE business_id=?',(actor.business_id,)).fetchone()
+        if policy is None:sec.fail(409,'POLICY_NOT_CONFIGURED')
+        offers=json.loads((Path(__file__).resolve().parents[2]/'data/fixtures/fictional_offers.json').read_text())
+        finance=compare_financing(FinancingRequest(principal_minor=5000000,repayment_capacity_minor=max(0,zero_reserve['closing_balance_minor']-policy[0]),capacity_source_ids=zero_reserve['source_ids'],offers=offers))
+        return dict(snapshot=snapshot(ds),invoices=[i.model_dump(mode='json') for i in ds.invoices],proposals=[sec.proposal_view(row) for row in rows],audit=dict(events=events,chain_verified=True,tenant_chain_head=events[-1]['event_hash'] if events else '0'*64),week=week,month=month,financing=finance,simulation_only=True)

@@ -12,6 +12,8 @@ from api.app.body_limit import BodyLimitMiddleware
 from api.app.routes import router
 from api.app.agents import runner
 from api.app.agents.provider import ProviderError
+from api.app.database import connect
+from api.app import accounts
 
 def _cors_origins() -> list[str]:
     """Read allowed origins from env; default to localhost dev ports only."""
@@ -24,11 +26,6 @@ def _cors_origins() -> list[str]:
 
 SCHEMA_VERSION = 1
 
-def connect():
-    connection = sqlite3.connect(os.environ.get("SAFELEDGER_DB", "./safeledger.sqlite3"), timeout=5, check_same_thread=False)
-    connection.execute("PRAGMA foreign_keys=ON")
-    return connection
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     with closing(connect()) as db:
@@ -37,6 +34,8 @@ async def lifespan(app: FastAPI):
             db.execute("INSERT OR IGNORE INTO schema_meta(version) VALUES (?)", (SCHEMA_VERSION,))
         security.create_schema(db)
         runner.create_schema(db)
+        accounts.schema(db)
+        accounts.prepare_template(db)
     yield
 
 app = FastAPI(title="SafeLedger AI", version="0.3.0", lifespan=lifespan)
@@ -46,9 +45,10 @@ app.add_middleware(
     allow_origins=_cors_origins(),
     allow_credentials=True,
     allow_methods=["GET", "POST"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "X-SafeLedger-Client"],
 )
 app.include_router(router)
+app.include_router(accounts.router)
 
 @app.exception_handler(ProviderError)
 async def ai_error(request,exc):
@@ -80,7 +80,7 @@ async def headers(request, call_next):
 @app.get("/api/health")
 def health():
     configured=all(os.environ.get(key) for key in ("SAFELEDGER_LLM_BASE_URL","SAFELEDGER_LLM_MODEL","SAFELEDGER_LLM_API_KEY"))
-    return {"status": "ok", "version": "0.3.0", "build_commit": os.environ.get("SAFELEDGER_BUILD_COMMIT", "development"), "simulation_only": True, "milestone": "M3", "ai_status": "configured_not_verified" if configured else "not_configured"}
+    return {"status": "ok", "version": "0.3.0", "build_commit": (os.environ.get("RENDER_GIT_COMMIT") or os.environ.get("SAFELEDGER_BUILD_COMMIT", "development")), "simulation_only": True, "milestone": "M3", "ai_status": "configured_not_verified" if configured else "not_configured"}
 
 @app.get("/api/ready")
 def ready():
@@ -91,4 +91,4 @@ def ready():
             raise sqlite3.DatabaseError("Unsupported schema")
     except sqlite3.Error:
         return JSONResponse(status_code=503, content={"status": "not_ready", "database": "unavailable"})
-    return {"status": "ready", "database": "sqlite", "schema_version": SCHEMA_VERSION}
+    return {"status": "ready", "database": "libsql" if os.environ.get("TURSO_DATABASE_URL") else "sqlite", "schema_version": SCHEMA_VERSION}

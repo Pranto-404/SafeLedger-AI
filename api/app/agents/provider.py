@@ -70,19 +70,15 @@ class ChatProvider:
         if len(encoded.encode())>24000:raise ProviderError('AI_INPUT_BUDGET_EXCEEDED')
         try:
             with httpx.Client(transport=self.transport,trust_env=False,follow_redirects=False,timeout=min(30,remaining)) as client:
-                for attempt in range(2):
-                    with client.stream('POST',self.base+'/chat/completions',headers={'Authorization':'Bearer '+self.key},json=payload) as response:
-                        if response.status_code==429:raise ProviderError('AI_QUOTA_EXHAUSTED')
-                        if response.status_code in {500,502,503,504} and attempt==0 and not self.is_mock:
-                            time.sleep(2);continue
-                        if response.status_code!=200:raise ProviderError('AI_PROVIDER_REJECTED')
-                        chunks=[];size=0
-                        for chunk in response.iter_bytes():
-                            size+=len(chunk)
-                            if size>65536:raise ProviderError('AI_OUTPUT_BUDGET_EXCEEDED')
-                            if time.monotonic()>self.deadline:raise ProviderError('AI_TIMEOUT')
-                            chunks.append(chunk)
-                        break
+                with client.stream('POST',self.base+'/chat/completions',headers={'Authorization':'Bearer '+self.key},json=payload) as response:
+                    if response.status_code==429:raise ProviderError('AI_QUOTA_EXHAUSTED')
+                    if response.status_code!=200:raise ProviderError('AI_PROVIDER_REJECTED')
+                    chunks=[];size=0
+                    for chunk in response.iter_bytes():
+                        size+=len(chunk)
+                        if size>65536:raise ProviderError('AI_OUTPUT_BUDGET_EXCEEDED')
+                        if time.monotonic()>self.deadline:raise ProviderError('AI_TIMEOUT')
+                        chunks.append(chunk)
             raw=strict_json(b''.join(chunks).decode('utf-8'))
             if not isinstance(raw,dict):raise ProviderError('AI_INVALID_RESPONSE')
             def tag(value):

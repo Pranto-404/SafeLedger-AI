@@ -1,4 +1,4 @@
-export type Session = { user_id: string; business_id: string; role: 'owner' | 'approver' | 'viewer' | 'agent' };
+export type Session = { user_id: string; business_id: string; role: 'owner' | 'approver' | 'viewer' | 'agent'; username?:string|null; guest?:boolean };
 export type Snapshot = { currency: string; as_of: string; opening_balance_minor: number; income_minor: number; expenses_minor: number; balance_minor: number; source_ids: string[]; dataset_sha256: string; assumptions: string[] };
 export type Invoice = { invoice_id: string; source_record_id: string; vendor_id: string; invoice_number: string; due_on: string; amount_minor: number; status: string; memo: string };
 export type Risk = { risk: string; invoice_ids: string[]; source_ids: string[]; execution_blocked: boolean };
