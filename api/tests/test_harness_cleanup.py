@@ -10,7 +10,7 @@ from scripts.m4_browser_demo import stop_process,verify_ports_closed
 @pytest.mark.skipif(os.name!='posix',reason='POSIX process-group cleanup;Windows requires separate qualification')
 def test_process_group_cleanup_closes_child_listener(tmp_path):
     ready=tmp_path/'ready'
-    child="import socket,time;import pytest;s=socket.socket();s.bind(('127.0.0.1',0));s.listen();Path(%r).write_text(str(s.getsockname()[1]));time.sleep(60)"%str(ready)
+    child="import socket,time;from pathlib import Path;s=socket.socket();s.bind(('127.0.0.1',0));s.listen();Path(%r).write_text(str(s.getsockname()[1]));time.sleep(60)"%str(ready)
     parent="import subprocess,sys,time;subprocess.Popen([sys.executable,'-c',%r]);time.sleep(60)"%child
     process=subprocess.Popen([sys.executable,'-c',parent],start_new_session=True)
     try:
