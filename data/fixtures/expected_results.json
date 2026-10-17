@@ -1,0 +1,25 @@
+{
+  "invoice_count": 45,
+  "event_count": 60,
+  "income_minor": 3000000,
+  "expenses_minor": 1000000,
+  "balance_minor": 12000000,
+  "payables_minor": 8930000,
+  "forecast_7_closing_minor": -1500000,
+  "forecast_30_closing_minor": -1875000,
+  "forecast_minimum_minor": -5500000,
+  "first_shortfall_on": "2026-10-22",
+  "delayed_7_closing_minor": -5500000,
+  "delayed_30_closing_minor": -1875000,
+  "delayed_30_minimum_minor": -5930000,
+  "ranked_offers": [
+    "FICTION-C",
+    "FICTION-B",
+    "FICTION-A"
+  ],
+  "total_cost_minor": [
+    200000,
+    210000,
+    250000
+  ]
+}

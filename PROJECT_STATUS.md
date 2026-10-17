@@ -2,26 +2,26 @@
 Updated: 2026-10-17 Asia/Dhaka. Deadline: 2026-10-20 21:59 BD (15:59 UTC).
 
 ## DONE
-M0 requirements/setup completed: organizer/playbook read; concise requirements and hashes retained; scope, architecture, request contracts, access inventory and preliminary risk register saved. New Git repository, FastAPI health/readiness with SQLite bootstrap, React/TypeScript UI, pinned Python lock and npm lock. Future financial write routes absent. No previous project code overwritten; no subagents used.
+M0 requirements/bootstrap and GitHub publication completed. M1 financial foundation now complete: strict BDT/date/source validation; bounded JSON/CSV intake with errors; exact/possible duplicate detection; reconciled cash summary; source-linked 7/30-day deterministic forecast and delayed-receipt scenario; three fictional full-cost financing offers and conservative affordability; atomic SQLite staging import, per-source checksums and verified reload. Reproducible45-invoice/60-event synthetic fixtures, fixed independent expected results, local CLI demo. No feature reset or autonomous agent fleet.
 
-## VERIFIED
-- `python -m pytest -q --junitxml=evidence/m0/pytest.xml`: 23 passed, one Starlette/httpx deprecation warning; log retained. Tests cover strict money contracts, unsupported currencies/date order/client-authority fields, absent write routes, limited agent outer envelope, health/readiness and redacted DB outage.
-- `npm ci --ignore-scripts` and `npm run build`: installed locked dependencies; TypeScript and Vite build passed. Environment npm proxy warning retained.
-- `python scripts/verify_bootstrap.py`: live HTTP health and SQLite readiness both passed. Self-contained runner manages API lifecycle. First separate-process attempt failed with connection refused; original log retained, not counted as pass.
-- `python -m pip check`: no broken requirements. `compileall` and `git diff --check`: passed.
-- This verifies M0 bootstrap ONLY. No implemented financial calculations, authentication, approvals, sandbox ledger, audit chain, real LLM integration or full finance E2E. No browser/device/independent QA or vulnerability scan executed.
-- Exact commands, environment, source commit and outcomes: evidence/m0/verification.json (final verification checkpoint); logs in evidence/m0/.
+## VERIFIED — M1
+- `../.venv/bin/python -m pytest -q --junitxml=evidence/m1/pytest.xml`:116 passed,2 warnings (existing Starlette/httpx deprecation; intentional malformed-model Pydantic serializer warning).100 generated money-conservation cases also run within one test. No disabled/skipped test.
+- `../.venv/bin/python scripts/m1_demo.py`: temporary SQLite import/reload, snapshot,7/30-day forecast, delayed30 scenario, fictional comparison passed fixed oracle assertions. Output evidence/m1/financial-demo.json. No AI calls/payments.
+- `SAFELEDGER_EVIDENCE_DIR=evidence/m1 ../.venv/bin/python scripts/verify_bootstrap.py`: live HTTP health/version0.1.0/M1 and SQLite readiness passed.
+- `cd web && npm run build`: TypeScript/Vite passed. `compileall` and `git diff --check` passed.
+- Baseline: cash BDT120,000;7-day closing BDT-15,000;30-day closing BDT-18,750; first reserve breach2026-10-22. Fictional offer total costs C/B/A=BDT2,000/2,100/2,500. All unaffordable under supplied baseline capacity0.
+- First run1 fail/110 pass identified possible-duplicate false positives. Fixed numeric-name similarity gate and added regressions; failed log kept. Source-row tampering and oversized numeric CSV regressions included.
+- Evidence manifest records real commands/outcomes, file hashes and exact tested published source commit. GitHub tree SHA compared to local staged tree on publication.
 
 ## BLOCKED / unresolved
-P0 owner: registration UNCONFIRMED; official Appendix3/form/receipt not supplied. Verify eligibility and organizer workflow privately; no outbound ID/registration permission granted.
-GitHub target authorized by owner: Pranto-404/SafeLedger-AI. Existing remote initial README is preserved in publication ancestry; origin configured. Terminal fetch succeeded but push failed because no terminal credential is available. Publish through authorized GitHub connector; local pre-publication history is preserved in evidence/m0/local-history.bundle. Remote commit ID differs from the tested local implementation; file content hashes establish identity. See evidence/github-sync.json.
-P1 access: Vercel team listing returned zero teams; target account/project not selected. Authorized persistent Python backend host not supplied. Public deployment not performed.
-P1 owner/M3: LLM provider and budget not selected; do not paste keys into chat/Git.
-P1 release: full security, financial, E2E and reproducibility gates are pending, not passed. Project license and third-party attribution review before publication.
-Known nonblocking M0 warnings: Starlette deprecates httpx TestClient in favor of httpx2; npm reports environment http-proxy configuration. No failing test disabled.
+P0 owner: registration UNCONFIRMED; Appendix3/form/receipt still not supplied. No registration requests or ID documents sent.
+Authorized repository: https://github.com/Pranto-404/SafeLedger-AI. Terminal fetch works; direct push has no credential. Publish via authenticated GitHub connector with expected-HEAD check, never force shared history. M0 local history bundle retained; docs/ACCESS.md has access evidence.
+P1/M3: LLM provider/budget not configured. No API keys needed for current deterministic services; never paste secrets into Git or chat.
+P1/M6: persistent Python hosting/authorized deployment target not selected. Public deployment absent. Project licensing/attribution review and dependency vulnerability scan pending.
+Release gates: authenticated tenant access, independent human approval, idempotent sandbox ledger, cryptographic audit, real LLM/tool safety, finance UI, Playwright/mobile/keyboard/independent QA are NOT implemented or verified. Inert-memo test is not live-model injection evidence. Storage tenant keys are not HTTP authorization.
 
 ## Current milestone / exact next action
-M0 complete; tested implementation commit `05d6df104fd21793c416501b17093c946a0b5a4f`; M1 next. Implement pure finance services and deterministic seed2026 fixture with independently specified expected totals, reconciliation, 7/30-day scenarios, duplicate detection and fictional financing comparisons. Verify strict money, import atomicity and no double counting. Keep business HTTP routes closed until M2 authenticated tenant scoping. Do not start M2/M3 before M1 acceptance passes.
+M1 complete. Next M2 only: server-derived tenant/roles, isolated human sessions and bounded agent identity; immutable source/hash-bound invoice proposals; separate human approval with expiry/version; transactional exactly-once sandbox posting with balance/duplicate rechecks; append-only trace. Test auth/IDOR/self-approval, amount/hash tampering, expiry/replay, simultaneous requests, rollback and restart. Keep all business routes fail-closed until auth is connected. Do not build M3 until M2 passes.
 
 ## Recovery
-Read this file, NEXT_STEPS.md, docs/REQUIREMENTS.md and git history. Use evidence manifest's source_commit as tested implementation checkpoint; later checkpoint commits may contain status/evidence only. Authorized origin: https://github.com/Pranto-404/SafeLedger-AI.git. Preserve remote history and push verified checkpoints; confirm local HEAD equals remote main after each push. M0 recovery ZIP also retains Git history.
+Read this file,NEXT_STEPS.md,docs/REQUIREMENTS.md and git history; do not reread PDFs or restart. M1 docs/FINANCIAL_METHODS.md describes arithmetic and limitations; evidence/m1/verification.json links the tested source commit and hashes. Preserve working features. Record/publish a compact checkpoint after each milestone and verify local/remote trees match.

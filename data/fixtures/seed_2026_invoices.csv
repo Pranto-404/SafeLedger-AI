@@ -1,0 +1,46 @@
+source_record_id,invoice_id,vendor_id,invoice_number,issued_on,due_on,amount_minor,currency,status,memo
+row-inv-105,INV-105,VEND-105,A-105,2026-10-01,2026-10-19,3500000,BDT,open,Synthetic supplier payable
+row-inv-104,INV-104,VEND-104,A-104,2026-10-01,2026-10-20,5000000,BDT,open,Synthetic supplier payable
+row-small-00,SMALL-00,VEND-01,S-00,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-01,SMALL-01,VEND-03,S-01,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-02,SMALL-02,VEND-05,S-02,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-03,SMALL-03,VEND-05,S-03,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-04,SMALL-04,VEND-06,S-04,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-05,SMALL-05,VEND-07,S-05,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-06,SMALL-06,VEND-01,S-06,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-07,SMALL-07,VEND-02,S-07,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-08,SMALL-08,VEND-05,S-08,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-09,SMALL-09,VEND-05,S-09,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-10,SMALL-10,VEND-05,S-10,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-11,SMALL-11,VEND-04,S-11,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-12,SMALL-12,VEND-07,S-12,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-13,SMALL-13,VEND-05,S-13,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-14,SMALL-14,VEND-05,S-14,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-15,SMALL-15,VEND-07,S-15,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-16,SMALL-16,VEND-06,S-16,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-17,SMALL-17,VEND-07,S-17,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-18,SMALL-18,VEND-07,S-18,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-19,SMALL-19,VEND-04,S-19,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-20,SMALL-20,VEND-07,S-20,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-21,SMALL-21,VEND-07,S-21,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-22,SMALL-22,VEND-05,S-22,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-23,SMALL-23,VEND-04,S-23,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-24,SMALL-24,VEND-02,S-24,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-25,SMALL-25,VEND-01,S-25,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-26,SMALL-26,VEND-05,S-26,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-27,SMALL-27,VEND-01,S-27,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-28,SMALL-28,VEND-01,S-28,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-29,SMALL-29,VEND-03,S-29,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-30,SMALL-30,VEND-07,S-30,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-31,SMALL-31,VEND-01,S-31,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-32,SMALL-32,VEND-04,S-32,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-33,SMALL-33,VEND-01,S-33,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-34,SMALL-34,VEND-07,S-34,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-35,SMALL-35,VEND-06,S-35,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-36,SMALL-36,VEND-04,S-36,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-37,SMALL-37,VEND-06,S-37,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-38,SMALL-38,VEND-03,S-38,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-39,SMALL-39,VEND-02,S-39,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-40,SMALL-40,VEND-04,S-40,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-41,SMALL-41,VEND-03,S-41,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+row-small-42,SMALL-42,VEND-03,S-42,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials

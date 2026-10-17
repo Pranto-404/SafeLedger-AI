@@ -9,7 +9,9 @@ from urllib.request import urlopen
 
 with tempfile.TemporaryDirectory(prefix="safeledger-smoke-") as temp:
     env = dict(os.environ, SAFELEDGER_DB=str(Path(temp) / "smoke.sqlite3"))
-    with open("evidence/m0/uvicorn.log", "w") as log:
+    evidence = Path(os.environ.get("SAFELEDGER_EVIDENCE_DIR", "evidence/m0"))
+    evidence.mkdir(parents=True, exist_ok=True)
+    with (evidence / "uvicorn.log").open("w") as log:
         server = subprocess.Popen([sys.executable, "-m", "uvicorn", "api.app.main:app", "--host", "127.0.0.1", "--port", "8000"], env=env, stdout=log, stderr=subprocess.STDOUT)
         try:
             for attempt in range(50):

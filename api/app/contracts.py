@@ -2,10 +2,19 @@
 from datetime import date
 from enum import Enum
 from typing import Annotated, Literal
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, BeforeValidator, Field, model_validator
 
 Minor = Annotated[int, Field(strict=True, ge=0, le=10**12)]
 PositiveMinor = Annotated[int, Field(strict=True, gt=0, le=10**12)]
+def iso_date(value):
+    import re
+    if type(value) is date:
+        return value
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+        raise ValueError("Expected ISO date YYYY-MM-DD, not a timestamp")
+    return date.fromisoformat(value)
+
+ISODate = Annotated[date, BeforeValidator(iso_date)]
 RecordId = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$")]
 
 class Contract(BaseModel):
@@ -16,10 +25,11 @@ class InvoiceInput(Contract):
     invoice_id: RecordId
     vendor_id: RecordId
     invoice_number: Annotated[str, Field(min_length=1, max_length=80)]
-    issued_on: date
-    due_on: date
+    issued_on: ISODate
+    due_on: ISODate
     amount_minor: PositiveMinor
     currency: Literal["BDT"]
+    status: Literal["open", "paid"] = "open"
     memo: Annotated[str, Field(max_length=2000)] = ""
 
     @model_validator(mode="after")
@@ -33,16 +43,18 @@ class CashEventInput(Contract):
     event_id: RecordId
     direction: Literal["inflow", "outflow"]
     status: Literal["cleared", "scheduled"]
-    effective_on: date
+    effective_on: ISODate
     amount_minor: PositiveMinor
     currency: Literal["BDT"]
+
+    invoice_id: RecordId | None = None
 
 class ImportRequest(Contract):
     invoices: Annotated[list[InvoiceInput], Field(max_length=1000)]
     events: Annotated[list[CashEventInput], Field(max_length=2000)]
 
 class ScenarioRequest(Contract):
-    as_of: date
+    as_of: ISODate
     horizon_days: Literal[7, 30]
     reserve_minor: Minor
     delay_inflows_days: Annotated[int, Field(strict=True, ge=0, le=30)] = 0

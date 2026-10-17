@@ -1,0 +1,41 @@
+[
+  {
+    "offer_id": "FICTION-A",
+    "label": "Fictional A",
+    "fictional": true,
+    "currency": "BDT",
+    "principal_minor": 5000000,
+    "rate_convention": "flat_per_term",
+    "rate_bps": 100,
+    "upfront_fee_minor": 200000,
+    "term_days": 30,
+    "repayment_structure": "single_maturity_payment",
+    "source_record_id": "fictional-offer-A"
+  },
+  {
+    "offer_id": "FICTION-B",
+    "label": "Fictional B",
+    "fictional": true,
+    "currency": "BDT",
+    "principal_minor": 5000000,
+    "rate_convention": "flat_per_term",
+    "rate_bps": 400,
+    "upfront_fee_minor": 10000,
+    "term_days": 30,
+    "repayment_structure": "single_maturity_payment",
+    "source_record_id": "fictional-offer-B"
+  },
+  {
+    "offer_id": "FICTION-C",
+    "label": "Fictional C",
+    "fictional": true,
+    "currency": "BDT",
+    "principal_minor": 5000000,
+    "rate_convention": "flat_per_term",
+    "rate_bps": 300,
+    "upfront_fee_minor": 50000,
+    "term_days": 30,
+    "repayment_structure": "single_maturity_payment",
+    "source_record_id": "fictional-offer-C"
+  }
+]

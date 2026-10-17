@@ -1,7 +1,7 @@
 # SafeLedger AI
 Topic E — SME Finance Copilot. Competition prototype; synthetic data and sandbox only.
 
-**Current checkpoint: M0 bootstrap.** No financial execution, authentication or LLM integration is implemented. Registration is unconfirmed. See PROJECT_STATUS.md before continuing.
+**Current checkpoint: M1 financial foundation.** Synthetic data ingestion, deterministic financial analysis and fictional financing comparison work through tested internal services and the local CLI. Financial execution, authentication and LLM integration are not yet implemented. Registration is unconfirmed. See PROJECT_STATUS.md before continuing.
 
 ## Local setup
 Python 3.12 and Node 22.12+ (validated here on Node 24.19.0). Run from the repository root:
@@ -30,3 +30,13 @@ Read PROJECT_STATUS.md, NEXT_STEPS.md, docs/REQUIREMENTS.md and `git log -5 --on
 
 ## Safety and ownership
 No real banking integrations. Never commit real financial data, IDs, passports, credentials or `.env` files. Owner must select the GitHub account/repository and provide registration status. Dependency licenses and a project license need an owner decision before public release. No compliance certification is claimed.
+
+
+## M1 reproducible financial demo
+After installing `api/requirements.lock.txt`, run:
+
+```bash
+.venv/bin/python scripts/m1_demo.py
+```
+
+It stages 45 synthetic invoices and 60 cash events into a temporary SQLite database, verifies fixed expected outcomes, and prints source-linked 7/30-day projections plus three fictional offers. It executes no payments and calls no AI provider. Regenerate fixtures with `.venv/bin/python scripts/build_fixtures.py`; byte/checksum reproducibility is tested. Invoice/event CSV samples are included; amounts are integer poysha, e.g. BDT35,000 = 3,500,000 minor units. API business routes remain closed pending M2 authentication. See docs/FINANCIAL_METHODS.md and evidence/m1/ for formulas, results and limitations.

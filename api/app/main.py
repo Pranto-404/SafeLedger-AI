@@ -1,4 +1,4 @@
-"""M0 bootstrap only. No ledger mutation or user-data endpoints are exposed."""
+"""M1 internal financial services. No ledger mutation or user-data endpoints are exposed."""
 from contextlib import asynccontextmanager
 import os
 import sqlite3
@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
         db.execute("INSERT OR IGNORE INTO schema_meta(version) VALUES (?)", (SCHEMA_VERSION,))
     yield
 
-app = FastAPI(title="SafeLedger AI", version="0.0.1", lifespan=lifespan)
+app = FastAPI(title="SafeLedger AI", version="0.1.0", lifespan=lifespan)
 
 @app.middleware("http")
 async def headers(request, call_next):
@@ -30,7 +30,7 @@ async def headers(request, call_next):
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "version": "0.0.1", "build_commit": os.environ.get("SAFELEDGER_BUILD_COMMIT", "development"), "simulation_only": True, "milestone": "M0", "ai_status": "not_configured"}
+    return {"status": "ok", "version": "0.1.0", "build_commit": os.environ.get("SAFELEDGER_BUILD_COMMIT", "development"), "simulation_only": True, "milestone": "M1", "ai_status": "not_configured"}
 
 @app.get("/api/ready")
 def ready():

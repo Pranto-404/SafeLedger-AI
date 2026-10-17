@@ -1,0 +1,216 @@
+data/fixtures/seed_2026_events.csv:1: trailing whitespace.
++source_record_id,event_id,direction,status,effective_on,amount_minor,currency,invoice_id
+data/fixtures/seed_2026_events.csv:2: trailing whitespace.
++row-event-CREDIT,CREDIT,inflow,cleared,2026-10-16,3000000,BDT,
+data/fixtures/seed_2026_events.csv:3: trailing whitespace.
++row-event-DEBIT,DEBIT,outflow,cleared,2026-10-17,1000000,BDT,
+data/fixtures/seed_2026_events.csv:4: trailing whitespace.
++row-event-INV105,INV105,outflow,scheduled,2026-10-19,3500000,BDT,INV-105
+data/fixtures/seed_2026_events.csv:5: trailing whitespace.
++row-event-RENT,RENT,outflow,scheduled,2026-10-22,9000000,BDT,
+data/fixtures/seed_2026_events.csv:6: trailing whitespace.
++row-event-RECEIPT,RECEIPT,inflow,scheduled,2026-10-24,4000000,BDT,
+data/fixtures/seed_2026_events.csv:7: trailing whitespace.
++row-event-RECEIPT-00,RECEIPT-00,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:8: trailing whitespace.
++row-event-RECEIPT-01,RECEIPT-01,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:9: trailing whitespace.
++row-event-RECEIPT-02,RECEIPT-02,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:10: trailing whitespace.
++row-event-RECEIPT-03,RECEIPT-03,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:11: trailing whitespace.
++row-event-RECEIPT-04,RECEIPT-04,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:12: trailing whitespace.
++row-event-RECEIPT-05,RECEIPT-05,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:13: trailing whitespace.
++row-event-RECEIPT-06,RECEIPT-06,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:14: trailing whitespace.
++row-event-RECEIPT-07,RECEIPT-07,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:15: trailing whitespace.
++row-event-RECEIPT-08,RECEIPT-08,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:16: trailing whitespace.
++row-event-RECEIPT-09,RECEIPT-09,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:17: trailing whitespace.
++row-event-RECEIPT-10,RECEIPT-10,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:18: trailing whitespace.
++row-event-RECEIPT-11,RECEIPT-11,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:19: trailing whitespace.
++row-event-RECEIPT-12,RECEIPT-12,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:20: trailing whitespace.
++row-event-RECEIPT-13,RECEIPT-13,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:21: trailing whitespace.
++row-event-RECEIPT-14,RECEIPT-14,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:22: trailing whitespace.
++row-event-RECEIPT-15,RECEIPT-15,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:23: trailing whitespace.
++row-event-RECEIPT-16,RECEIPT-16,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:24: trailing whitespace.
++row-event-RECEIPT-17,RECEIPT-17,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:25: trailing whitespace.
++row-event-RECEIPT-18,RECEIPT-18,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:26: trailing whitespace.
++row-event-RECEIPT-19,RECEIPT-19,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:27: trailing whitespace.
++row-event-RECEIPT-20,RECEIPT-20,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:28: trailing whitespace.
++row-event-RECEIPT-21,RECEIPT-21,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:29: trailing whitespace.
++row-event-RECEIPT-22,RECEIPT-22,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:30: trailing whitespace.
++row-event-RECEIPT-23,RECEIPT-23,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:31: trailing whitespace.
++row-event-RECEIPT-24,RECEIPT-24,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:32: trailing whitespace.
++row-event-RECEIPT-25,RECEIPT-25,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:33: trailing whitespace.
++row-event-RECEIPT-26,RECEIPT-26,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:34: trailing whitespace.
++row-event-RECEIPT-27,RECEIPT-27,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:35: trailing whitespace.
++row-event-RECEIPT-28,RECEIPT-28,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:36: trailing whitespace.
++row-event-RECEIPT-29,RECEIPT-29,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:37: trailing whitespace.
++row-event-RECEIPT-30,RECEIPT-30,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:38: trailing whitespace.
++row-event-RECEIPT-31,RECEIPT-31,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:39: trailing whitespace.
++row-event-RECEIPT-32,RECEIPT-32,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:40: trailing whitespace.
++row-event-RECEIPT-33,RECEIPT-33,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:41: trailing whitespace.
++row-event-RECEIPT-34,RECEIPT-34,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:42: trailing whitespace.
++row-event-RECEIPT-35,RECEIPT-35,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:43: trailing whitespace.
++row-event-RECEIPT-36,RECEIPT-36,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:44: trailing whitespace.
++row-event-RECEIPT-37,RECEIPT-37,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:45: trailing whitespace.
++row-event-RECEIPT-38,RECEIPT-38,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:46: trailing whitespace.
++row-event-RECEIPT-39,RECEIPT-39,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:47: trailing whitespace.
++row-event-RECEIPT-40,RECEIPT-40,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:48: trailing whitespace.
++row-event-RECEIPT-41,RECEIPT-41,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:49: trailing whitespace.
++row-event-RECEIPT-42,RECEIPT-42,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:50: trailing whitespace.
++row-event-RECEIPT-43,RECEIPT-43,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:51: trailing whitespace.
++row-event-RECEIPT-44,RECEIPT-44,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:52: trailing whitespace.
++row-event-RECEIPT-45,RECEIPT-45,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:53: trailing whitespace.
++row-event-RECEIPT-46,RECEIPT-46,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:54: trailing whitespace.
++row-event-RECEIPT-47,RECEIPT-47,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:55: trailing whitespace.
++row-event-RECEIPT-48,RECEIPT-48,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:56: trailing whitespace.
++row-event-RECEIPT-49,RECEIPT-49,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:57: trailing whitespace.
++row-event-RECEIPT-50,RECEIPT-50,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:58: trailing whitespace.
++row-event-RECEIPT-51,RECEIPT-51,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:59: trailing whitespace.
++row-event-RECEIPT-52,RECEIPT-52,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:60: trailing whitespace.
++row-event-RECEIPT-53,RECEIPT-53,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_events.csv:61: trailing whitespace.
++row-event-RECEIPT-54,RECEIPT-54,inflow,scheduled,2026-10-29,1000,BDT,
+data/fixtures/seed_2026_invoices.csv:1: trailing whitespace.
++source_record_id,invoice_id,vendor_id,invoice_number,issued_on,due_on,amount_minor,currency,status,memo
+data/fixtures/seed_2026_invoices.csv:2: trailing whitespace.
++row-inv-105,INV-105,VEND-105,A-105,2026-10-01,2026-10-19,3500000,BDT,open,Synthetic supplier payable
+data/fixtures/seed_2026_invoices.csv:3: trailing whitespace.
++row-inv-104,INV-104,VEND-104,A-104,2026-10-01,2026-10-20,5000000,BDT,open,Synthetic supplier payable
+data/fixtures/seed_2026_invoices.csv:4: trailing whitespace.
++row-small-00,SMALL-00,VEND-01,S-00,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:5: trailing whitespace.
++row-small-01,SMALL-01,VEND-03,S-01,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:6: trailing whitespace.
++row-small-02,SMALL-02,VEND-05,S-02,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:7: trailing whitespace.
++row-small-03,SMALL-03,VEND-05,S-03,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:8: trailing whitespace.
++row-small-04,SMALL-04,VEND-06,S-04,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:9: trailing whitespace.
++row-small-05,SMALL-05,VEND-07,S-05,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:10: trailing whitespace.
++row-small-06,SMALL-06,VEND-01,S-06,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:11: trailing whitespace.
++row-small-07,SMALL-07,VEND-02,S-07,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:12: trailing whitespace.
++row-small-08,SMALL-08,VEND-05,S-08,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:13: trailing whitespace.
++row-small-09,SMALL-09,VEND-05,S-09,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:14: trailing whitespace.
++row-small-10,SMALL-10,VEND-05,S-10,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:15: trailing whitespace.
++row-small-11,SMALL-11,VEND-04,S-11,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:16: trailing whitespace.
++row-small-12,SMALL-12,VEND-07,S-12,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:17: trailing whitespace.
++row-small-13,SMALL-13,VEND-05,S-13,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:18: trailing whitespace.
++row-small-14,SMALL-14,VEND-05,S-14,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:19: trailing whitespace.
++row-small-15,SMALL-15,VEND-07,S-15,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:20: trailing whitespace.
++row-small-16,SMALL-16,VEND-06,S-16,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:21: trailing whitespace.
++row-small-17,SMALL-17,VEND-07,S-17,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:22: trailing whitespace.
++row-small-18,SMALL-18,VEND-07,S-18,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:23: trailing whitespace.
++row-small-19,SMALL-19,VEND-04,S-19,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:24: trailing whitespace.
++row-small-20,SMALL-20,VEND-07,S-20,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:25: trailing whitespace.
++row-small-21,SMALL-21,VEND-07,S-21,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:26: trailing whitespace.
++row-small-22,SMALL-22,VEND-05,S-22,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:27: trailing whitespace.
++row-small-23,SMALL-23,VEND-04,S-23,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:28: trailing whitespace.
++row-small-24,SMALL-24,VEND-02,S-24,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:29: trailing whitespace.
++row-small-25,SMALL-25,VEND-01,S-25,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:30: trailing whitespace.
++row-small-26,SMALL-26,VEND-05,S-26,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:31: trailing whitespace.
++row-small-27,SMALL-27,VEND-01,S-27,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:32: trailing whitespace.
++row-small-28,SMALL-28,VEND-01,S-28,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:33: trailing whitespace.
++row-small-29,SMALL-29,VEND-03,S-29,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:34: trailing whitespace.
++row-small-30,SMALL-30,VEND-07,S-30,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:35: trailing whitespace.
++row-small-31,SMALL-31,VEND-01,S-31,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:36: trailing whitespace.
++row-small-32,SMALL-32,VEND-04,S-32,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:37: trailing whitespace.
++row-small-33,SMALL-33,VEND-01,S-33,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:38: trailing whitespace.
++row-small-34,SMALL-34,VEND-07,S-34,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:39: trailing whitespace.
++row-small-35,SMALL-35,VEND-06,S-35,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:40: trailing whitespace.
++row-small-36,SMALL-36,VEND-04,S-36,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:41: trailing whitespace.
++row-small-37,SMALL-37,VEND-06,S-37,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:42: trailing whitespace.
++row-small-38,SMALL-38,VEND-03,S-38,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:43: trailing whitespace.
++row-small-39,SMALL-39,VEND-02,S-39,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:44: trailing whitespace.
++row-small-40,SMALL-40,VEND-04,S-40,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:45: trailing whitespace.
++row-small-41,SMALL-41,VEND-03,S-41,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+data/fixtures/seed_2026_invoices.csv:46: trailing whitespace.
++row-small-42,SMALL-42,VEND-03,S-42,2026-10-02,2026-10-27,10000,BDT,open,Synthetic materials
+evidence/m1/pytest-first-run.log:13: trailing whitespace.
++E         
