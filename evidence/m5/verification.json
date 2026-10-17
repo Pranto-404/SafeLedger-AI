@@ -1,0 +1,68 @@
+{
+  "milestone": "M5 local QA checkpoint;independent/live/public gates open",
+  "verified_at_utc": "2026-10-17T07:43:07.400585+00:00",
+  "repository": "https://github.com/Pranto-404/SafeLedger-AI",
+  "source_commit": "7996a563520b549f6034261ce7e718381c96843c",
+  "source_tree_sha": "2184d6133f98f903780fc5a426f2211500ef06a7",
+  "publication": "Exact full staged Git tree matched connector tree before expected-HEAD non-force ref publication.",
+  "results": {
+    "pytest": {
+      "passed": 225,
+      "failed": 0,
+      "skipped": 0,
+      "warnings": 2,
+      "junit": "evidence/m5/pytest.xml"
+    },
+    "adversarial_browser": {
+      "scenarios": 8,
+      "passed": true,
+      "page_errors": 0,
+      "result": "evidence/m5/browser-final/qa-results.json"
+    },
+    "full_workflow_browser": {
+      "scenarios": 10,
+      "passed": true,
+      "page_errors": 0,
+      "result": "evidence/m5/full-workflow-regression/browser-results.json"
+    },
+    "accessibility": {
+      "automated_scans": 10,
+      "violations": 0,
+      "result": "evidence/m5/browser-final/accessibility-results.json",
+      "scope": "Automated axe WCAG2/2.1A/AA subset,not conformance certification"
+    },
+    "backend_concurrency_restart_replay": "passed",
+    "frontend_typescript_build": "passed",
+    "npm_known_vulnerabilities": 0,
+    "python_lock_known_vulnerabilities": 0,
+    "limited_credential_scan_candidates": 0,
+    "pip_check": "passed",
+    "compileall": "passed",
+    "staged_diff_check": "passed"
+  },
+  "commands_and_failures": "evidence/m5/checks.log",
+  "report": "docs/M5_QA_REPORT.md",
+  "source_sha256": {
+    "api/requirements.lock.txt": "b9b5b2c1f86ef19c1e5a398de23caba854f77ed9a55406ecb0d5867f7a5f9602",
+    "scripts/m4_browser_demo.cjs": "61b05ba9453784f37a72aee89858d54d0e27d1c7aca96193e44c47bae4ef5869",
+    "scripts/m4_browser_demo.py": "18214302af4ce227d7a47b33385b4237e13a272cebe67dd7acd82202f97ff3f8",
+    "scripts/m5_browser_qa.cjs": "3c1f82c6b08c4316bb4402fac612e4b41a474e9782387361b19eea54e11c48b1",
+    "scripts/m5_browser_qa.py": "24466592a876ff99f6bb4a244d3a177a76bf9854b681b3009e368278197fcc87",
+    "scripts/security_scan.py": "5b94b368651cf07300728b0f6222b64ba45864ba9a16daea42fe97bc435a2f7a",
+    "web/package-lock.json": "fda70c4a871a638ca0b637f15efe87c457e0e2953032bf3d6c8946ed6749f5af",
+    "web/package.json": "9e1edc3cc4b0e1e485743ca79a16cce908c702d02887c0b19a26d7f65ecd6c35",
+    "web/src/App.tsx": "90ccea93962c02159d00e5313dfeeae40358da5b702283a2ca04b1695a0ea718",
+    "web/src/api.ts": "6d52d419f5863af9cfe321d2e9494edb54dab6dc25c785b22b54a3e9094f5646",
+    "web/src/main.tsx": "67bc2fb3ad2c68a4089708fe8bd4956b6808b14f64aeb9553be0175ac375301f",
+    "web/src/style.css": "a0b57a90e9c43dd7470234ba450f4bf96316c4b3027108f44f7265bb695c4acb",
+    "web/src/types.ts": "5bd9deb7cb9e4b75380a029e024ce62abb666fcc21f7bbfe4b1534f704b108cd",
+    "web/vite.config.ts": "9d04dfd92f4cfb3d29a2d225ab64f6c6a2fb49a05656f0bb2db6fb598c59c27d"
+  },
+  "limits": [
+    "No live LLM/model evaluation;configuration absent",
+    "QA performed by implementing developer,not independent external signoff",
+    "Chromium Linux only;no real Safari/Firefox/Android/iOS device result",
+    "Vercel prior403 remains;durable Python/SQLite host absent;no live URL/autodeploy",
+    "M6 clean-clone/public deployment/submission not verified;registration owner handling"
+  ]
+}
