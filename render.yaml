@@ -23,7 +23,7 @@ services:
       - key: SAFELEDGER_LLM_BASE_URL
         value: https://generativelanguage.googleapis.com/v1beta/openai
       - key: SAFELEDGER_LLM_MODEL
-        value: gemini-3.8-flash
+        value: gemini-3.5-flash-lite
       - key: SAFELEDGER_LLM_ALLOWED_HOSTS
         value: generativelanguage.googleapis.com
       - key: SAFELEDGER_LLM_FREE_TIER_CONFIRMED
