@@ -1,0 +1,27 @@
+{
+  "milestone": "M3 zero-money Gemini profile readiness;live gate pending",
+  "verified_at_utc": "2026-10-17T18:14:51.387980+00:00",
+  "base_commit": "12a65294e9bca926e177365e5741e899660744cd",
+  "source_binding": "File hashes bind tested code;checkpoint commit is in Git history. Preflight ran before publication on modified source.",
+  "results": {
+    "pytest_passed": 273,
+    "pytest_failed": 0,
+    "pytest_skipped": 0,
+    "known_warnings": 2,
+    "new_free_provider_tests": 18,
+    "targeted_provider_evaluation_tests_passed": 98,
+    "live_provider_calls": 0,
+    "free_preflight_exit_code": 3,
+    "free_preflight_reason": "AI_NOT_CONFIGURED",
+    "compileall": "passed",
+    "git_diff_check": "passed"
+  },
+  "source_sha256": {
+    "api/app/agents/provider.py": "70bbd1f87ae8222306a1fd3c3f06b6de204176677288e8a192dd5f1b9909ba79",
+    "scripts/evaluate_live_agent.py": "7bab969ef10ec109cb0d3cdcf82e2b74199c1b6ed9d6e71666c5bb7fc4bf0681",
+    "api/tests/test_free_provider.py": "5e56d80dbe3900a2b191efcce2e260dca13409ca45ae93194ce82c2db263de78"
+  },
+  "scope": "Synthetic HTTP MockTransport integration validates Gemini request path/payload,real app validation and quota failure on either call;not actual Gemini compatibility,accuracy,latency or free-account verification. No financial policy/frontend/dependency/storage changes. Prior HTTP/browser/reproduction evidence remains historical.",
+  "budget": "Owner BDT0;no paid service or billing activation authorized. Free account acknowledgement is not independent billing proof. No retry/paid fallback.",
+  "next": "Privately configure Free-tier Gemini key/billing-disabled confirmation,then explicit --live --free-tier finite evaluation. Vercel403/durable backend still unresolved."
+}

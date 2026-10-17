@@ -150,6 +150,7 @@ def test_agent_malformed_plan_and_tool_count_denied(rig,monkeypatch,plan):
 
 
 def configured(monkeypatch):
+    monkeypatch.setenv('SAFELEDGER_LLM_PROFILE','compatible')
     monkeypatch.setenv('SAFELEDGER_LLM_BASE_URL','https://api.openai.com/v1')
     monkeypatch.setenv('SAFELEDGER_LLM_MODEL','explicit-test-model')
     monkeypatch.setenv('SAFELEDGER_LLM_API_KEY',secrets.token_urlsafe(32))

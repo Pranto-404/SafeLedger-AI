@@ -1,7 +1,12 @@
 # SafeLedger AI — preserved checkpoint
-Updated:2026-10-17 UTC. Deadline:2026-10-20 21:59 BD/15:59 UTC.
+Updated:2026-10-17 UTC/18 BD. Deadline:2026-10-20 21:59 BD/15:59 UTC.
 
-## DONE / latest verified source
+## Latest extension / zero-money AI
+Owner budget BDT0;no paid service,billing activation or credit purchase authorized. Default gemini_free profile pins Google HTTPS /v1beta/openai and reviewed gemini-3.8-flash,requires private Free-tier/billing-disabled owner acknowledgement. No retry/model switch/paid fallback. Quota429 gives AI_QUOTA_EXHAUSTED;deterministic finance remains usable. Legacy /v1 integrations/tests require explicit compatible profile and are not authorized paid use. Actual Google account billing cannot be independently verified by model name/config.
+VERIFIED:273pytest passed,0failed/skipped,2known warnings;18new free-profile tests.98targeted provider/evaluation tests passed. MockTransport→real API→deterministic facts and quota at either call,no orphan proposal/no posting. compileall/diffcheck passed. Free CLI preflight exit3 AI_NOT_CONFIGURED,0calls. evidence/free-ai/verification.json binds tested source hashes;pytest.log/xml preserve actual output. Code/evidence/status are in this Git checkpoint;read git log for its exact commit. docs/FREE_AI_SETUP.md and .env.example contain safe private setup. No live Gemini accuracy/compatibility/deployment claim.
+NEXT:privately create/configure Gemini project showing Free tier,billing disabled,key +confirmation;run --live --free-tier with max14calls. Do not ask for paid budget or keys in chat. M3 live and M6 release remain open. Hosting/Postgres support is a separate future milestone,not implemented by this extension.
+
+## Preserved prior verified source
 M0/M1/M2 finance/security,M3 bounded agent implementation,M4 UI,M5 local QA,M6 local reproduction/submission preparation preserved. Latest extension:finite real-model evaluation runner +safe provider metadata/accounting. Source `6a9c2bd9bdbedfabeec333f07cf1c03b459c2f46`,tree`3c10ad4808eca29836b47f919fedbeb28a422d89`. GitHub:Pranto-404/SafeLedger-AI. M3 LIVE and M6 RELEASE remain OPEN.
 
 ## VERIFIED / latest
@@ -13,10 +18,10 @@ Earlier exact application commit7c7f03f remote-cloned/newvenv/npmci:226 tests/bu
 English technical report/checklist/deck content+notes/rehearsal script in submission/. Saved handoffs:SafeLedger_AI_Competition_Deck_v3.pptx(10slides,510s target,spoken rehearsal unmeasured);SafeLedger_AI_Local_Demo_v2.mp4(117.12s,actual local flow,English captions,no audio,private logins excluded). Hashes:evidence/m6/artifact-manifest.json. These are checkpoint drafts with accurate historical counts/limits;update only at final release freeze,not on every code change.
 
 ## BLOCKED / required access
-Real provider/model/key/rates/budget absent. Runner defaults tozero-call preflight;actual run requires --live,explicit rates/estimated ceiling,fresh outputdir. Max14attempts/600requested output tokens each/no retry. USD estimate uses reported usage and caller rates after each response;one request can exceed it,provider-side hard billing cap still required. No approve/execute path. docs/LIVE_AGENT_EVALUATION.md has exact commands and acceptance.
+Private free-tier provider key/confirmation absent. Owner budget is zero;use new free profile instructions above. Legacy rate-based evaluation details below are historical,not authorization for paid use. Runner defaults tozero-call preflight;actual run requires --live,explicit rates/estimated ceiling,fresh outputdir. Max14attempts/600requested output tokens each/no retry. USD estimate uses reported usage and caller rates after each response;one request can exceed it,provider-side hard billing cap still required. No approve/execute path. docs/LIVE_AGENT_EVALUATION.md has exact commands and acceptance.
 Vercel deployment/autoupdate authorized but prior scopechallanger2/team_DBu9dfubsCdxVr9XuPxBFjWN create403 persists;no project/Git-link/URL/autoupdate success orCLI credentials. Do not retry unchanged. Need authorized target +durable FastAPI/SQLite backend/private settings;ephemeral serverless SQLite unsuitable. See docs/DEPLOYMENT_STATUS.md.
 Independent external review/physical devices/full WCAG/public TLS/session lifecycle/key rotation/anchors still open. Registration pending,owner handling. License/actual presentation rehearsal/final submission/receipt pending. No real money/customerIDs/secrets/outbound registration/messages. No finalist/compliance/bug-free guarantee.
 
 ## Next / recovery
-Obtain private compatible LLM config/current rates/budget;run finite actual eight-case suite,fix real failures,record model/cost/facts/audit. Then authorized persistent HTTPS deployment and actual subsequent Git auto-update proof;independent QA/owner release/submission. Avoid further duplicate docs/UI redesign/repeated unchanged suites while access is absent.
+Obtain private Gemini Free-tier key and owner billing-disabled acknowledgement;run finite actual eight-case --live --free-tier suite,fix real failures,record model/usage/zero-rate assumption/facts/audit. Then authorized persistent HTTPS deployment and actual subsequent Git auto-update proof;independent QA/owner release/submission. Avoid further duplicate docs/UI redesign/repeated unchanged suites while access is absent.
 Read this file,NEXT_STEPS.md,git history/latest verification;preserve working code and original failures. Expected-HEAD Git publication/no force. No PDF reread/restart. Source and artifacts are recoverable by recorded commits/filenames/hashes.

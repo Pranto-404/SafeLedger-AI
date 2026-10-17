@@ -1,0 +1,12 @@
+Actual commands executed from repository root,2026-10-17 UTC/18 BD:
+../.venv/bin/python -m pytest -q api/tests/test_free_provider.py api/tests/test_live_evaluation.py api/tests/test_agent.py
+exit0:98passed,1known Starlette warning,5.50s. Initial terminal output,not a separately captured raw log.
+../.venv/bin/python -m pytest -q --junitxml=evidence/free-ai/pytest.xml > evidence/free-ai/pytest.log 2>&1
+exit0:273passed,0failed/skipped,2known warnings,11.61s. Raw log/JUnit retained.
+git diff --check
+exit0.
+../.venv/bin/python -m compileall -q api/app scripts/evaluate_live_agent.py
+exit0.
+../.venv/bin/python scripts/evaluate_live_agent.py --free-tier --output evidence/free-ai/preflight
+exit3:blocked AI_NOT_CONFIGURED,0provider calls,0completed live cases. evaluation.json retained.
+No actual Gemini calls,billing activation,paid allowance,new browser run,frontend build or public deployment performed. Prior app qualification evidence retains its exact older source scope.

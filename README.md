@@ -1,7 +1,7 @@
 # SafeLedger AI
 Topic E — SME Finance Copilot. Competition prototype; synthetic data and sandbox only.
 
-**Current checkpoint: M5 local QA verified.** The connected financial dashboard, deterministic services and secure sandbox execution are implemented. Backend tests, real browser workflows and automated accessibility scans passed. M3's bounded agent adapter is mock-tested, but real-model evaluation is still pending. No public deployment or registration completion is claimed. See PROJECT_STATUS.md for exact source commits, results and remaining gates.
+**Current checkpoint: local QA/reproduction verified;live AI and public release pending.** The connected financial dashboard, deterministic services and secure sandbox execution are implemented. Backend tests, real browser workflows and automated accessibility scans passed. M3's bounded agent adapter is mock-tested, but real-model evaluation is still pending. No public deployment or registration completion is claimed. See PROJECT_STATUS.md for exact source commits, results and remaining gates.
 
 ## Local setup
 Python 3.12 and Node 22.12+ (validated here on Node 24.19.0). Run from the repository root:
@@ -115,3 +115,6 @@ Requires Playwright Chromium and ffmpeg/ffprobe. The screencast starts after pri
 
 ## Real-model qualification (pending private configuration)
 `scripts/evaluate_live_agent.py` now provides a finite8-case agent evaluation (5financial tasks,2instruction-injection cases,1server viewer denial). Default preflight sends zero provider requests and exits3 when blocked. Actual live mode requires explicit `--live`,caller-supplied rates/estimated USD ceiling and a fresh evidence directory. Up to14 call attempts,600 output tokens each,no automatic retries,no approval/execution path. Budget estimate is checked after each response and cannot replace a provider-side hard cap. Missing model/token metadata fails qualification instead of inventing zero cost. Each case records verified facts,sanitized usage and server-verified audit evidence. See docs/LIVE_AGENT_EVALUATION.md for exact commands,scoring,privacy and limits. No live-model pass has been recorded.
+
+## Free AI configuration
+Owner budget:BDT0. Default Gemini Free Tier profile,private free-account confirmation,finite --free-tier evaluation,and quota failure without retry/paid fallback are implemented. Actual Gemini compatibility/quality is not yet verified. See [FREE_AI_SETUP.md](docs/FREE_AI_SETUP.md). No key or billing activation is included.

@@ -105,6 +105,7 @@ def test_missing_private_config_is_blocked_zero_requests_and_no_overwrite(tmp_pa
 
 
 def configure(monkeypatch):
+    monkeypatch.setenv('SAFELEDGER_LLM_PROFILE','compatible')
     monkeypatch.setenv('SAFELEDGER_LLM_BASE_URL','https://api.openai.com/v1')
     monkeypatch.setenv('SAFELEDGER_LLM_MODEL','test-only-config-not-live')
     monkeypatch.setenv('SAFELEDGER_LLM_API_KEY','test-key-never-exported')

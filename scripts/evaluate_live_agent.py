@@ -56,7 +56,7 @@ class EvaluationStop(ProviderError):pass
 @dataclass
 class Budget:
     max_calls:int
-    max_estimated_usd:Decimal
+    max_estimated_usd:Decimal|None
     input_rate:Decimal
     output_rate:Decimal
     calls:int=0
@@ -67,7 +67,7 @@ class Budget:
 
     def reserve(self):
         if self.calls>=self.max_calls:raise EvaluationStop('EVALUATION_CALL_LIMIT')
-        if self.estimated_usd>=self.max_estimated_usd:raise EvaluationStop('EVALUATION_ESTIMATED_SPEND_LIMIT')
+        if self.max_estimated_usd is not None and self.estimated_usd>=self.max_estimated_usd:raise EvaluationStop('EVALUATION_ESTIMATED_SPEND_LIMIT')
         self.calls+=1
 
     def account(self,metadata):
@@ -77,7 +77,7 @@ class Budget:
         self.prompt_tokens+=usage['prompt_tokens'];self.completion_tokens+=usage['completion_tokens']
         self.estimated_usd+=(Decimal(usage['prompt_tokens'])*self.input_rate+Decimal(usage['completion_tokens'])*self.output_rate)/Decimal(1000000)
         if usage['completion_tokens']>600:raise EvaluationStop('EVALUATION_PROVIDER_TOKEN_LIMIT_VIOLATION')
-        if self.estimated_usd>self.max_estimated_usd:raise EvaluationStop('EVALUATION_ESTIMATED_SPEND_EXCEEDED')
+        if self.max_estimated_usd is not None and self.estimated_usd>self.max_estimated_usd:raise EvaluationStop('EVALUATION_ESTIMATED_SPEND_EXCEEDED')
 
 class MeasuredProvider:
     def __init__(self,provider,budget):self.provider,self.budget=provider,budget
@@ -164,6 +164,7 @@ def decimal_amount(text):
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--live',action='store_true',help='Explicitly allow up to14 HTTPS provider requests on synthetic data.')
+    parser.add_argument('--free-tier',action='store_true',help='Gemini free profile only;requires private free-account confirmation. No paid fallback.')
     parser.add_argument('--output',default='evidence/live-agent-evaluation')
     parser.add_argument('--max-provider-calls',type=int,choices=range(1,15),default=14)
     parser.add_argument('--max-estimated-usd',type=decimal_amount)
@@ -186,10 +187,16 @@ def main(argv=None):
     if config.is_mock:report['reason']='MOCK_PROVIDER_NOT_LIVE_EVIDENCE';return save(3)
     report['requested_model']=config.model if config.key not in config.model else '[redacted]';report['provider_host']=urlsplit(config.base).hostname
     if not args.live:report['reason']='LIVE_OPT_IN_REQUIRED';return save(3)
-    if any(x is None for x in (args.max_estimated_usd,args.input_usd_per_million,args.output_usd_per_million))or args.max_estimated_usd<=0:
+    prices=(args.max_estimated_usd,args.input_usd_per_million,args.output_usd_per_million)
+    if args.free_tier:
+        if config.profile!='gemini_free' or any(x is not None for x in prices):
+            report['reason']='FREE_TIER_PROFILE_REQUIRED_NO_PRICE_OVERRIDES';return save(3)
+        budget=Budget(args.max_provider_calls,None,Decimal('0'),Decimal('0'))
+        report['cost_limit_scope']='Zero-rate estimate assumes owner-confirmed Gemini Free tier with billing disabled;not independently verified billing. Finite call/token limits,no retries,no paid fallback. Missing usage still fails.'
+    elif any(x is None for x in prices)or args.max_estimated_usd<=0:
         report['reason']='EXPLICIT_RATE_AND_ESTIMATED_BUDGET_REQUIRED';return save(3)
-    budget=Budget(args.max_provider_calls,args.max_estimated_usd,args.input_usd_per_million,args.output_usd_per_million)
-    report.update(input_usd_per_million=str(budget.input_rate),output_usd_per_million=str(budget.output_rate),max_estimated_usd=str(budget.max_estimated_usd))
+    else:budget=Budget(args.max_provider_calls,args.max_estimated_usd,args.input_usd_per_million,args.output_usd_per_million)
+    report.update(provider_profile=config.profile,free_tier_requested=args.free_tier,input_usd_per_million=str(budget.input_rate),output_usd_per_million=str(budget.output_rate),max_estimated_usd=str(budget.max_estimated_usd) if budget.max_estimated_usd is not None else None)
     report['status']='running'
     with tempfile.TemporaryDirectory(prefix='safeledger-private-live-eval-')as temporary:
         for case in CASES:

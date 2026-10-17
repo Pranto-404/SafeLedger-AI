@@ -27,17 +27,25 @@ def strict_json(text):
 class ChatProvider:
     is_mock=False
     def __init__(self,transport=None):
-        self.base=os.environ.get('SAFELEDGER_LLM_BASE_URL','').rstrip('/')
-        self.model=os.environ.get('SAFELEDGER_LLM_MODEL','')
+        self.profile=os.environ.get('SAFELEDGER_LLM_PROFILE','gemini_free')
+        if self.profile not in {'gemini_free','compatible'}:raise ProviderError('AI_CONFIGURATION_INVALID')
+        free=self.profile=='gemini_free'
+        self.base=os.environ.get('SAFELEDGER_LLM_BASE_URL','https://generativelanguage.googleapis.com/v1beta/openai' if free else '').rstrip('/')
+        self.model=os.environ.get('SAFELEDGER_LLM_MODEL','gemini-3.8-flash' if free else '')
         self.key=os.environ.get('SAFELEDGER_LLM_API_KEY','')
         if not all([self.base,self.model,self.key]):raise ProviderError('AI_NOT_CONFIGURED')
         try:
             parts=urlsplit(self.base)
-            allowed={x.strip().lower() for x in os.environ.get('SAFELEDGER_LLM_ALLOWED_HOSTS','api.openai.com,ai-gateway.vercel.sh').split(',') if x.strip()}
-            invalid=parts.scheme!='https' or not parts.hostname or parts.hostname not in allowed or parts.username or parts.password or parts.query or parts.fragment or parts.port not in (None,443) or parts.path!='/v1'
+            allowed={x.strip().lower() for x in os.environ.get('SAFELEDGER_LLM_ALLOWED_HOSTS','generativelanguage.googleapis.com' if free else 'api.openai.com,ai-gateway.vercel.sh').split(',') if x.strip()}
+            expected_path='/v1beta/openai' if free else '/v1'
+            invalid=parts.scheme!='https' or not parts.hostname or parts.hostname not in allowed or parts.username or parts.password or parts.query or parts.fragment or parts.port not in (None,443) or parts.path!=expected_path
+            if free:invalid=invalid or parts.hostname!='generativelanguage.googleapis.com' or self.model!='gemini-3.8-flash'
         except ValueError:raise ProviderError('AI_CONFIGURATION_INVALID') from None
         if invalid:raise ProviderError('AI_CONFIGURATION_INVALID')
         if not 1<=len(self.model)<=120 or len(self.key)>1024:raise ProviderError('AI_CONFIGURATION_INVALID')
+        # A model name cannot establish account billing status. Owner must check
+        # AI Studio shows Free tier with billing disabled before enabling calls.
+        if free and os.environ.get('SAFELEDGER_LLM_FREE_TIER_CONFIRMED')!='1':raise ProviderError('AI_FREE_TIER_CONFIRMATION_REQUIRED')
         self.calls=0;self.deadline=time.monotonic()+20
         self.telemetry=[]  # Metadata only;never request bodies,keys or model prose.
         self.transport=transport
@@ -50,11 +58,20 @@ class ChatProvider:
         payload={'model':self.model,'messages':messages,'max_completion_tokens':600,'store':False}
         if tools is not None:payload.update(tools=tools,tool_choice='required',parallel_tool_calls=True)
         if response_schema is not None:payload['response_format']={'type':'json_schema','json_schema':{'name':'verified_rationale','strict':True,'schema':response_schema}}
+        if self.profile=='gemini_free':
+            # Keep Google's beta compatibility request minimal. Backend requires
+            # a valid tool plan even though the wire uses auto selection.
+            payload.pop('store');payload.pop('max_completion_tokens')
+            payload.update(max_tokens=600,reasoning_effort='low')
+            if tools is not None:
+                payload.pop('parallel_tool_calls');payload['tool_choice']='auto'
+                payload['tools']=[{**t,'function':{k:v for k,v in t['function'].items() if k!='strict'}} for t in tools]
         encoded=json.dumps(payload)
         if len(encoded.encode())>24000:raise ProviderError('AI_INPUT_BUDGET_EXCEEDED')
         try:
             with httpx.Client(transport=self.transport,trust_env=False,follow_redirects=False,timeout=min(8,remaining)) as client:
                 with client.stream('POST',self.base+'/chat/completions',headers={'Authorization':'Bearer '+self.key},json=payload) as response:
+                    if response.status_code==429:raise ProviderError('AI_QUOTA_EXHAUSTED')
                     if response.status_code!=200:raise ProviderError('AI_PROVIDER_REJECTED')
                     chunks=[];size=0
                     for chunk in response.iter_bytes():
