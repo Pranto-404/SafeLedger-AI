@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: safeledger-api
+    runtime: python
+    plan: free
+    region: singapore
+    rootDir: .
+    buildCommand: pip install -r api/requirements.lock.txt
+    startCommand: bash render_start.sh
+    disk:
+      name: safeledger-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: SAFELEDGER_DB
+        value: /data/safeledger.sqlite3
+      - key: SAFELEDGER_BUILD_COMMIT
+        sync: false
+      - key: SAFELEDGER_SIGNING_KEY
+        generateValue: true
+      - key: SAFELEDGER_LLM_PROFILE
+        value: gemini_free
+      - key: SAFELEDGER_LLM_BASE_URL
+        value: https://generativelanguage.googleapis.com/v1beta/openai
+      - key: SAFELEDGER_LLM_MODEL
+        value: gemini-3.8-flash
+      - key: SAFELEDGER_LLM_ALLOWED_HOSTS
+        value: generativelanguage.googleapis.com
+      - key: SAFELEDGER_LLM_FREE_TIER_CONFIRMED
+        value: "1"
+      - key: SAFELEDGER_LLM_API_KEY
+        sync: false          # Set manually in Render dashboard — never commit
+      - key: SAFELEDGER_CORS_ORIGINS
+        sync: false          # Set to https://safeledger-ai.vercel.app after deploy

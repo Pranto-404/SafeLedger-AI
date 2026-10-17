@@ -4,6 +4,7 @@ import os
 import logging
 import sqlite3
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from api.app import security
@@ -11,6 +12,15 @@ from api.app.body_limit import BodyLimitMiddleware
 from api.app.routes import router
 from api.app.agents import runner
 from api.app.agents.provider import ProviderError
+
+def _cors_origins() -> list[str]:
+    """Read allowed origins from env; default to localhost dev ports only."""
+    raw = os.environ.get("SAFELEDGER_CORS_ORIGINS", "")
+    origins = [o.strip().rstrip("/") for o in raw.split(",") if o.strip()]
+    if not origins:
+        origins = ["http://127.0.0.1:5173", "http://localhost:5173",
+                   "http://127.0.0.1:4173", "http://localhost:4173"]
+    return origins
 
 SCHEMA_VERSION = 1
 
@@ -31,6 +41,13 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="SafeLedger AI", version="0.3.0", lifespan=lifespan)
 app.add_middleware(BodyLimitMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_cors_origins(),
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Authorization", "Content-Type"],
+)
 app.include_router(router)
 
 @app.exception_handler(ProviderError)
