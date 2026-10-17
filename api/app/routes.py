@@ -38,6 +38,9 @@ def principal(request: Request, db=Depends(db_connection)):
         sec.budget(db,'auth-failure:'+hashlib.sha256(peer.encode()).hexdigest(),20)
         raise
     sec.budget(db,'session:'+actor.token_hash,240 if request.method=='GET' else 60)
+    from api.app.accounts import PUBLIC_TEMPLATES
+    if actor.business_id in PUBLIC_TEMPLATES and request.method not in {'GET','HEAD','OPTIONS'} and request.url.path not in {'/api/cashflow/scenarios','/api/finance/compare'}:
+        sec.fail(403,'GUEST_READ_ONLY')
     return actor
 
 
@@ -147,7 +150,8 @@ from api.app.agents import runner
 
 @router.post('/agent/tasks')
 def agent_task(body: TaskRequest,actor=Depends(principal),db=Depends(db_connection)):
-    if actor.business_id=='public-demo-v2':sec.fail(403,'CREATE_ACCOUNT_FOR_ASSISTANT')
+    from api.app.accounts import PUBLIC_TEMPLATES
+    if actor.business_id in PUBLIC_TEMPLATES:sec.fail(403,'CREATE_ACCOUNT_FOR_ASSISTANT')
     if db.execute('SELECT 1 FROM account_members WHERE user_id=?',(actor.user_id,)).fetchone():
         sec.budget(db,'public-ai-global',8)
     return runner.run_task(db,actor,body)

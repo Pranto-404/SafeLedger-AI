@@ -1,0 +1,5 @@
+PASS health
+PASS persistent database
+PASS unauthenticated workspace denied
+PASS guest session
+AssertionError guest overview

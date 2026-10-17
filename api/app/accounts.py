@@ -20,11 +20,13 @@ from api.app import security as sec
 from api.app.contracts import Contract
 from api.app.services.intake import parse_json
 from api.app.services.storage import store_dataset
+from api.app.services.finance import fingerprint
 from api.app.routes import db_connection, principal
 
 router = APIRouter(prefix='/api')
 COOKIE = 'safeledger_session'
-TEMPLATE = 'public-demo-v2'
+TEMPLATE = 'public-demo-v3'
+PUBLIC_TEMPLATES = {'public-demo-v2', TEMPLATE}
 HASH_LOCK = threading.BoundedSemaphore(1)
 DUMMY_SALT = '0'*32
 
@@ -40,12 +42,18 @@ def schema(db):
 def prepare_template(db):
     if not db.execute('SELECT 1 FROM financial_datasets WHERE business_id=?', (TEMPLATE,)).fetchone():
         ds = parse_json((Path(__file__).resolve().parents[2]/'data/fixtures/duplicate_exact.json').read_bytes())
-        try:store_dataset(db, TEMPLATE, ds)
-        except sqlite3.IntegrityError:pass  # Another startup may have created this immutable template.
+        previous=db.execute('SELECT dataset_sha256 FROM financial_datasets WHERE business_id=?',('public-demo-v2',)).fetchone()
+        if previous and previous[0]==fingerprint(ds):
+            with db:
+                db.execute('INSERT OR IGNORE INTO financial_datasets SELECT ?,dataset_sha256,payload FROM financial_datasets WHERE business_id=?',(TEMPLATE,'public-demo-v2'))
+                db.execute('INSERT OR IGNORE INTO source_records SELECT ?,source_record_id,kind,record_id,record_sha256,payload FROM source_records WHERE business_id=?',(TEMPLATE,'public-demo-v2'))
+        else:
+            try:store_dataset(db, TEMPLATE, ds)
+            except sqlite3.IntegrityError:pass  # Concurrent startup may have created this immutable template.
     with db:
         db.execute('INSERT OR IGNORE INTO security_policies VALUES (?,?,?)', (TEMPLATE,1000000,10000000))
         db.execute("INSERT OR IGNORE INTO trusted_vendors SELECT ?,json_extract(payload,'$.vendor_id'),1 FROM source_records WHERE business_id=? AND kind='invoice'", (TEMPLATE,TEMPLATE))
-        db.execute("INSERT OR IGNORE INTO security_users VALUES ('public-visitor',?,'viewer',1)", (TEMPLATE,))
+        db.execute("INSERT OR IGNORE INTO security_users VALUES ('public-visitor-v3',?,'viewer',1)", (TEMPLATE,))
 
 
 def browser_origin(request):
@@ -86,7 +94,7 @@ def set_cookie(response, token):
 
 def identity(db, actor):
     row=db.execute('SELECT a.username FROM auth_accounts a JOIN account_members m ON m.account_id=a.account_id WHERE m.user_id=?',(actor.user_id,)).fetchone()
-    return dict(user_id=actor.user_id,business_id=actor.business_id,role=actor.role,username=row[0] if row else None,guest=actor.business_id==TEMPLATE,simulation_only=True)
+    return dict(user_id=actor.user_id,business_id=actor.business_id,role=actor.role,username=row[0] if row else None,guest=actor.business_id in PUBLIC_TEMPLATES,simulation_only=True)
 
 
 class Credentials(Contract):
@@ -140,8 +148,8 @@ def login(body:Credentials,request:Request,response:Response,db=Depends(db_conne
 def guest(request:Request,response:Response,db=Depends(db_connection)):
     browser_origin(request);rate(request,db,'guest',20)
     with db:
-        db.execute('DELETE FROM security_sessions WHERE user_id=? AND expires_at<?',('public-visitor',sec.now()))
-        token=issue(db,'public-visitor')
+        db.execute('DELETE FROM security_sessions WHERE user_id=? AND expires_at<?',('public-visitor-v3',sec.now()))
+        token=issue(db,'public-visitor-v3')
     set_cookie(response,token);return identity(db,sec.authenticate(db,token))
 
 

@@ -25,3 +25,7 @@ Render Free can sleep and take time to wake. The entry screen remains usable whi
 Local backend: 304 tests pass (two existing warnings). Local browser qualification: 12 scenarios, 4 axe scans and 360/390/768/1366px viewport checks. Separate browser processes tested guest entry, signup, restored cookie, teammate invitation, one posting, BDT 85,000 reconciliation, audit and sign-out. The actual remote database public-account smoke also passed, with no provider calls. Evidence: evidence/public-access/.
 
 The earlier passed real-model eight-case report is historical evidence for the same model protocol; this UI/auth update does not claim a new statistical AI evaluation or independent security audit. After release, record actual deployment commit/status and public browser/API results separately.
+
+## Live guest regression caught before acceptance
+
+The first public-browser check exposed a shared demo audit signed during an earlier local/cloud qualification with a different signing identity. The API correctly failed closed. Guest rejection previously wrote a DENIED audit into that shared template. Guest financial mutations now stop in the authentication boundary, before any financial audit write, and the clean read-only example uses a versioned template. Existing accounts and their signing identity are preserved. The obsolete example is retained rather than deleting immutable audit history. A targeted real-remote regression checks that rejected guest actions leave an empty financial audit and the overview remains readable.

@@ -62,6 +62,8 @@ def test_guest_read_only_financial_exploration_and_no_ai(world):
     assert c.post('/api/proposals',json={'invoice_id':'INV-105'}).status_code==403
     assert c.post('/api/account/invitations',json={'role':'approver'}).status_code==403
     assert c.post('/api/agent/tasks',json={'task':'What is my balance?','allow_proposal':False}).status_code==403
+    assert c.get('/api/audit').json()['events']==[]
+    assert c.get('/api/workspace').status_code==200
 
 
 def test_separate_registered_approver_single_posting_and_invite_replay(world):

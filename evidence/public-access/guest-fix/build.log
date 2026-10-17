@@ -1,0 +1,14 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> safeledger-web@0.0.1 build
+> tsc --noEmit && vite build
+
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 30 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.36 kB │ gzip:  0.26 kB
+dist/assets/index-nr6dInLB.css   11.20 kB │ gzip:  3.36 kB
+dist/assets/index-BdYR2lLD.js   228.27 kB │ gzip: 71.79 kB
+✓ built in 906ms

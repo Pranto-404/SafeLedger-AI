@@ -32,7 +32,7 @@ export default function App() {
   const [showPassword,setShowPassword]=useState(false); const [error,setError]=useState('');
   const [busy,setBusy]=useState(false); const [restoring,setRestoring]=useState(true);
   const [legacy,setLegacy]=useState('');const restoreRequest=useRef<AbortController|null>(null);
-  useEffect(()=>{const c=new AbortController();restoreRequest.current=c;void fetch('/api/session',{credentials:'same-origin',signal:AbortSignal.any([c.signal,AbortSignal.timeout(90000)])}).then(async r=>{if(r.ok){const session=await r.json() as Session;if(!c.signal.aborted)setAuth({token:'',session});}}).catch(()=>{}).finally(()=>{if(!c.signal.aborted)setRestoring(false);});return()=>c.abort();},[]);
+  useEffect(()=>{const c=new AbortController();restoreRequest.current=c;void fetch('/api/session',{credentials:'same-origin',signal:AbortSignal.any([c.signal,AbortSignal.timeout(90000)])}).then(async r=>{if(r.ok){const session=await r.json() as Session;if(!c.signal.aborted&&!(session.guest&&session.business_id!=='public-demo-v3'))setAuth({token:'',session});}}).catch(()=>{}).finally(()=>{if(!c.signal.aborted)setRestoring(false);});return()=>c.abort();},[]);
   async function enter(kind:'signup'|'login'|'guest',event?:FormEvent){
     event?.preventDefault();if(busy)return;restoreRequest.current?.abort();setRestoring(false);setBusy(true);setError('');
     try{const session=await accountRequest<Session>('/auth/'+kind,kind==='guest'?{}:{username,password});setAuth({token:'',session});setPassword('');}
