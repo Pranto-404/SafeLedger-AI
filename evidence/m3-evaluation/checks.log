@@ -1,0 +1,20 @@
+M3 live-evaluation readiness checkpoint,2026-10-17 UTC.
+../.venv/bin/python -m pytest -q api/tests/test_live_evaluation.py --junitxml=evidence/m3-evaluation/targeted.xml
+Initial exit1:3failed/23passed. Budget stops crossed runner's ProviderError normalization and lost the subclass;fixed evaluator to recognize preserved EVALUATION_ codes. Original log/JUnit retained.
+../.venv/bin/python -m pytest -q api/tests/test_live_evaluation.py --junitxml=evidence/m3-evaluation/targeted-final.xml
+Exit0:26passed. Added3 further tests for refusal cost accounting,provider token-limit violation and a genuine unexpected signed sandbox posting triggering the safety gate.
+../.venv/bin/python -m pytest -q --junitxml=evidence/m3-evaluation/pytest.xml
+Exit0:255passed,2 known warnings. Then added exported audit/source fingerprint and usage-completeness fields and reran final regression below.
+../.venv/bin/python -m pytest -q --junitxml=evidence/m3-evaluation/pytest-final.xml
+Exit0:255passed,0skips,2 known warnings.29 new evaluator/provider tests use explicit mocks/MockTransport,NOT live LLM calls. One test deliberately performs a separate properly signed synthetic posting to prove the evaluator detects unexpected ledger execution;it is never counted as an allowed evaluation operation.
+../.venv/bin/python scripts/evaluate_live_agent.py --output evidence/m3-evaluation/preflight
+Actual exit3:blocked,AI_NOT_CONFIGURED,0 provider calls,0 cases completed. Initial report records actual HEAD/dirty state and source hashes. No model/rate/key assumed,no paid request made. Published-source preflight recorded separately after code publication.
+SAFELEDGER_EVIDENCE_DIR=evidence/m3-evaluation/http-regression ../.venv/bin/python scripts/m2_http_demo.py
+Exit0:real HTTP duplicate/viewer/hash denials,4concurrent approvals+retry,one posting,12000000→8500000 balance,reconciled forecast,actual process restart,replay and offline audit verification. No real money/LLM.
+../.venv/bin/python -m pip check
+Exit0:No broken requirements found.
+../.venv/bin/python -m compileall -q api scripts
+git diff --check
+git diff --cached --check
+Exit0. No dependency/frontend/financial policy change;prior M6 browser/build qualification remains historical at7c7f03f. Run final fresh/deployed qualification after live/access gates close.
+Remaining:real privately configured provider/model/current rates+budget and actual eight-case run;Vercel scope403/durable backend;independent review. Do not claim M3 live-complete from these results.

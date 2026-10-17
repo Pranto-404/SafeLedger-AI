@@ -112,3 +112,6 @@ SAFELEDGER_DEMO_OUTPUT=/absolute/path/new-demo.mp4 SAFELEDGER_EVIDENCE_DIR=evide
 ```
 
 Requires Playwright Chromium and ffmpeg/ffprobe. The screencast starts after private login,pauses before session changes,records real UI/API/SQLite actions,then burns English captions over the recorded timeline. It has no narration audio and makes no live-model/public-host claim. Output must be a new absolute path;private intermediate frames are deleted. Do not record real credentials or customer data.
+
+## Real-model qualification (pending private configuration)
+`scripts/evaluate_live_agent.py` now provides a finite8-case agent evaluation (5financial tasks,2instruction-injection cases,1server viewer denial). Default preflight sends zero provider requests and exits3 when blocked. Actual live mode requires explicit `--live`,caller-supplied rates/estimated USD ceiling and a fresh evidence directory. Up to14 call attempts,600 output tokens each,no automatic retries,no approval/execution path. Budget estimate is checked after each response and cannot replace a provider-side hard cap. Missing model/token metadata fails qualification instead of inventing zero cost. Each case records verified facts,sanitized usage and server-verified audit evidence. See docs/LIVE_AGENT_EVALUATION.md for exact commands,scoring,privacy and limits. No live-model pass has been recorded.

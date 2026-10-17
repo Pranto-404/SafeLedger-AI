@@ -1,6 +1,7 @@
 """Two-call-budget HTTP adapter. No model/provider credentials are hardcoded."""
 import json
 import os
+import re
 import time
 from urllib.parse import urlsplit
 import httpx
@@ -38,6 +39,7 @@ class ChatProvider:
         if invalid:raise ProviderError('AI_CONFIGURATION_INVALID')
         if not 1<=len(self.model)<=120 or len(self.key)>1024:raise ProviderError('AI_CONFIGURATION_INVALID')
         self.calls=0;self.deadline=time.monotonic()+20
+        self.telemetry=[]  # Metadata only;never request bodies,keys or model prose.
         self.transport=transport
         self.is_mock=transport is not None
 
@@ -61,6 +63,14 @@ class ChatProvider:
                         if time.monotonic()>self.deadline:raise ProviderError('AI_TIMEOUT')
                         chunks.append(chunk)
             raw=strict_json(b''.join(chunks).decode('utf-8'))
+            if not isinstance(raw,dict):raise ProviderError('AI_INVALID_RESPONSE')
+            def tag(value):
+                return value if isinstance(value,str) and re.fullmatch(r'[A-Za-z0-9_.:/-]{1,160}',value) and self.key not in value else None
+            usage=raw.get('usage')
+            valid=isinstance(usage,dict) and all(type(usage.get(k)) is int and 0<=usage[k]<=10**9 for k in ('prompt_tokens','completion_tokens'))
+            if valid and 'total_tokens' in usage:
+                valid=type(usage['total_tokens']) is int and usage['total_tokens']==usage['prompt_tokens']+usage['completion_tokens']
+            self.telemetry.append({'requested_model':tag(self.model),'reported_model':tag(raw.get('model')),'response_id':tag(raw.get('id')),'usage':{k:usage[k] for k in ('prompt_tokens','completion_tokens')} if valid else None})
             choices=raw.get('choices')
             if not isinstance(choices,list) or len(choices)!=1:raise ProviderError('AI_INVALID_RESPONSE')
             choice=choices[0]

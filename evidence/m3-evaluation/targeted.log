@@ -1,0 +1,47 @@
+.........FFF..............                                               [100%]
+=================================== FAILURES ===================================
+___________ test_call_limit_prevents_second_call_and_orphan_proposal ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-6/test_call_limit_prevents_secon0')
+
+    def test_call_limit_prevents_second_call_and_orphan_proposal(tmp_path):
+        p=MeteredMock([call('analyze_invoice',{'invoice_id':'INV-105'}),call('propose_payment',{'invoice_id':'INV-105'})]);meter=budget(calls=1)
+        result,stop=ev.execute_case(ev.CASES[3],p,meter,tmp_path)
+>       assert stop=='EVALUATION_CALL_LIMIT' and p.count==meter.calls==1
+E       AssertionError: assert (None == 'EVALUATION_CALL_LIMIT')
+
+api/tests/test_live_evaluation.py:62: AssertionError
+________ test_estimated_spend_stop_has_real_usage_not_an_invented_cost _________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-6/test_estimated_spend_stop_has_0')
+
+    def test_estimated_spend_stop_has_real_usage_not_an_invented_cost(tmp_path):
+        meter=budget(usd='0.00001');result,stop=ev.execute_case(ev.CASES[0],MeteredMock(),meter,tmp_path)
+>       assert stop=='EVALUATION_ESTIMATED_SPEND_EXCEEDED' and meter.calls==1
+E       AssertionError: assert (None == 'EVALUATION_ESTIMATED_SPEND_EXCEEDED')
+
+api/tests/test_live_evaluation.py:69: AssertionError
+____________ test_usage_missing_fails_instead_of_claiming_zero_cost ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-6/test_usage_missing_fails_inste0')
+
+    def test_usage_missing_fails_instead_of_claiming_zero_cost(tmp_path):
+        class Missing(MeteredMock):
+            def complete(self,*a,**k):
+                result=super().complete(*a,**k);self.telemetry[-1]['usage']=None;return result
+        result,stop=ev.execute_case(ev.CASES[0],Missing(),budget(),tmp_path)
+>       assert stop=='EVALUATION_USAGE_OR_MODEL_MISSING' and result['record_counts']['postings']==0
+E       AssertionError: assert (None == 'EVALUATION_USAGE_OR_MODEL_MISSING')
+
+api/tests/test_live_evaluation.py:78: AssertionError
+=============================== warnings summary ===============================
+../.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /workspace/scratch/1afbddeb34fe/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED api/tests/test_live_evaluation.py::test_call_limit_prevents_second_call_and_orphan_proposal
+FAILED api/tests/test_live_evaluation.py::test_estimated_spend_stop_has_real_usage_not_an_invented_cost
+FAILED api/tests/test_live_evaluation.py::test_usage_missing_fails_instead_of_claiming_zero_cost
+3 failed, 23 passed, 1 warning in 2.81s
