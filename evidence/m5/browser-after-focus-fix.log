@@ -1,0 +1,14 @@
+AssertionError [ERR_ASSERTION]: Automated accessibility violations;see accessibility-results.json
+
+10 !== 0
+
+    at main (/workspace/scratch/1afbddeb34fe/safeledger-ai/scripts/m5_browser_qa.cjs:69:75)
+Traceback (most recent call last):
+  File "/workspace/scratch/1afbddeb34fe/safeledger-ai/scripts/m5_browser_qa.py", line 37, in <module>
+    if __name__=='__main__':run('m5_browser_qa.cjs',setup)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/1afbddeb34fe/safeledger-ai/scripts/m4_browser_demo.py", line 50, in run
+    subprocess.run(['node',str(ROOT/'scripts'/script_name)],cwd=ROOT,env=dict(os.environ,SAFELEDGER_BROWSER_URL=f'http://127.0.0.1:{web_port}',SAFELEDGER_BROWSER_ACCESS=str(private/'sessions.json'),SAFELEDGER_EVIDENCE_DIR=str(OUT)),check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['node', '/workspace/scratch/1afbddeb34fe/safeledger-ai/scripts/m5_browser_qa.cjs']' returned non-zero exit status 1.

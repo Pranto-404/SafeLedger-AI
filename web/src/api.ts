@@ -11,6 +11,8 @@ export function client(token: string, signal: AbortSignal, onUnauthorized: () =>
       throw new ApiError('CONNECTION_FAILED', 0, 'Could not reach the server. Check the connection and retry. A timed-out action may have completed; refresh before retrying.');
     }
     const data = await response.json().catch(() => null);
+    // An old session must not sign out a newly mounted workspace after cancellation.
+    signal.throwIfAborted();
     if (!response.ok) {
       if (response.status === 401) onUnauthorized();
       const fields = data?.error?.fields as {field: string; message: string}[] | undefined;

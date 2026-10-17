@@ -1,0 +1,39 @@
+M5 actual executed commands and outcomes (2026-10-17 UTC):
+npm audit --prefix web --json
+Initial exit1:2 affected packages,Vite high/esbuild low. npm-audit-initial.json retained.
+npm install --prefix web --save-dev --save-exact vite@7.3.7
+Exit0;targeted update. npm-upgrade.log.
+npm install --prefix web --save-dev --save-exact @axe-core/playwright
+Exit0;pinned4.14.0. axe-install.log.
+npm audit --prefix web --json
+Intermediate exit1:esbuild low remained. npm-audit-after-vite.json.
+npm pkg set --prefix web overrides.esbuild=0.28.1
+npm install --prefix web
+Exit0;explicit patched transitive override. esbuild-upgrade.log.
+npm audit --prefix web --json
+Final exit0:0 known vulnerabilities. npm-audit-final.json.
+../.venv/bin/python -m pip_audit -r api/requirements.lock.txt --format json --output evidence/m5/pip-audit-initial.json
+Initial exit1:one pytest advisory reported twice;fix9.0.3. pip-audit-initial.*.
+../.venv/bin/python -m pip install pytest==9.0.3
+Exit0;pytest-upgrade.log. Lock updated,not a freeze of the separate audit-tool environment.
+../.venv/bin/python -m pip_audit -r api/requirements.lock.txt --format json --output evidence/m5/pip-audit-final.json
+Final exit0:No known vulnerabilities found. pip-audit-final.*.
+../.venv/bin/python -m pytest -q --junitxml=evidence/m5/pytest.xml
+Exit0:225 passed,2 known warnings;zero skips. pytest.log/xml.
+npm run build --prefix web
+Exit0:TypeScript --noEmit +Vite7.3.7 production build with esbuild0.28.1. frontend-build.log.
+SAFELEDGER_EVIDENCE_DIR=evidence/m5/backend-regression ../.venv/bin/python scripts/m2_http_demo.py
+Exit0:real HTTP concurrency+replay+process restart+balanced ledger+offline audit. backend-regression.log and directory.
+SAFELEDGER_CHROMIUM_MODULE=/workspace/scratch/1afbddeb34fe/browser-runtime/node_modules/@sparticuz/chromium/build/index.js SAFELEDGER_EVIDENCE_DIR=evidence/m5/browser-final ../.venv/bin/python scripts/m5_browser_qa.py
+Final exit0:8 adversarial browser scenarios,10 axe scans,0 violations,0 page errors. Actual FastAPI/SQLite denied actions;only network failure deliberately injected. Initial Tab-focus failure and subsequent axe failures retained;fixed/retested,no test/rule suppressed.
+SAFELEDGER_CHROMIUM_MODULE=/workspace/scratch/1afbddeb34fe/browser-runtime/node_modules/@sparticuz/chromium/build/index.js SAFELEDGER_EVIDENCE_DIR=evidence/m5/full-workflow-regression ../.venv/bin/python scripts/m4_browser_demo.py
+Exit0:10 successful/full workflow scenarios,0 page errors;360/390/768/1366px checks and synthetic screenshots. Real independent approval with exactly1 execution.
+../.venv/bin/python scripts/security_scan.py
+Exit0:limited known credential patterns over15 reachable commits/207 unique history blobs plus tracked working files/private ignore checks;0 candidates. Exact scope in credential-scan.json. No matching secret content printed.
+../.venv/bin/python -m pip check
+Exit0:No broken requirements found. pip-check.log.
+../.venv/bin/python -m compileall -q api scripts
+Exit0.
+git diff --cached --check
+Exit0.
+No live LLM,real money,external independent/device audit,public HTTPS or Vercel deployment performed. Tool versions in tool-versions.log. Registry scans are point-in-time known-advisory checks.

@@ -1,0 +1,85 @@
+INFO:     Started server process [54]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:39115 (Press CTRL+C to quit)
+INFO:     127.0.0.1:47854 - "GET /api/ready HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49972 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49984 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50000 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50010 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50028 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50018 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50032 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50034 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50040 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50054 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50064 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50080 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50084 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50090 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50106 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50118 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50134 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50148 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50156 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50158 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50164 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50172 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50176 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50190 - "GET /api/invoices HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50184 - "GET /api/dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50210 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50200 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50212 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50224 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50246 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50268 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50256 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50236 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50296 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50270 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50284 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50302 - "POST /api/proposals/fdd1f401-f22a-45f1-bdcb-1c6693e61e0e/approve HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:50310 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50322 - "POST /api/proposals HTTP/1.1" 201 Created
+INFO:     127.0.0.1:50326 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50334 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50344 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50348 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50380 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50390 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50364 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50396 - "POST /api/proposals/c66de3c8-9578-4b65-8f11-d7fcf5f42b8c/approve HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:50400 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50412 - "POST /api/proposals/c66de3c8-9578-4b65-8f11-d7fcf5f42b8c/approve HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50440 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50446 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50466 - "POST /api/proposals/c66de3c8-9578-4b65-8f11-d7fcf5f42b8c/approve HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:50478 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50424 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50494 - "POST /api/proposals HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:50502 - "GET /api/proposals/c66de3c8-9578-4b65-8f11-d7fcf5f42b8c HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50456 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50506 - "GET /api/audit/c66de3c8-9578-4b65-8f11-d7fcf5f42b8c HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50510 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50518 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50514 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50534 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50548 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50558 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50616 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50570 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50586 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50602 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50628 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50642 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50620 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50648 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50664 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50694 - "GET /api/dashboard HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50692 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [54]

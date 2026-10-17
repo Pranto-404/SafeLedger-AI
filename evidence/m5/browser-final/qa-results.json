@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "browser": "153.0.8010.0",
+  "steps": [
+    "Network failure clears stale totals,shows retry message,and real refresh recovers",
+    "Logout aborts in-flight finance;new empty tenant sees no previous business totals",
+    "Genuinely signed expired proposal denied in actual API;modal shows failure;no balance change",
+    "Tampered approval hash rejected server-side;modal traps Tab/Shift+Tab;human rejection final and cannot be replayed as approval",
+    "Direct browser role/tenant bypass attempts denied and signed audit proves zero executions",
+    "Actual stored HTML/prompt-injection memo is escaped inert text;no script,no execution",
+    "Real server401 clears active workspace/token;no persistent credentials",
+    "Automated axe scans of login,eightviews,approvaldialog report zero WCAG2/2.1A/AA violations"
+  ],
+  "page_errors": [],
+  "accessibility_scans": 10,
+  "violation_count": 0,
+  "live_ai_used": false,
+  "financial_denials_from_real_api": true,
+  "network_abort_injected": true
+}

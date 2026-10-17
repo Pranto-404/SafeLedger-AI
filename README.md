@@ -87,3 +87,14 @@ cd web && npx playwright install chromium && cd ..
 The runner starts/stops its own loopback servers on free ports and writes synthetic screenshots, server logs, audit export and browser-results.json to evidence/m4/browser. Set `SAFELEDGER_EVIDENCE_DIR` to a fresh directory to retain earlier runs. No browser trace/request-header recording is enabled because authorization headers are secrets. If using a separately installed Playwright/browser runtime, `SAFELEDGER_PLAYWRIGHT_MODULE` may select its module and `SAFELEDGER_CHROMIUM_MODULE` the optional @sparticuz/chromium module entry. This is test infrastructure only, not a production browser dependency. Default Playwright browser download failed in the current environment; actual successful execution used Playwright1.62.1 + npm-provided Chromium153.0.8010.0. See evidence/m4/ for setup failures and actual successes.
 
 For a custom local backend port, set `SAFELEDGER_DEV_API_URL=http://127.0.0.1:PORT` when starting Vite. This setting is proxy-only, not a browser credential or production deployment configuration.
+
+## M5 security and failure-path QA
+After installing the locked Python/web dependencies and Playwright Chromium,run:
+
+```bash
+SAFELEDGER_EVIDENCE_DIR=evidence/new-m5-run .venv/bin/python scripts/m5_browser_qa.py
+```
+
+This reuses the local real-server harness with private fixture setup,no public test/admin endpoint. It exercises server-denied expired/tampered approvals,rejection replay,tenant/role bypass,network failure/recovery,in-flight logout isolation,inert stored HTML/instruction memos,session401 and10 automated axe accessibility scans. No real LLM/payment call. Environment-specific optional browser runtime settings remain as documented for M4. The full successful owner→independent approval→ledger workflow remains `scripts/m4_browser_demo.py`.
+
+Known-advisory checks:`npm audit --prefix web` and `python -m pip_audit -r api/requirements.lock.txt` (install pip-audit separately as a QA tool). `python scripts/security_scan.py` checks limited credential patterns across reachable Git history/tracked working files and ignored private paths,reporting locations only. Scope is intentionally stated;passing is not proof of complete security. esbuild0.28.1 is a deliberate override to remediate the reported dev-server advisory;reconsider when Vite supports it natively. Full M5 findings,evidence and remaining release limits:docs/M5_QA_REPORT.md.

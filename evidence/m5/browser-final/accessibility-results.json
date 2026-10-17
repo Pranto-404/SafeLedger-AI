@@ -1,0 +1,46 @@
+{
+  "tool": "axe-core/playwright",
+  "scope": "WCAG2A/AA and2.1A/AA automated subset;not conformance certification",
+  "views": [
+    {
+      "view": "login",
+      "violations": []
+    },
+    {
+      "view": "Overview",
+      "violations": []
+    },
+    {
+      "view": "Invoices",
+      "violations": []
+    },
+    {
+      "view": "Cash flow",
+      "violations": []
+    },
+    {
+      "view": "Financing",
+      "violations": []
+    },
+    {
+      "view": "Assistant",
+      "violations": []
+    },
+    {
+      "view": "Approvals",
+      "violations": []
+    },
+    {
+      "view": "Audit",
+      "violations": []
+    },
+    {
+      "view": "Import",
+      "violations": []
+    },
+    {
+      "view": "approval-dialog",
+      "violations": []
+    }
+  ]
+}
