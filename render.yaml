@@ -7,13 +7,9 @@ services:
     rootDir: .
     buildCommand: pip install -r api/requirements.lock.txt
     startCommand: bash render_start.sh
-    disk:
-      name: safeledger-data
-      mountPath: /data
-      sizeGB: 1
     envVars:
       - key: SAFELEDGER_DB
-        value: /data/safeledger.sqlite3
+        value: ./safeledger.sqlite3
       - key: SAFELEDGER_BUILD_COMMIT
         sync: false
       - key: SAFELEDGER_SIGNING_KEY

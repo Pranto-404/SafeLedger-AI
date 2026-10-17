@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "data/fixtures/seed_2026.json"
 
 def seed_if_empty():
-    db_path = os.environ.get("SAFELEDGER_DB", "/data/safeledger.sqlite3")
+    db_path = os.environ.get("SAFELEDGER_DB", "./safeledger.sqlite3")
     key = os.environ.get("SAFELEDGER_SIGNING_KEY", "")
     if not key:
         print("[seed] ERROR: SAFELEDGER_SIGNING_KEY not set — cannot provision sessions.", flush=True)
@@ -40,7 +40,7 @@ def seed_if_empty():
         runner.create_schema(db)
 
         # Check if demo data already loaded
-        row = db.execute("SELECT count(*) FROM businesses WHERE business_id='synthetic-demo'").fetchone()
+        row = db.execute("SELECT count(*) FROM financial_datasets WHERE business_id='synthetic-demo'").fetchone()
         if row and row[0] > 0:
             print("[seed] Demo data already present — skipping seed.", flush=True)
             return
@@ -58,7 +58,7 @@ def seed_if_empty():
         tokens = {}
         for role in ["owner", "approver", "viewer", "agent"]:
             tokens[role] = sec.provision_session(
-                db, f"demo-{role}", "synthetic-demo", role, ttl_seconds=30 * 86400
+                db, f"demo-{role}", "synthetic-demo", role, ttl_seconds=86400
             )
 
         # Print tokens ONCE to Render logs — judge captures them
