@@ -133,3 +133,11 @@ def trace(trace_id: TracePath,actor=Depends(principal),db=Depends(db_connection)
 def export_audit(actor=Depends(principal),db=Depends(db_connection)):
     events=sec.verified_audit(db,actor.business_id)
     return dict(events=events,chain_verified=True,tenant_chain_head=events[-1]['event_hash'] if events else '0'*64,simulation_only=True)
+
+
+from api.app.agents.models import TaskRequest
+from api.app.agents import runner
+
+@router.post('/agent/tasks')
+def agent_task(body: TaskRequest,actor=Depends(principal),db=Depends(db_connection)):
+    return runner.run_task(db,actor,body)

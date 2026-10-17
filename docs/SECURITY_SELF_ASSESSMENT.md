@@ -15,3 +15,6 @@ Not a certification. Authentication,source-bound proposals,separate human approv
 | Secrets/dependencies | Private generated local credentials,hashed stored tokens,.gitignore,secret-free demo output checks | Comprehensive history/dependency scan M5 |
 
 No browser/device/keyboard,independent audit,real LLM evaluation or public deployment pass claimed. Code author executed the recorded tests; this is not independent sign-off. Release remains blocked on later end-to-end product and security gates.
+
+## M3 implemented extension
+Strict finite native tool plans,constrained fact-reference rationale,stale snapshot/identity checks,two-call/timeout/output/hourly budgets,fail-closed provider errors and deferred atomic proposal creation now mock/transport-tested. Viewer escalation,privileged tools,invented facts and malformed plans refused. M2 concurrent HTTP/process-restart regression rerun after integration. Real-model injection/task success remains unmeasured and blocked on private provider configuration. Deployment/automatic Git updates attempted but blocked by Vercel403 scope access; no URL or public QA success claimed.

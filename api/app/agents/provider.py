@@ -1,0 +1,72 @@
+"""Two-call-budget HTTP adapter. No model/provider credentials are hardcoded."""
+import json
+import os
+import time
+from urllib.parse import urlsplit
+import httpx
+
+
+class ProviderError(Exception):
+    def __init__(self,code='AI_UNAVAILABLE'):
+        self.code=code
+        super().__init__(code)
+
+
+def strict_json(text):
+    def unique(pairs):
+        result={}
+        for key,value in pairs:
+            if key in result:raise ValueError('Duplicate JSON key')
+            result[key]=value
+        return result
+    def finite(value):raise ValueError('Nonfinite JSON')
+    return json.loads(text,object_pairs_hook=unique,parse_constant=finite)
+
+
+class ChatProvider:
+    is_mock=False
+    def __init__(self,transport=None):
+        self.base=os.environ.get('SAFELEDGER_LLM_BASE_URL','').rstrip('/')
+        self.model=os.environ.get('SAFELEDGER_LLM_MODEL','')
+        self.key=os.environ.get('SAFELEDGER_LLM_API_KEY','')
+        if not all([self.base,self.model,self.key]):raise ProviderError('AI_NOT_CONFIGURED')
+        try:
+            parts=urlsplit(self.base)
+            allowed={x.strip().lower() for x in os.environ.get('SAFELEDGER_LLM_ALLOWED_HOSTS','api.openai.com,ai-gateway.vercel.sh').split(',') if x.strip()}
+            invalid=parts.scheme!='https' or not parts.hostname or parts.hostname not in allowed or parts.username or parts.password or parts.query or parts.fragment or parts.port not in (None,443) or parts.path!='/v1'
+        except ValueError:raise ProviderError('AI_CONFIGURATION_INVALID') from None
+        if invalid:raise ProviderError('AI_CONFIGURATION_INVALID')
+        if not 1<=len(self.model)<=120 or len(self.key)>1024:raise ProviderError('AI_CONFIGURATION_INVALID')
+        self.calls=0;self.deadline=time.monotonic()+20
+        self.transport=transport
+        self.is_mock=transport is not None
+
+    def complete(self,messages,*,tools=None,response_schema=None):
+        self.calls+=1
+        remaining=self.deadline-time.monotonic()
+        if self.calls>2 or remaining<=0:raise ProviderError('AI_CALL_BUDGET_EXCEEDED')
+        payload={'model':self.model,'messages':messages,'max_completion_tokens':600,'store':False}
+        if tools is not None:payload.update(tools=tools,tool_choice='required',parallel_tool_calls=True)
+        if response_schema is not None:payload['response_format']={'type':'json_schema','json_schema':{'name':'verified_rationale','strict':True,'schema':response_schema}}
+        encoded=json.dumps(payload)
+        if len(encoded.encode())>24000:raise ProviderError('AI_INPUT_BUDGET_EXCEEDED')
+        try:
+            with httpx.Client(transport=self.transport,trust_env=False,follow_redirects=False,timeout=min(8,remaining)) as client:
+                with client.stream('POST',self.base+'/chat/completions',headers={'Authorization':'Bearer '+self.key},json=payload) as response:
+                    if response.status_code!=200:raise ProviderError('AI_PROVIDER_REJECTED')
+                    chunks=[];size=0
+                    for chunk in response.iter_bytes():
+                        size+=len(chunk)
+                        if size>65536:raise ProviderError('AI_OUTPUT_BUDGET_EXCEEDED')
+                        if time.monotonic()>self.deadline:raise ProviderError('AI_TIMEOUT')
+                        chunks.append(chunk)
+            raw=strict_json(b''.join(chunks).decode('utf-8'))
+            choices=raw.get('choices')
+            if not isinstance(choices,list) or len(choices)!=1:raise ProviderError('AI_INVALID_RESPONSE')
+            choice=choices[0]
+            if choice.get('finish_reason') not in {'stop','tool_calls'}:raise ProviderError('AI_INCOMPLETE_RESPONSE')
+            message=choice.get('message')
+            if not isinstance(message,dict) or message.get('refusal'):raise ProviderError('AI_REFUSED')
+            return message
+        except (httpx.HTTPError,TimeoutError):raise ProviderError('AI_TIMEOUT_OR_NETWORK_FAILURE') from None
+        except (ValueError,UnicodeError,AttributeError,TypeError,RecursionError):raise ProviderError('AI_INVALID_RESPONSE') from None

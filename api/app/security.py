@@ -311,19 +311,24 @@ def proposal_view(row):
     return dict(proposal_id=row['proposal_id'],state=row['state'],action_hash=row['action_hash'],details=json.loads(row['payload']),simulation_only=True)
 
 
-def propose(db, principal, invoice_id):
+def propose(db, principal, invoice_id, *, expected_runtime_sha=None, on_result=None):
     trace=str(uuid.uuid4())
     try:
         with transaction(db):
             current=recheck(db,principal)
             if current.role not in {'owner','approver','agent'}:fail(403,'PROPOSAL_ROLE_REQUIRED')
             verified_audit(db,current.business_id)
+            if expected_runtime_sha is not None and current!=principal:fail(409,'AI_IDENTITY_CONTEXT_CHANGED')
+            if expected_runtime_sha is not None and fingerprint(runtime_dataset(db,current.business_id))!=expected_runtime_sha:fail(409,'AI_FACTS_STALE_REFRESH_REQUIRED')
             ds,invoice,preview=check_invoice_policy(db,current,invoice_id)
             db.row_factory=sqlite3.Row
             old=db.execute("SELECT * FROM proposals WHERE business_id=? AND invoice_id=? AND state IN ('AWAITING_APPROVAL','APPROVED')",(current.business_id,invoice_id)).fetchone()
             if old:
                 payload=verify_proposal(db,old,ds)
-                if now()<payload['expires_at']:return dict(proposal_view(old),preview=preview)
+                if now()<payload['expires_at']:
+                    result=dict(proposal_view(old),preview=preview)
+                    if on_result is not None:on_result(result)
+                    return result
                 db.execute("UPDATE proposals SET state='EXPIRED' WHERE proposal_id=?",(old['proposal_id'],))
                 audit(db,current,old['proposal_id'],'EXPIRED',{'action_hash':old['action_hash']})
             timestamp=now()
@@ -333,7 +338,9 @@ def propose(db, principal, invoice_id):
             digest=hashlib.sha256(canonical(payload).encode()).hexdigest()
             db.execute('INSERT INTO proposals VALUES (?,?,?,?,?,?,?,?)',(trace,current.business_id,invoice_id,current.user_id,canonical(payload),digest,signature('proposal',digest),'AWAITING_APPROVAL'))
             audit(db,current,trace,'PROPOSED',{'action_hash':digest,'source_id':invoice.source_record_id,'dataset_sha256':fingerprint(ds),'policy_preview':preview})
-            return dict(proposal_view(get_proposal(db,current,trace)),preview=preview)
+            result=dict(proposal_view(get_proposal(db,current,trace)),preview=preview)
+            if on_result is not None:on_result(result)
+            return result
     except PolicyError as exc:
         deny_event(db,principal,trace,exc.code)
         raise

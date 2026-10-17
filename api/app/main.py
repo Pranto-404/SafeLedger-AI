@@ -9,6 +9,8 @@ from fastapi.exceptions import RequestValidationError
 from api.app import security
 from api.app.body_limit import BodyLimitMiddleware
 from api.app.routes import router
+from api.app.agents import runner
+from api.app.agents.provider import ProviderError
 
 SCHEMA_VERSION = 1
 
@@ -24,11 +26,16 @@ async def lifespan(app: FastAPI):
             db.execute("CREATE TABLE IF NOT EXISTS schema_meta (version INTEGER PRIMARY KEY)")
             db.execute("INSERT OR IGNORE INTO schema_meta(version) VALUES (?)", (SCHEMA_VERSION,))
         security.create_schema(db)
+        runner.create_schema(db)
     yield
 
-app = FastAPI(title="SafeLedger AI", version="0.2.0", lifespan=lifespan)
+app = FastAPI(title="SafeLedger AI", version="0.3.0", lifespan=lifespan)
 app.add_middleware(BodyLimitMiddleware)
 app.include_router(router)
+
+@app.exception_handler(ProviderError)
+async def ai_error(request,exc):
+    return JSONResponse(status_code=503,content={"error":{"code":exc.code},"ai_status":"unavailable","deterministic_finance_available":True})
 
 @app.exception_handler(security.PolicyError)
 async def policy_error(request,exc):
@@ -55,7 +62,8 @@ async def headers(request, call_next):
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "version": "0.2.0", "build_commit": os.environ.get("SAFELEDGER_BUILD_COMMIT", "development"), "simulation_only": True, "milestone": "M2", "ai_status": "not_configured"}
+    configured=all(os.environ.get(key) for key in ("SAFELEDGER_LLM_BASE_URL","SAFELEDGER_LLM_MODEL","SAFELEDGER_LLM_API_KEY"))
+    return {"status": "ok", "version": "0.3.0", "build_commit": os.environ.get("SAFELEDGER_BUILD_COMMIT", "development"), "simulation_only": True, "milestone": "M3", "ai_status": "configured_not_verified" if configured else "not_configured"}
 
 @app.get("/api/ready")
 def ready():

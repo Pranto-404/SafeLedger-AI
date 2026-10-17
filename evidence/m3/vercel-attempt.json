@@ -1,0 +1,13 @@
+{
+  "operation": "create_git_project",
+  "repository": "Pranto-404/SafeLedger-AI",
+  "project_name": "safeledger-ai",
+  "root_directory": "web",
+  "team_id": "team_DBu9dfubsCdxVr9XuPxBFjWN",
+  "http_status": 403,
+  "code": "forbidden",
+  "scope": "challanger2",
+  "outcome": "No confirmed project, deployment URL or Git automatic updates",
+  "fallback": "vercel executable and local CLI credential files absent; no unchanged retry",
+  "requires": "Authorized scope access or a different explicitly selected accessible target; persistent backend hosting"
+}

@@ -1,0 +1,325 @@
+{
+  "simulation_only": true,
+  "real_money_moved": false,
+  "llm_used": false,
+  "steps": [
+    {
+      "role": "viewer",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "http_status": 200,
+      "expected_status": 200
+    },
+    {
+      "role": "owner",
+      "method": "POST",
+      "path": "/api/proposals",
+      "http_status": 409,
+      "expected_status": 409
+    },
+    {
+      "role": "owner",
+      "method": "POST",
+      "path": "/api/proposals",
+      "http_status": 201,
+      "expected_status": 201
+    },
+    {
+      "role": "viewer",
+      "method": "POST",
+      "path": "/api/proposals/4323e03f-19e6-432d-95be-d87b36fd3b35/approve",
+      "http_status": 403,
+      "expected_status": 403
+    },
+    {
+      "role": "approver",
+      "method": "POST",
+      "path": "/api/proposals/4323e03f-19e6-432d-95be-d87b36fd3b35/approve",
+      "http_status": 409,
+      "expected_status": 409
+    },
+    {
+      "operation": "four_concurrent_human_approval_requests",
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200
+      ],
+      "unique_postings": 1
+    },
+    {
+      "role": "approver",
+      "method": "POST",
+      "path": "/api/proposals/4323e03f-19e6-432d-95be-d87b36fd3b35/approve",
+      "http_status": 200,
+      "expected_status": 200
+    },
+    {
+      "role": "viewer",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "http_status": 200,
+      "expected_status": 200
+    },
+    {
+      "role": "viewer",
+      "method": "POST",
+      "path": "/api/cashflow/scenarios",
+      "http_status": 200,
+      "expected_status": 200
+    },
+    {
+      "operation": "real_api_process_restart_and_replay",
+      "http_status": 200,
+      "same_posting_id": true
+    }
+  ],
+  "proposal": {
+    "proposal_id": "4323e03f-19e6-432d-95be-d87b36fd3b35",
+    "state": "AWAITING_APPROVAL",
+    "action_hash": "d183e6d7e79721b974b30171f7f03963a536ea23af79cbc38fa13e59bc76e0a0",
+    "details": {
+      "amount_minor": 3500000,
+      "business_id": "synthetic-demo",
+      "created_at": 1792221018,
+      "currency": "BDT",
+      "dataset_sha256": "04676c32444040e7a201968d80eebf2e46f7f9780f6d64c524cb0766e899998e",
+      "expires_at": 1792221918,
+      "invoice_id": "INV-105",
+      "proposal_id": "4323e03f-19e6-432d-95be-d87b36fd3b35",
+      "proposer_id": "demo-owner",
+      "source_id": "row-inv-105",
+      "source_sha256": "97632c22ea3b5916fe2117b6ead07ab09b9f6210786a7c27f02143039fce0483",
+      "vendor_id": "VEND-105",
+      "version": 1
+    },
+    "simulation_only": true,
+    "preview": {
+      "available_minor": 12000000,
+      "after_payment_minor": 8500000,
+      "reserve_minor": 1000000,
+      "payment_limit_minor": 10000000
+    }
+  },
+  "before": {
+    "currency": "BDT",
+    "as_of": "2026-10-17",
+    "opening_balance_minor": 10000000,
+    "income_minor": 3000000,
+    "expenses_minor": 1000000,
+    "balance_minor": 12000000,
+    "source_ids": [
+      "opening-2026",
+      "row-event-CREDIT",
+      "row-event-DEBIT"
+    ],
+    "dataset_sha256": "04676c32444040e7a201968d80eebf2e46f7f9780f6d64c524cb0766e899998e",
+    "assumptions": [
+      "Cash basis; cleared income/expenses are cash movements, not accrual profit",
+      "Opening balance is start-of-day opening_on; cleared events are included through end-of-day as_of"
+    ],
+    "simulation_only": true
+  },
+  "after": {
+    "currency": "BDT",
+    "as_of": "2026-10-17",
+    "opening_balance_minor": 10000000,
+    "income_minor": 3000000,
+    "expenses_minor": 4500000,
+    "balance_minor": 8500000,
+    "source_ids": [
+      "opening-2026",
+      "posted-c0a3a03a-5b44-4670-9243-083e1fbfda9c",
+      "row-event-CREDIT",
+      "row-event-DEBIT"
+    ],
+    "dataset_sha256": "36bfff5db999b740571f5acfc86063f199337b8d7ab92162572aaab32e7d3318",
+    "assumptions": [
+      "Cash basis; cleared income/expenses are cash movements, not accrual profit",
+      "Opening balance is start-of-day opening_on; cleared events are included through end-of-day as_of"
+    ],
+    "simulation_only": true
+  },
+  "posting_id": "c0a3a03a-5b44-4670-9243-083e1fbfda9c",
+  "postings_count": 1,
+  "ledger_entries": [
+    [
+      "cash",
+      -3500000
+    ],
+    [
+      "payables",
+      3500000
+    ]
+  ],
+  "forecast_30_closing_minor": -1875000,
+  "audit": {
+    "events": [
+      {
+        "business_id": "synthetic-demo",
+        "trace_id": "5e362073-5b6a-4d81-b3ad-25a6ab5b9c9b",
+        "actor_id": "demo-owner",
+        "kind": "DENIED",
+        "created_at": 1792221018,
+        "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "payload": {
+          "reason": "DUPLICATE_INVOICE_BLOCKED"
+        },
+        "event_id": 1,
+        "event_hash": "9cf9c5904abb68c0be50635f02c5f2576667e36ebe9f9790152cac1a9f1af5de"
+      },
+      {
+        "business_id": "synthetic-demo",
+        "trace_id": "4323e03f-19e6-432d-95be-d87b36fd3b35",
+        "actor_id": "demo-owner",
+        "kind": "PROPOSED",
+        "created_at": 1792221018,
+        "previous_hash": "9cf9c5904abb68c0be50635f02c5f2576667e36ebe9f9790152cac1a9f1af5de",
+        "payload": {
+          "action_hash": "d183e6d7e79721b974b30171f7f03963a536ea23af79cbc38fa13e59bc76e0a0",
+          "dataset_sha256": "04676c32444040e7a201968d80eebf2e46f7f9780f6d64c524cb0766e899998e",
+          "policy_preview": {
+            "after_payment_minor": 8500000,
+            "available_minor": 12000000,
+            "payment_limit_minor": 10000000,
+            "reserve_minor": 1000000
+          },
+          "source_id": "row-inv-105"
+        },
+        "event_id": 2,
+        "event_hash": "514eb1501cff7276e20dcdd4bf17cd65ebcbad27b0edb8e2c6f666d7d9c68417"
+      },
+      {
+        "business_id": "synthetic-demo",
+        "trace_id": "4323e03f-19e6-432d-95be-d87b36fd3b35",
+        "actor_id": "demo-viewer",
+        "kind": "DENIED",
+        "created_at": 1792221018,
+        "previous_hash": "514eb1501cff7276e20dcdd4bf17cd65ebcbad27b0edb8e2c6f666d7d9c68417",
+        "payload": {
+          "reason": "HUMAN_APPROVER_REQUIRED"
+        },
+        "event_id": 3,
+        "event_hash": "041501b605c2b3a0dbc79644d9fe48cba67424bc550e1567abfd9f21521e95eb"
+      },
+      {
+        "business_id": "synthetic-demo",
+        "trace_id": "4323e03f-19e6-432d-95be-d87b36fd3b35",
+        "actor_id": "demo-approver",
+        "kind": "DENIED",
+        "created_at": 1792221018,
+        "previous_hash": "041501b605c2b3a0dbc79644d9fe48cba67424bc550e1567abfd9f21521e95eb",
+        "payload": {
+          "reason": "APPROVAL_HASH_MISMATCH"
+        },
+        "event_id": 4,
+        "event_hash": "53e888b8a1665659a846ae0f6b70522f3c4249f0ad86b8441c0865b7cd5743f1"
+      },
+      {
+        "business_id": "synthetic-demo",
+        "trace_id": "4323e03f-19e6-432d-95be-d87b36fd3b35",
+        "actor_id": "demo-approver",
+        "kind": "APPROVED",
+        "created_at": 1792221018,
+        "previous_hash": "53e888b8a1665659a846ae0f6b70522f3c4249f0ad86b8441c0865b7cd5743f1",
+        "payload": {
+          "action_hash": "d183e6d7e79721b974b30171f7f03963a536ea23af79cbc38fa13e59bc76e0a0",
+          "decision": "approve"
+        },
+        "event_id": 5,
+        "event_hash": "dc7def2da5d4fd6805b50fcc71c4df2ca42b1e77d3ae5b1dc9bae298396220d7"
+      },
+      {
+        "business_id": "synthetic-demo",
+        "trace_id": "4323e03f-19e6-432d-95be-d87b36fd3b35",
+        "actor_id": "demo-approver",
+        "kind": "EXECUTED",
+        "created_at": 1792221018,
+        "previous_hash": "dc7def2da5d4fd6805b50fcc71c4df2ca42b1e77d3ae5b1dc9bae298396220d7",
+        "payload": {
+          "action_hash": "d183e6d7e79721b974b30171f7f03963a536ea23af79cbc38fa13e59bc76e0a0",
+          "after_payment_minor": 8500000,
+          "cash_delta_minor": -3500000,
+          "posting_id": "c0a3a03a-5b44-4670-9243-083e1fbfda9c"
+        },
+        "event_id": 6,
+        "event_hash": "5f3ba4d9bc1cd8d55fdd2145a14dc1bf1113af02fe309c9047f9097803423f11"
+      },
+      {
+        "business_id": "synthetic-demo",
+        "trace_id": "4323e03f-19e6-432d-95be-d87b36fd3b35",
+        "actor_id": "demo-approver",
+        "kind": "IDEMPOTENT_REPLAY",
+        "created_at": 1792221018,
+        "previous_hash": "5f3ba4d9bc1cd8d55fdd2145a14dc1bf1113af02fe309c9047f9097803423f11",
+        "payload": {
+          "action_hash": "d183e6d7e79721b974b30171f7f03963a536ea23af79cbc38fa13e59bc76e0a0",
+          "posting_id": "c0a3a03a-5b44-4670-9243-083e1fbfda9c"
+        },
+        "event_id": 7,
+        "event_hash": "763998ebc5e11a4ef594a6366357a11e7ce2175069d77d1c1ebbf69471eec546"
+      },
+      {
+        "business_id": "synthetic-demo",
+        "trace_id": "4323e03f-19e6-432d-95be-d87b36fd3b35",
+        "actor_id": "demo-approver",
+        "kind": "IDEMPOTENT_REPLAY",
+        "created_at": 1792221018,
+        "previous_hash": "763998ebc5e11a4ef594a6366357a11e7ce2175069d77d1c1ebbf69471eec546",
+        "payload": {
+          "action_hash": "d183e6d7e79721b974b30171f7f03963a536ea23af79cbc38fa13e59bc76e0a0",
+          "posting_id": "c0a3a03a-5b44-4670-9243-083e1fbfda9c"
+        },
+        "event_id": 8,
+        "event_hash": "5486c9a5ca4498391893b13583dd423f1118ce9b765a872575446769622afe78"
+      },
+      {
+        "business_id": "synthetic-demo",
+        "trace_id": "4323e03f-19e6-432d-95be-d87b36fd3b35",
+        "actor_id": "demo-approver",
+        "kind": "IDEMPOTENT_REPLAY",
+        "created_at": 1792221018,
+        "previous_hash": "5486c9a5ca4498391893b13583dd423f1118ce9b765a872575446769622afe78",
+        "payload": {
+          "action_hash": "d183e6d7e79721b974b30171f7f03963a536ea23af79cbc38fa13e59bc76e0a0",
+          "posting_id": "c0a3a03a-5b44-4670-9243-083e1fbfda9c"
+        },
+        "event_id": 9,
+        "event_hash": "4f61ba320bcc4bac5abe2c3d702ebf8383ead95338827cb7b4d7ff2c3322dc22"
+      },
+      {
+        "business_id": "synthetic-demo",
+        "trace_id": "4323e03f-19e6-432d-95be-d87b36fd3b35",
+        "actor_id": "demo-approver",
+        "kind": "IDEMPOTENT_REPLAY",
+        "created_at": 1792221018,
+        "previous_hash": "4f61ba320bcc4bac5abe2c3d702ebf8383ead95338827cb7b4d7ff2c3322dc22",
+        "payload": {
+          "action_hash": "d183e6d7e79721b974b30171f7f03963a536ea23af79cbc38fa13e59bc76e0a0",
+          "posting_id": "c0a3a03a-5b44-4670-9243-083e1fbfda9c"
+        },
+        "event_id": 10,
+        "event_hash": "47a8ec4a69d8349c8868ec73ae4d80eb50f6653f2a5cde6061d8e0088651e843"
+      },
+      {
+        "business_id": "synthetic-demo",
+        "trace_id": "4323e03f-19e6-432d-95be-d87b36fd3b35",
+        "actor_id": "demo-approver",
+        "kind": "IDEMPOTENT_REPLAY",
+        "created_at": 1792221019,
+        "previous_hash": "47a8ec4a69d8349c8868ec73ae4d80eb50f6653f2a5cde6061d8e0088651e843",
+        "payload": {
+          "action_hash": "d183e6d7e79721b974b30171f7f03963a536ea23af79cbc38fa13e59bc76e0a0",
+          "posting_id": "c0a3a03a-5b44-4670-9243-083e1fbfda9c"
+        },
+        "event_id": 11,
+        "event_hash": "d4fd4750a6464ffe7cadd92986aefc8414a99a4c6939def4ef5c97ab88f14891"
+      }
+    ],
+    "chain_verified": true,
+    "tenant_chain_head": "d4fd4750a6464ffe7cadd92986aefc8414a99a4c6939def4ef5c97ab88f14891",
+    "simulation_only": true
+  },
+  "offline_sha256_chain_verified": true
+}

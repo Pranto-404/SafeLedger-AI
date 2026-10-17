@@ -1,7 +1,7 @@
 # SafeLedger AI
 Topic E — SME Finance Copilot. Competition prototype; synthetic data and sandbox only.
 
-**Current checkpoint: M2 secure sandbox execution.** Authenticated financial APIs, deterministic analysis, separate human approval, transactional idempotent sandbox posting and signed audit traces are implemented and tested. The connected financial UI and LLM integration are upcoming milestones. Registration is unconfirmed. See PROJECT_STATUS.md before continuing.
+**Current checkpoint: M3 adapter implemented; live AI evaluation pending.** Authenticated financial APIs and secure sandbox execution remain verified. The bounded agent adapter/dispatcher are mock-tested; actual provider configuration, connected financial UI and deployment remain pending. Registration is unconfirmed. See PROJECT_STATUS.md before continuing.
 
 ## Local setup
 Python 3.12 and Node 22.12+ (validated here on Node 24.19.0). Run from the repository root:
@@ -62,3 +62,11 @@ For a complete automated live HTTP proof without handling credentials manually:
 The runner creates temporary private credentials, starts the real API, proves duplicate/viewer/hash denials, sends4 concurrent human approvals plus retries, verifies a single balanced posting, restarts the actual process, checks replay and offline audit hashes, then deletes private credentials. Public evidence goes in evidence/m2/. No real money or LLM calls. This is API E2E evidence; browser/mobile E2E is pending M4/M5.
 
 M2 routes are documented in docs/API_CONTRACT.md. There is no public `/execute`; authenticated approval invokes a server-only executor atomically. An owner may import one validated snapshot into its own business; import never allowlists payees or configures limits. Those are trusted local admin decisions. Prototype DB/event caps, single BDT currency, full invoice payments and financial assumptions remain documented limits.
+
+## M3 bounded agent (live provider not yet evaluated)
+Authenticated POST /api/agent/tasks accepts `{task,invoice_id?,allow_proposal:false}`. Model tool calls are schema-validated; all money/source facts come from backend services. Explicit allow_proposal=true with invoice_id only permits a pending proposal when caller and M2 policy allow it. AI cannot approve/execute. Rationale uses constrained codes/references rendered alongside verified facts; unverified model prose is never displayed.
+
+Set SAFELEDGER_LLM_BASE_URL,SAFELEDGER_LLM_MODEL,SAFELEDGER_LLM_API_KEY privately. Compatible HTTPS /v1 endpoint must match the admin-configured host allowlist. No live provider key/model/budget is configured in this checkpoint. Tests use clearly labeled mocks/MockTransport; real-model evaluation remains pending. Missing service returns503,while deterministic financial APIs continue. See docs/M3_AGENT_DESIGN.md.
+
+## Vercel and updates
+Owner authorized Vercel/Git auto-deployment. Actual Git-project creation attempt returned403 Forbidden for scope challanger2; no deployment URL or automatic-update success is claimed. CLI fallback credentials are absent. See docs/DEPLOYMENT_STATUS.md and evidence/m3/vercel-attempt.json. Frontend hosting also needs an authorized durable Python backend: React-only Vercel hosting cannot make the SQLite finance workflow live by itself.
