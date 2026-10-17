@@ -1,0 +1,118 @@
+{
+  "milestone": "M2",
+  "verified_at_utc": "2026-10-17T07:00:40.178332+00:00",
+  "repository": "https://github.com/Pranto-404/SafeLedger-AI",
+  "source_commit": "60e224c4e29cebae4af755702d5af88e002b6ce2",
+  "source_tree_sha": "439a4de19b4c33a3a9110fee537f307452ee4cda",
+  "publication": "exact full staged/source tree SHA matched connected GitHub tree before expected-HEAD ref update; no force push",
+  "test_summary": {
+    "tests": 174,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "checks": [
+    {
+      "command": "../.venv/bin/python -m pytest -q --junitxml=evidence/m2/pytest.xml",
+      "exit_code": 0,
+      "log": "evidence/m2/pytest.log"
+    },
+    {
+      "command": "../.venv/bin/python scripts/m2_http_demo.py",
+      "exit_code": 0,
+      "log": "evidence/m2/live-demo.log",
+      "artifact": "evidence/m2/http-execution-evidence.json"
+    },
+    {
+      "command": "cd web && npm run build",
+      "exit_code": 0,
+      "log": "evidence/m2/web-build.log"
+    },
+    {
+      "command": "../.venv/bin/python scripts/m1_demo.py",
+      "exit_code": 0,
+      "artifact": "evidence/m2/m1-regression.json"
+    },
+    {
+      "command": "../.venv/bin/python -m compileall -q api scripts",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit_code": 0,
+      "log": "evidence/m2/format-check.log"
+    }
+  ],
+  "live_execution": {
+    "real_money_moved": false,
+    "llm_used": false,
+    "posting_id": "3af17fb7-7c64-408e-902e-703236adc48a",
+    "postings_count": 1,
+    "before_balance_minor": 12000000,
+    "after_balance_minor": 8500000,
+    "ledger_entries": [
+      [
+        "cash",
+        -3500000
+      ],
+      [
+        "payables",
+        3500000
+      ]
+    ],
+    "concurrent_HTTP_approvals": 4,
+    "actual_process_restart_replay": true,
+    "service_and_TestClient_concurrent_approvals": 8,
+    "audit_events": 11,
+    "tenant_chain_anchor": "69347b340c016a1c2af4e607129498a3c97b0b0f046aeb8da9b6008a4ad6818c",
+    "offline_sha256_chain_verified": true,
+    "credential_redaction_checked": true
+  },
+  "warnings": [
+    "existing Starlette/httpx TestClient deprecation",
+    "Pydantic serializer warning from intentional invalid model mutation test",
+    "npm environment proxy warning"
+  ],
+  "retained_failures": [
+    "baseline-integration.log:2 outdated404 expectations,now401 authenticated route assertions",
+    "live-demo-first-attempt.log:loopback client used environment SOCKS proxy;trust_env=False fixes",
+    "live-demo-second-attempt.log and live-server-diagnostic.log:SQLite worker-thread ProgrammingError;request-isolated check_same_thread=False plus HTTP regression fixes"
+  ],
+  "not_claimed": [
+    "real LLM or live-model prompt-injection robustness",
+    "browser/mobile/keyboard E2E",
+    "independent reviewer sign-off",
+    "public deployment",
+    "comprehensive dependency/history audit",
+    "compliance certification",
+    "real banking integration"
+  ],
+  "source_files_sha256": {
+    "api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "api/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "api/app/body_limit.py": "3306b2a8be51e391dfdbed4c5385a122925a465819fee844e0aeb4f722c5e901",
+    "api/app/contracts.py": "90a9d4332bd2c5a9d7058090c34cfc627b6f509f3727eea6b45d46b4c8a9b80b",
+    "api/app/main.py": "5e22a6c2d7cbc23a4043e1b9c35a1a591a987c028545f68bba93bb3e05af5341",
+    "api/app/routes.py": "4776fecd08f1b18c7a1c03f47d123ecb8e242d199d0cdfb8783daf13bdea2160",
+    "api/app/security.py": "ab7b8a74c36777f6adbf25f60258cbca648b226494344ada51225a505d37a5c8",
+    "api/app/services/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "api/app/services/finance.py": "e27401b06c8ce99b6e7274d577ca56f8418057efa17a48934711678955f0b1b7",
+    "api/app/services/intake.py": "7d98f7cab9f55cb8e595767eb87017c9c922541930cfb6ecb4a3298cb5a29db4",
+    "api/app/services/storage.py": "35a577f7cdd2a9bec2a398d76c3c7a670cf325da51849eb7e466a9ef76d297d2",
+    "api/requirements-dev.txt": "41da2fb2041cff8c59ccdf17e51131deb2b4cc83186587201f271eda0752028f",
+    "api/requirements.lock.txt": "7403ca86c5b56915f5cb4f9b86a2713ab5773336e3aaf8f294f505a2d7bc38c1",
+    "api/requirements.txt": "7c2c790b58e7d7b7e2e802bb3bd569182df5194715a3b309459ca0431024dcc3",
+    "api/tests/test_bootstrap.py": "71b9d5fb2ac28da87698443f385ab4a94eb5c05c475c5f6e26425a72c3071be5",
+    "api/tests/test_finance.py": "da10cedf282a59735f253838ab2c2639a5613363da1a5095dde04b4c70282cb5",
+    "api/tests/test_intake_storage.py": "f7073c30999126e07cd489541e32ec8cf1850f13ed8b9c73df19233f56538d68",
+    "api/tests/test_security_execution.py": "2ea078e89e34949cd1d2c033f11f062c94e08d16625066f61460410203a6d3bb",
+    "scripts/bootstrap_demo.py": "d62e18b0dcaa5fb5eaebe8dc4faefd2e56bad436913a50163931589940dcdbfc",
+    "scripts/build_fixtures.py": "0f1059f0e20774e3bf65205422497ed351faee5b45081f586d0bb2063eab7ba5",
+    "scripts/m1_demo.py": "533b3de714bd596a24defacdfa28669263b2aebc105c3a356dec51cd48a9ff5c",
+    "scripts/m2_http_demo.py": "8058ceb471f965a23937c66070b19b06e96a29556937c1b76d32de67b99cd034",
+    "scripts/smoke.py": "c1515b8b5661c4cdf5e0f7164dd0a09503cd1a1abfcd9e4a601821eb75d89332",
+    "scripts/verify_bootstrap.py": "d4e6182e706eafbf2dc00eb10597f32a2253b556da84f44ab6ea9b95240f1bff",
+    "web/src/main.tsx": "6f4bcc49a4c23f41b74f18bee7d01f02c1180e3a8246d179b96317106efca0a7",
+    "web/src/style.css": "c8cb76ae052b615a642d76d04ac78973111520fdc0a579032907dfe1a1064b4b"
+  }
+}

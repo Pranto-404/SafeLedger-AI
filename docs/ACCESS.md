@@ -12,3 +12,5 @@ Owner selected Pranto-404 and created SafeLedger-AI. Connector confirmed reposit
 Terminal push was attempted with prompting disabled and failed: no HTTPS username/credential. Use authenticated GitHub connector for publication. Keep local branch and recovery bundle; verify published tree against local tree before continuing.
 
 M1 publication: connected GitHub API published tested source commit7d91c26635cb524fbb3a444a8b8c21156d5126f1, identical tree449521168f42a147514a218a1ea819b722011fd5. Full source/log byte identity verified; raw CR characters in the original formatting-error log were explicitly preserved before updating main. Terminal still has read-only Git transport; future writes use connector with expected HEAD.
+
+M2 verified source published through connected Pranto-404 GitHub account:commit60e224c4e29cebae4af755702d5af88e002b6ce2,tree439a4de19b4c33a3a9110fee537f307452ee4cda. Public source includes only synthetic evidence; private bootstrap credentials are generated at runtime and ignored by Git. No registration or external ID actions performed; owner said they will handle registration later.

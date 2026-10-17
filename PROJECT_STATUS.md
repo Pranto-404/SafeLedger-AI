@@ -2,7 +2,7 @@
 Updated:2026-10-17 Asia/Dhaka. Deadline:2026-10-20 21:59 BD/15:59 UTC.
 
 ## DONE
-M0 requirements/bootstrap and M1 finance foundation preserved. M2 implemented: private hashed bearer sessions,server-derived tenant/roles,authenticated financial APIs,immutable source/hash/expiry/version-bound proposals,HMAC signatures,separate human approval,no public executor,atomic idempotent sandbox posting/paired ledger,audit chain and full export,request/input limits,private local bootstrap and actual HTTP demo.
+M0 requirements/bootstrap and M1 finance foundation preserved. Tested M2 source commit `60e224c4e29cebae4af755702d5af88e002b6ce2` (tree`439a4de19b4c33a3a9110fee537f307452ee4cda`). M2 implemented: private hashed bearer sessions,server-derived tenant/roles,authenticated financial APIs,immutable source/hash/expiry/version-bound proposals,HMAC signatures,separate human approval,no public executor,atomic idempotent sandbox posting/paired ledger,audit chain and full export,request/input limits,private local bootstrap and actual HTTP demo.
 
 ## VERIFIED
 - `../.venv/bin/python -m pytest -q --junitxml=evidence/m2/pytest.xml`:174 passed,2 known warnings; zero skipped/disabled. Includes earlier M0/M1 plus auth/IDOR,self-approval,forged/expired approvals,state/source/audit tampering,duplicate invoice policy,rate limits,input rejection,transaction rollback,8-thread service and HTTP concurrency,competing-invoice funds race and private credential generation.
