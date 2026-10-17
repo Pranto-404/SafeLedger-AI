@@ -2,7 +2,7 @@
 Updated:2026-10-17 Asia/Dhaka. Deadline:2026-10-20 21:59 BD/15:59 UTC.
 
 ## DONE / implemented
-M0 requirements,M1 exact financial services and M2 secure sandbox workflow preserved. M3 provider-neutral HTTP adapter,strict READ/PROPOSE dispatcher,constrained evidence-based rationale,stale-fact/identity checks,request/output/time/call budgets,atomic deferred proposal result and signed run audit implemented. POST/api/agent/tasks available; missing provider returns explicit503 while finance remains available. No approval/execution tool added. GitHub authorized:Pranto-404/SafeLedger-AI.
+M0 requirements,M1 exact financial services and M2 secure sandbox workflow preserved. Tested published M3 source `d41b5f346e89b79ed295768f985720d4b4f86521`,tree`ac11bd8d36396241e4c53e482f35c53a2ff56c41`. M3 provider-neutral HTTP adapter,strict READ/PROPOSE dispatcher,constrained evidence-based rationale,stale-fact/identity checks,request/output/time/call budgets,atomic deferred proposal result and signed run audit implemented. POST/api/agent/tasks available; missing provider returns explicit503 while finance remains available. No approval/execution tool added. GitHub authorized:Pranto-404/SafeLedger-AI.
 
 ## VERIFIED
 225 tests passed,zero skipped/disabled:174 prior +51 agent/provider tests. Mock planner and HTTP MockTransport used; not real-model accuracy or live prompt-injection evidence. Final logs/JUnit:evidence/m3/pytest.*. Frontend TypeScript/Vite build passed. Real M2 uvicorn HTTP concurrency/payment/process-restart regression passed after M3 integration; artifacts:evidence/m3/m2-regression/. compileall,dependency consistency and staged formatting checked. Test/code/source commit and hashes in evidence/m3/verification.json at publication.

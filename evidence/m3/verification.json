@@ -1,0 +1,101 @@
+{
+  "milestone": "M3 adapter/dispatcher implementation; live-model gate blocked",
+  "verified_at_utc": "2026-10-17T07:14:27.563874+00:00",
+  "source_commit": "d41b5f346e89b79ed295768f985720d4b4f86521",
+  "source_tree_sha": "ac11bd8d36396241e4c53e482f35c53a2ff56c41",
+  "repository": "https://github.com/Pranto-404/SafeLedger-AI",
+  "test_summary": {
+    "tests": 225,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "agent_tests": 51,
+  "live_llm_called": false,
+  "provider_tests_mode": "explicit mock planner and HTTP MockTransport; not model accuracy",
+  "checks": [
+    {
+      "command": "../.venv/bin/python -m pytest -q --junitxml=evidence/m3/pytest.xml",
+      "exit_code": 0,
+      "log": "evidence/m3/pytest.log"
+    },
+    {
+      "command": "cd web && npm run build",
+      "exit_code": 0,
+      "log": "evidence/m3/web-build.log"
+    },
+    {
+      "command": "SAFELEDGER_EVIDENCE_DIR=evidence/m3/m2-regression ../.venv/bin/python scripts/m2_http_demo.py",
+      "exit_code": 0,
+      "log": "evidence/m3/m2-regression.log",
+      "artifact": "evidence/m3/m2-regression/http-execution-evidence.json"
+    },
+    {
+      "command": "../.venv/bin/python -m compileall -q api scripts",
+      "exit_code": 0
+    },
+    {
+      "command": "../.venv/bin/python -m pip check",
+      "exit_code": 0,
+      "log": "evidence/m3/pip-check.log"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit_code": 0,
+      "log": "evidence/m3/format-check.log"
+    }
+  ],
+  "deployment": {
+    "requested_by_owner": "Vercel live after completion,update on changes",
+    "operation": "create_git_project",
+    "status": "BLOCKED",
+    "http_status": 403,
+    "scope": "challanger2",
+    "team_id": "team_DBu9dfubsCdxVr9XuPxBFjWN",
+    "deployment_url": null,
+    "auto_updates_enabled_or_verified": false,
+    "evidence": "evidence/m3/vercel-attempt.json",
+    "cli_fallback": "executable and local credentials absent"
+  },
+  "not_claimed": [
+    "live provider evaluation",
+    "real-model task accuracy or prompt-injection robustness",
+    "browser/mobile/keyboard QA",
+    "public financial app deployment",
+    "Vercel Git auto-updates",
+    "independent audit"
+  ],
+  "source_files_sha256": {
+    "api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "api/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "api/app/agents/__init__.py": "374c5b84e92a7ca5ec68cca19520cc8e08a4365df6b97a9347d17155767b571a",
+    "api/app/agents/models.py": "44077b6da149c594fc30180c8b502462c6299ffeb1efaede959c06450610c8d9",
+    "api/app/agents/provider.py": "c9788185af7a2a7ea622efbc6ce0a2e1464f16e763c86b65a90dbafbf19fb6f5",
+    "api/app/agents/runner.py": "e57d72be3ddc1bb26f54e9e5a6749775bdf917ac5895ea608143a3e2c8ad6533",
+    "api/app/body_limit.py": "3306b2a8be51e391dfdbed4c5385a122925a465819fee844e0aeb4f722c5e901",
+    "api/app/contracts.py": "90a9d4332bd2c5a9d7058090c34cfc627b6f509f3727eea6b45d46b4c8a9b80b",
+    "api/app/main.py": "55cec3f61960bbe573a2ce11d4e7e942e00e479e657b6c3b134507b020031087",
+    "api/app/routes.py": "d94fcc1600d7ee75563ebcec78d3a6ec5c00a75060e10ab742ce6aba25f187cb",
+    "api/app/security.py": "ee4297e737db05159eb50c9a291a72fed2a92f6d0ec674ac5d9f5c76623bf758",
+    "api/app/services/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "api/app/services/finance.py": "e27401b06c8ce99b6e7274d577ca56f8418057efa17a48934711678955f0b1b7",
+    "api/app/services/intake.py": "7d98f7cab9f55cb8e595767eb87017c9c922541930cfb6ecb4a3298cb5a29db4",
+    "api/app/services/storage.py": "35a577f7cdd2a9bec2a398d76c3c7a670cf325da51849eb7e466a9ef76d297d2",
+    "api/requirements-dev.txt": "ebc319f05921f7d8d196fb93e7e47ffabc2cdda3dbd7e261d76a8fbc5ea099c8",
+    "api/requirements.lock.txt": "7403ca86c5b56915f5cb4f9b86a2713ab5773336e3aaf8f294f505a2d7bc38c1",
+    "api/requirements.txt": "696010f1432bd81e8fa458fc955fa97eff59b932d72018d8f04da9ae90a3f34e",
+    "api/tests/test_agent.py": "8f801b0a0e2924e22561785b50783a956c485aa2bc81087a571c81d8a6d8bee0",
+    "api/tests/test_bootstrap.py": "71b9d5fb2ac28da87698443f385ab4a94eb5c05c475c5f6e26425a72c3071be5",
+    "api/tests/test_finance.py": "da10cedf282a59735f253838ab2c2639a5613363da1a5095dde04b4c70282cb5",
+    "api/tests/test_intake_storage.py": "f7073c30999126e07cd489541e32ec8cf1850f13ed8b9c73df19233f56538d68",
+    "api/tests/test_security_execution.py": "2ea078e89e34949cd1d2c033f11f062c94e08d16625066f61460410203a6d3bb",
+    "scripts/bootstrap_demo.py": "d62e18b0dcaa5fb5eaebe8dc4faefd2e56bad436913a50163931589940dcdbfc",
+    "scripts/build_fixtures.py": "0f1059f0e20774e3bf65205422497ed351faee5b45081f586d0bb2063eab7ba5",
+    "scripts/m1_demo.py": "533b3de714bd596a24defacdfa28669263b2aebc105c3a356dec51cd48a9ff5c",
+    "scripts/m2_http_demo.py": "8058ceb471f965a23937c66070b19b06e96a29556937c1b76d32de67b99cd034",
+    "scripts/smoke.py": "c1515b8b5661c4cdf5e0f7164dd0a09503cd1a1abfcd9e4a601821eb75d89332",
+    "scripts/verify_bootstrap.py": "d4e6182e706eafbf2dc00eb10597f32a2253b556da84f44ab6ea9b95240f1bff",
+    "web/src/main.tsx": "02036996d81702c3e6baf04d40a79487bd2ef0d44fb8e548598a94aeaa2180eb",
+    "web/src/style.css": "c8cb76ae052b615a642d76d04ac78973111520fdc0a579032907dfe1a1064b4b"
+  }
+}
