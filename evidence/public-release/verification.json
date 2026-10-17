@@ -1,0 +1,60 @@
+{
+  "target": "https://safeledger-ai.vercel.app",
+  "simulation_only": true,
+  "checks": [
+    "health",
+    "persistent database",
+    "unauthenticated workspace denied",
+    "guest session",
+    "guest overview",
+    "guest cannot propose",
+    "self-service owner account",
+    "secure HttpOnly cookie",
+    "live assistant grounded balance",
+    "owner proposal",
+    "self approval denied",
+    "one-time invitation created",
+    "separate reviewer account",
+    "cross-workspace access denied",
+    "invited approver joins",
+    "independent approval executes",
+    "approval replay idempotent",
+    "one audited execution",
+    "owner balance reconciled",
+    "cookie CSRF denied",
+    "logout revokes session",
+    "password login",
+    "login restores persisted ledger"
+  ],
+  "ai": {
+    "attempted": true,
+    "status_code": 200,
+    "ai_mode": "configured_live_provider",
+    "error_code": null
+  },
+  "build_commit": "2961bdd18b7322e92555314635b4045be2f386fa",
+  "status": "passed",
+  "posting_count": 1,
+  "balance_minor": 8500000,
+  "render_deploy_id": "dep-db9vrfnlk1mc73cd0t10",
+  "render_deploy_status": "live",
+  "render_plan": "free",
+  "vercel_status": "success",
+  "browser_guest_pages_verified": [
+    "Overview",
+    "Invoices/search",
+    "Cash flow",
+    "Financing",
+    "Assistant restricted",
+    "Audit"
+  ],
+  "application_source_sha256": {
+    "api/app/accounts.py": "9a2e33cb108b20886aaf98a1305cea4fa141886f1a0507e4b0529692a22ebadf",
+    "api/app/routes.py": "fe50cf9691bf84d4e3daaa74853ec2111dd834b4cad6ae29a34d1ade78b6f8bc",
+    "api/app/main.py": "719556b67035ee62aff0024c0f3833979d79c12693fe86fd84c3c40c42eb8a56",
+    "api/app/database.py": "e114e98f706118b2d5e656ac5335abc30613ecc596f52340adf3db48d1435481",
+    "api/app/security.py": "ee4297e737db05159eb50c9a291a72fed2a92f6d0ec674ac5d9f5c76623bf758",
+    "web/src/App.tsx": "ec83cec9f3677d77ba21d000a6ae2d1fcedc2f042819fbac5b21546b408915e8",
+    "web/src/api.ts": "c03e57d0395583405c9b51727cf0b7d432894ad85c45549b9bdf816fe0fae91b"
+  }
+}

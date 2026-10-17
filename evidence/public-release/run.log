@@ -1,0 +1,62 @@
+PASS health
+PASS persistent database
+PASS unauthenticated workspace denied
+PASS guest session
+PASS guest overview
+PASS guest cannot propose
+PASS self-service owner account
+PASS secure HttpOnly cookie
+PASS live assistant grounded balance
+PASS owner proposal
+PASS self approval denied
+PASS one-time invitation created
+PASS separate reviewer account
+PASS cross-workspace access denied
+PASS invited approver joins
+PASS independent approval executes
+PASS approval replay idempotent
+PASS one audited execution
+PASS owner balance reconciled
+PASS cookie CSRF denied
+PASS logout revokes session
+PASS password login
+PASS login restores persisted ledger
+{
+  "target": "https://safeledger-ai.vercel.app",
+  "simulation_only": true,
+  "checks": [
+    "health",
+    "persistent database",
+    "unauthenticated workspace denied",
+    "guest session",
+    "guest overview",
+    "guest cannot propose",
+    "self-service owner account",
+    "secure HttpOnly cookie",
+    "live assistant grounded balance",
+    "owner proposal",
+    "self approval denied",
+    "one-time invitation created",
+    "separate reviewer account",
+    "cross-workspace access denied",
+    "invited approver joins",
+    "independent approval executes",
+    "approval replay idempotent",
+    "one audited execution",
+    "owner balance reconciled",
+    "cookie CSRF denied",
+    "logout revokes session",
+    "password login",
+    "login restores persisted ledger"
+  ],
+  "ai": {
+    "attempted": true,
+    "status_code": 200,
+    "ai_mode": "configured_live_provider",
+    "error_code": null
+  },
+  "build_commit": "2961bdd18b7322e92555314635b4045be2f386fa",
+  "status": "passed",
+  "posting_count": 1,
+  "balance_minor": 8500000
+}

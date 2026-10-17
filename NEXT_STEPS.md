@@ -1,3 +1,13 @@
+# Final release check
+
+Public site is functioning with accounts, guest demo, invited approval and persistent Turso. 23 actual public checks passed, including a real configured-model grounded balance answer. Read PROJECT_STATUS and evidence/public-release/verification.json.
+
+Publish final sidebar CSS/evidence update, then verify Render becomes live and run ../.venv/bin/python scripts/verify_live_public.py --after-redeploy using the ignored .private/release/account.json. That test must show the same account, BDT85000 balance, one posting and verified audit after restart. Do not create another account or spend model quota for this persistence check. Keep the same signing key.
+
+Record the final successful deploy/public persistence result in a documentation-only checkpoint; no extra application changes or broad repeated suites needed. Preserve credentials privately, initial failed logs, live guest fix and old synthetic audit archive. User already authorized publication and deployment; do not ask again for the same action. Budget BDT0.
+
+## Superseded execution notes
+
 # Active public account release — next actions
 
 Explicit user approval to publish/deploy is now present. Do not repeat the previous permission question. Source in safeledger-review; public access implemented and qualified. Read docs/PUBLIC_ACCESS.md and evidence/public-access/.

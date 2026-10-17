@@ -1,3 +1,11 @@
+# Public release addendum — 18 October 2026
+
+The competition prototype is publicly deployed at https://safeledger-ai.vercel.app. It now provides a login-free read-only example, self-service username/passphrase accounts with isolated synthetic workspaces, and one-time approver invitations. Render Free uses persistent Turso rather than an ephemeral authoritative SQLite file. Desktop/mobile viewport qualification and 23 actual public HTTP checks passed, including exactly one independent approved posting and its audit. A real configured-model balance query also passed; the earlier eight-case model report remains historical source-hash-verified evidence, not a statistical accuracy result.
+
+Current backend regression: 304 passed (2 known warnings); local product browser qualification: 12 scenarios and 4 axe scans. See docs/PUBLIC_ACCESS.md and evidence/public-release/. Free service cold-start/quota limits and lack of password recovery are disclosed. Previous presentation and silent demo artifacts describe an earlier checkpoint and must be treated as historical until refreshed for final submission. This release does not submit the competition entry or claim independent certification.
+
+---
+
 # SafeLedger AI technical submission draft
 Topic E:SME Finance Copilot. Five Bangladesh students reported by owner. Synthetic data/sandbox only. English draft for the2026 Shenzhen International FinTech Competition. Registration and public deployment remain incomplete.
 

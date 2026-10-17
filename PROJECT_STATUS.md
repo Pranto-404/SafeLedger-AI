@@ -1,3 +1,17 @@
+# Public release verified — 18 October 2026
+
+LIVE: https://safeledger-ai.vercel.app with free Render backend https://safeledger-ai.onrender.com and persistent Turso. Public functional source 2961bdd18b7322e92555314635b4045be2f386fa: Render dep-db9vrfnlk1mc73cd0t10 live, Vercel success. Both Git integrations responded to actual main-branch updates. No paid services/billing were enabled.
+
+VERIFIED: 304 backend tests; 12 local browser scenarios; 4 axe scans; 360/390/768/1366px layouts. On the actual public URL, 23 checks passed: guest reads/no write, signup, Secure HttpOnly cookies, tenant isolation, separate invited approver, one posting and replay, BDT85000 balance, signed audit, CSRF denial, revoked logout and restored password login. Actual configured live model returned the source-grounded BDT120000 balance without creating a proposal. CUA browser inspected guest overview, invoice search, cash flow, financing, assistant restriction and verified audit.
+
+A real guest audit regression was caught and fixed before acceptance: shared guest mutations now stop before financial audit writes, and obsolete example audit history is preserved separately from the clean versioned template. No existing registered account or signing identity was reset.
+
+Final usability polish keeps the desktop sidebar and Sign out visible on long pages. After publishing this small CSS/evidence update, run the saved public test account through scripts/verify_live_public.py --after-redeploy to prove account/ledger/audit persistence. Save the final result/checkpoint. Core source hashes and actual public evidence: evidence/public-release/verification.json. Test credentials are only in ignored .private/release; never publish them.
+
+Limits: free Render cold starts and AI quotas; password recovery is not provided (disclosed before signup); guest example is read-only; accounts contain synthetic sample data. No independent external audit, actual physical-device qualification, statistical AI-accuracy claim or competition submission is implied. Prior decks/demo are historical drafts; registration/final submission remain owner actions.
+
+## Historical release work
+
 # Active public-access release — 18 October 2026
 
 User explicitly authorized publishing/deployment and requested simple public testing, signup and guest access. Work continues from reviewed commit 73a4b76 and preserves fetched GitHub main f606f9f. Earlier publication approval block is resolved by this explicit instruction; do not ask again for the same scope.
