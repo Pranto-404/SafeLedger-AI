@@ -8,7 +8,8 @@ const out = process.env.SAFELEDGER_EVIDENCE_DIR;
 const steps = [];
 async function main() {
   let options = { headless: true };
-  if (process.env.SAFELEDGER_CHROMIUM_MODULE) {
+  if (process.env.SAFELEDGER_CHROMIUM_EXECUTABLE) options.executablePath = process.env.SAFELEDGER_CHROMIUM_EXECUTABLE;
+  else if (process.env.SAFELEDGER_CHROMIUM_MODULE) {
     const loaded = require(process.env.SAFELEDGER_CHROMIUM_MODULE);
     const bundled = loaded.default || loaded;
     options = { ...options, executablePath: await bundled.executablePath(), args: bundled.args };

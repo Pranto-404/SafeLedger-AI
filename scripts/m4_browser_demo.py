@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import os
 import shlex
+import signal
 import socket
 import subprocess
 import sys
@@ -29,6 +30,32 @@ def ready(url,process):
             time.sleep(.1)
     raise RuntimeError('Local server did not become ready.')
 
+def stop_process(process):
+    if process is None:return
+    if os.name=='posix':
+        try:os.killpg(process.pid,signal.SIGTERM)
+        except ProcessLookupError:pass
+    else:process.terminate()
+    try:process.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        if os.name=='posix':
+            try:os.killpg(process.pid,signal.SIGKILL)
+            except ProcessLookupError:pass
+        else:process.kill()
+        process.wait(timeout=5)
+
+
+def verify_ports_closed(ports):
+    for _ in range(50):
+        alive=[]
+        for number in ports:
+            with socket.socket() as sock:
+                sock.settimeout(.1)
+                if sock.connect_ex(('127.0.0.1',number))==0:alive.append(number)
+        if not alive:return
+        time.sleep(.05)
+    raise RuntimeError('Harness left a listening child process behind.')
+
 def run(script_name='m4_browser_demo.cjs',setup=None):
     with tempfile.TemporaryDirectory(prefix='safeledger-private-m4-') as temporary:
         private=Path(temporary)/'access'
@@ -43,15 +70,15 @@ def run(script_name='m4_browser_demo.cjs',setup=None):
         subprocess.run([sys.executable,'-c',"from api.app import security as s; import sqlite3,os,json; from pathlib import Path; p=Path(os.environ['M4_ACCESS']); d=json.loads(p.read_text()); db=sqlite3.connect(os.environ['SAFELEDGER_DB']); d['bearer_tokens']['empty_owner']=s.provision_session(db,'empty-owner','empty-business','owner'); p.write_text(json.dumps(d)); db.close()"],cwd=ROOT,env=dict(env,M4_ACCESS=str(private/'sessions.json')),check=True)
         api_port,web_port=port(),port()
         with (OUT/'api-server.log').open('w') as api_log,(OUT/'web-server.log').open('w') as web_log:
-            api=subprocess.Popen([sys.executable,'-m','uvicorn','api.app.main:app','--host','127.0.0.1','--port',str(api_port)],cwd=ROOT,env=env,stdout=api_log,stderr=subprocess.STDOUT)
-            web=subprocess.Popen(['npm','run','dev','--','--port',str(web_port),'--strictPort'],cwd=ROOT/'web',env=dict(env,SAFELEDGER_DEV_API_URL=f'http://127.0.0.1:{api_port}'),stdout=web_log,stderr=subprocess.STDOUT)
+            api=web=None
             try:
+                api=subprocess.Popen([sys.executable,'-m','uvicorn','api.app.main:app','--host','127.0.0.1','--port',str(api_port)],cwd=ROOT,env=env,stdout=api_log,stderr=subprocess.STDOUT,start_new_session=os.name=='posix')
+                web=subprocess.Popen(['npm','run','dev','--','--port',str(web_port),'--strictPort'],cwd=ROOT/'web',env=dict(env,SAFELEDGER_DEV_API_URL=f'http://127.0.0.1:{api_port}'),stdout=web_log,stderr=subprocess.STDOUT,start_new_session=os.name=='posix')
                 ready(f'http://127.0.0.1:{api_port}/api/ready',api);ready(f'http://127.0.0.1:{web_port}',web)
                 subprocess.run(['node',str(ROOT/'scripts'/script_name)],cwd=ROOT,env=dict(os.environ,SAFELEDGER_BROWSER_URL=f'http://127.0.0.1:{web_port}',SAFELEDGER_BROWSER_ACCESS=str(private/'sessions.json'),SAFELEDGER_EVIDENCE_DIR=str(OUT)),check=True)
             finally:
-                for process in [web,api]:
-                    process.terminate()
-                    try:process.wait(timeout=10)
-                    except subprocess.TimeoutExpired:process.kill();process.wait()
+                for process in [web,api]:stop_process(process)
+                verify_ports_closed([web_port,api_port])
+                print('PASS:both local server ports closed after browser harness cleanup.')
 
 if __name__=='__main__':run()

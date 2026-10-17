@@ -6,7 +6,8 @@ const access=JSON.parse(fs.readFileSync(process.env.SAFELEDGER_BROWSER_ACCESS,'u
 const out=process.env.SAFELEDGER_EVIDENCE_DIR,steps=[],a11y=[];
 async function main(){
  let options={headless:true};
- if(process.env.SAFELEDGER_CHROMIUM_MODULE){const mod=require(process.env.SAFELEDGER_CHROMIUM_MODULE),bundled=mod.default||mod;options={...options,executablePath:await bundled.executablePath(),args:bundled.args};}
+ if(process.env.SAFELEDGER_CHROMIUM_EXECUTABLE)options.executablePath=process.env.SAFELEDGER_CHROMIUM_EXECUTABLE;
+ else if(process.env.SAFELEDGER_CHROMIUM_MODULE){const mod=require(process.env.SAFELEDGER_CHROMIUM_MODULE),bundled=mod.default||mod;options={...options,executablePath:await bundled.executablePath(),args:bundled.args};}
  const browser=await chromium.launch(options),context=await browser.newContext({viewport:{width:1366,height:900}}),page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  const button=name=>page.getByRole('button',{name,exact:true});
