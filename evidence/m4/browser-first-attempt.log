@@ -1,0 +1,9 @@
+Cannot find module '/workspace/scratch/1afbddeb34fe/browser-runtime/node_modules/@sparticuz/chromium'
+Require stack:
+- /workspace/scratch/1afbddeb34fe/safeledger-ai/scripts/m4_browser_demo.cjs
+Traceback (most recent call last):
+  File "/workspace/scratch/1afbddeb34fe/safeledger-ai/scripts/m4_browser_demo.py", line 48, in <module>
+    subprocess.run(['node',str(ROOT/'scripts/m4_browser_demo.cjs')],cwd=ROOT,env=dict(os.environ,SAFELEDGER_BROWSER_URL=f'http://127.0.0.1:{web_port}',SAFELEDGER_BROWSER_ACCESS=str(private/'sessions.json'),SAFELEDGER_EVIDENCE_DIR=str(OUT)),check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['node', '/workspace/scratch/1afbddeb34fe/safeledger-ai/scripts/m4_browser_demo.cjs']' returned non-zero exit status 1.

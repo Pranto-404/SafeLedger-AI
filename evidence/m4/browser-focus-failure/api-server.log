@@ -1,0 +1,48 @@
+INFO:     Started server process [58]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:32995 (Press CTRL+C to quit)
+INFO:     127.0.0.1:46636 - "GET /api/ready HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46648 - "GET /api/session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:46654 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46670 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46696 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46716 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46680 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46702 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46738 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46744 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46722 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46748 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46764 - "POST /api/agent/tasks HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:46768 - "POST /api/proposals HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:46782 - "POST /api/proposals HTTP/1.1" 201 Created
+INFO:     127.0.0.1:46822 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46788 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46806 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46800 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46844 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46858 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46834 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46864 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46876 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46880 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46898 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46908 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46894 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46922 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46920 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46912 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46932 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46934 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46972 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46944 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46966 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46952 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46976 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46992 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47002 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [58]

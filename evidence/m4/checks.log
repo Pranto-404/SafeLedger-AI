@@ -1,0 +1,17 @@
+Executed at M4 checkpoint:
+../.venv/bin/python -m pytest -q --junitxml=evidence/m4/pytest.xml
+Exit0:225 passed,2 warnings;no skipped tests. See pytest.log/xml.
+npm run build --prefix web
+Exit0:TypeScript --noEmit and Vite production build. See frontend-build.log.
+SAFELEDGER_EVIDENCE_DIR=evidence/m4/backend-regression ../.venv/bin/python scripts/m2_http_demo.py
+Exit0:actual uvicorn HTTP concurrency,replay,restart,offline audit proof. See backend-regression.log and backend-regression/.
+SAFELEDGER_CHROMIUM_MODULE=/workspace/scratch/1afbddeb34fe/browser-runtime/node_modules/@sparticuz/chromium/build/index.js SAFELEDGER_EVIDENCE_DIR=evidence/m4/browser-final ../.venv/bin/python scripts/m4_browser_demo.py
+Exit0:10 actual Chromium153.0.8010.0 browser scenarios;zero page errors. Uses pinned Playwright1.62.1 from web dev dependencies. See browser-final.log/results/screenshots/audit.
+../.venv/bin/python -m compileall -q api scripts
+Exit0.
+../.venv/bin/python -m pip check
+Exit0:No broken requirements found.
+git diff --check
+Exit0.
+Failures retained:browser-download-failure.log (truncated archive from CDN),browser-first-attempt.log (optional browser module directory resolution),browser-attempt-2.log (browser archive extraction chown),browser-focus-failure.log (actual missing focus return after Escape). Browser module entry selected; runtime binary successfully extracted; application focus return fixed and explicitly retested. Earlier browser-attempt-3 run preceded focus assertion; final run includes it. No disabled or skipped checks. Baseline/what-if isolation also covered by final run.
+Limits:no live model,no deployed HTTPS target,no independent external QA/WCAG certification. M5/M6 remain open.

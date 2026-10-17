@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "browser": "153.0.8010.0",
+  "steps": [
+    "Invalid session denied; no workspace or stored credentials",
+    "Owner dashboard displays actual 12,000,000 minor-unit baseline and source evidence",
+    "Live 30-day forecast and 7-day receipt-delay scenario match deterministic backend",
+    "Three fictional offers sorted by verified total cost, all unaffordable",
+    "AI-offline503 is visible; deterministic UI remains functional; duplicate payment denied by backend",
+    "Owner only proposes; viewer has no execution controls; session switch clears workspace",
+    "Independent approver reviews exact payee/amount/source/hash; unchecked approval blocked; Escape focus-safe cancellation; real sandbox execution reconciles to 8,500,000 minor",
+    "Downloaded backend-verified signed audit evidence contains exactly one EXECUTED event",
+    "All eight views fit 360/390/768/1366px without document overflow; invoice tables scroll within their container",
+    "Reload clears token; empty-tenant import state works; raw duplicate-key JSON denied; valid owner import succeeds without leaking other tenant posting"
+  ],
+  "page_errors": [],
+  "simulation_only": true,
+  "live_ai_used": false
+}

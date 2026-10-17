@@ -59,7 +59,7 @@ For a complete automated live HTTP proof without handling credentials manually:
 .venv/bin/python scripts/m2_http_demo.py
 ```
 
-The runner creates temporary private credentials, starts the real API, proves duplicate/viewer/hash denials, sends4 concurrent human approvals plus retries, verifies a single balanced posting, restarts the actual process, checks replay and offline audit hashes, then deletes private credentials. Public evidence goes in evidence/m2/. No real money or LLM calls. This is API E2E evidence; browser/mobile E2E is pending M4/M5.
+The runner creates temporary private credentials, starts the real API, proves duplicate/viewer/hash denials, sends4 concurrent human approvals plus retries, verifies a single balanced posting, restarts the actual process, checks replay and offline audit hashes, then deletes private credentials. Public evidence goes in evidence/m2/. No real money or LLM calls. This is API E2E evidence; M4 adds actual browser/mobile evidence below.
 
 M2 routes are documented in docs/API_CONTRACT.md. There is no public `/execute`; authenticated approval invokes a server-only executor atomically. An owner may import one validated snapshot into its own business; import never allowlists payees or configures limits. Those are trusted local admin decisions. Prototype DB/event caps, single BDT currency, full invoice payments and financial assumptions remain documented limits.
 
@@ -70,3 +70,20 @@ Set SAFELEDGER_LLM_BASE_URL,SAFELEDGER_LLM_MODEL,SAFELEDGER_LLM_API_KEY privatel
 
 ## Vercel and updates
 Owner authorized Vercel/Git auto-deployment. Actual Git-project creation attempt returned403 Forbidden for scope challanger2; no deployment URL or automatic-update success is claimed. CLI fallback credentials are absent. See docs/DEPLOYMENT_STATUS.md and evidence/m3/vercel-attempt.json. Frontend hosting also needs an authorized durable Python backend: React-only Vercel hosting cannot make the SQLite finance workflow live by itself.
+
+## M4 connected dashboard
+With the private M2 API running on port 8000, run `npm ci --prefix web` then `npm run dev --prefix web`. Open the displayed localhost URL and paste a privately generated session token into the password field. Sign out of owner and sign in with the separate approver session to approve a proposal. Reload/sign-out clears the token; it is never stored in browser storage. No demo credentials ship in the application.
+
+Eight views connect real APIs: overview, invoice register with source IDs, deterministic 7/30-day outlook and 30-day what-if scenario, fictional financing, bounded assistant, approval confirmation, verified audit JSON export, and owner-only immutable JSON import. All financial totals/policy decisions come from the backend. AI-offline errors do not disable deterministic finance. JSON import preserves the original request text so duplicate keys cannot be silently normalized by browser parsing. CSV file upload, real lenders and real payments are not provided. The UI deliberately has no independent role or tenant selector.
+
+Browser proof (real Vite proxy/FastAPI/SQLite, private temporary sessions):
+
+```bash
+npm ci --prefix web
+cd web && npx playwright install chromium && cd ..
+.venv/bin/python scripts/m4_browser_demo.py
+```
+
+The runner starts/stops its own loopback servers on free ports and writes synthetic screenshots, server logs, audit export and browser-results.json to evidence/m4/browser. Set `SAFELEDGER_EVIDENCE_DIR` to a fresh directory to retain earlier runs. No browser trace/request-header recording is enabled because authorization headers are secrets. If using a separately installed Playwright/browser runtime, `SAFELEDGER_PLAYWRIGHT_MODULE` may select its module and `SAFELEDGER_CHROMIUM_MODULE` the optional @sparticuz/chromium module entry. This is test infrastructure only, not a production browser dependency. Default Playwright browser download failed in the current environment; actual successful execution used Playwright1.62.1 + npm-provided Chromium153.0.8010.0. See evidence/m4/ for setup failures and actual successes.
+
+For a custom local backend port, set `SAFELEDGER_DEV_API_URL=http://127.0.0.1:PORT` when starting Vite. This setting is proxy-only, not a browser credential or production deployment configuration.

@@ -5,7 +5,7 @@
 | M1 | Seeded data ingestion; reconciled exact financial totals; duplicate detection; 7/30-day outlook; fictional offers; independent expected fixtures and pytest | Verified |
 | M2 | Auth-derived tenant/roles; separate human approval; immutable action hash/expiry; atomic idempotency; audit trace; race/replay/IDOR/security tests | Verified;174 total tests and live API proof |
 | M3 | Real configured LLM, finite typed tools, provenance/number verification, budget/timeouts, injection/outage tests | Adapter/dispatcher mock-verified; live evaluation blocked |
-| M4 | Dashboard/import/cashflow/financing/agent/approval/audit integration, honest status/error/empty states | Planned |
+| M4 | Dashboard/import/cashflow/financing/agent/approval/audit integration, honest status/error/empty states | Local workflow verified:225 pytest +10 real-browser scenarios; live AI/deployment gates remain |
 | M5 | Full financial/security suite, independent QA, mobile/keyboard/browser E2E evidence, critical fixes retested | Planned |
 | M6 | Authorized persistent deployment, clean clone verification, repository, technical/security docs, <=10-min deck, <=5-min demo and sandbox logs | Planned; registration/access unresolved |
 

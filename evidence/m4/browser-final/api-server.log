@@ -1,0 +1,60 @@
+INFO:     Started server process [56]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:34763 (Press CTRL+C to quit)
+INFO:     127.0.0.1:58608 - "GET /api/ready HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58618 - "GET /api/session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58632 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58642 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58654 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58670 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58658 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58680 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58714 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58688 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58700 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58730 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58742 - "POST /api/agent/tasks HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:35890 - "POST /api/proposals HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:35892 - "POST /api/proposals HTTP/1.1" 201 Created
+INFO:     127.0.0.1:35934 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35920 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35902 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35908 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35952 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35964 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35944 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35970 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35978 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36016 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35982 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35984 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36000 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36034 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36022 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36026 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36050 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36074 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36120 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36104 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36078 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36092 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36154 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36134 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36142 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36162 - "POST /api/proposals/0099ffe1-2b10-47ef-b947-ef896d7fad1e/approve HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36198 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36182 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36168 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36208 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36216 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36230 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36242 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36244 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36250 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36252 - "GET /api/dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:36274 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36258 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36254 - "GET /api/invoices HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:36284 - "POST /api/invoices/import HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:36292 - "POST /api/invoices/import HTTP/1.1" 201 Created
