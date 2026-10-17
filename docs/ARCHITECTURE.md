@@ -14,3 +14,6 @@ Single currency BDT, UTC audit timestamps, Asia/Dhaka business dates. Explicit a
 M3 provider-neutral structured adapter: finite tool list, per-tool Pydantic arguments, time/call/token budget, provenance/numeric fact verification, no approval or execution functions. AI offline shown explicitly; no fallback presented as a real LLM result.
 
 Deployment: frontend Vercel if selected account available, Python backend on an authorized persistent host. SQLite must survive restart. Static frontend build alone cannot host FastAPI/SQLite. Do not assume backend account access.
+
+## M2 implemented status
+Authenticated bearer sessions,tenant-scoped routes,immutable source-bound HMAC proposals,separate human approval,atomic idempotent sandbox ledger and signed audit chain are now implemented and tested. See M2_SECURITY_DESIGN.md for actual controls and limits; evidence/m2/ for real HTTP/process-restart/concurrency results. M3 LLM,M4 finance UI and M6 public deployment remain future work.

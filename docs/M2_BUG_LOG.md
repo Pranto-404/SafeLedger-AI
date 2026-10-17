@@ -1,0 +1,9 @@
+# M2 actual findings and retest
+- Baseline-integration run:2 failures/114 passes because M0 negative tests expected missing routes404. M2 now implements gated import/propose, so assertions were updated to authentication401; direct execution remains absent404. No tests removed/skipped.
+- Timestamp review: freeze proposal created_at/expiry from one clock sample; verify execution timestamp at/after approval and before expiry instead of assuming they occur in the same second. Incrementing-clock regression passed.
+- Local HTTP harness initially failed because environment SOCKS proxy required unavailable socksio. Loopback harness explicitly uses trust_env=False; no external proxy is used. Original failure retained.
+- Live HTTP concurrency then exposed SQLite ProgrammingError on FastAPI worker-thread handoff. Initial/diagnostic server logs kept; no financial-success claim made from failed run. Fix: per-request connections permit worker handoff, remain isolated per request and protected by BEGIN IMMEDIATE. Added8-thread HTTP regression; real-server4 concurrent approvals and restart/replay subsequently passed.
+- Denial audit failures now surface503 rather than silently returning an apparently audited rejection. Approval/posting/ledger/audit rollback tested with injected second-entry DB failure; retry after removal succeeds.
+- Source review added strict HTTP JSON parsing,duplicate-key/nonfinite rejection, path bounds, record immutability and signed approvals/postings/audit. Tests include source/hash/role/tenant/expiry tampering, separate-proposal funds race, missing signer and malicious memo with no unauthorized post.
+
+Artifacts evidence/m2/:pytest.log/xml; actual HTTP execution evidence; live process logs; failures preserved. Browser,independent reviewer,live-model adversarial and vulnerability audit remain pending.

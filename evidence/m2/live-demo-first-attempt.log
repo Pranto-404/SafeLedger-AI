@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/1afbddeb34fe/safeledger-ai/scripts/m2_http_demo.py", line 36, in <module>
+    with httpx.Client(base_url=base,timeout=10) as client:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/1afbddeb34fe/.venv/lib/python3.12/site-packages/httpx/_client.py", line 700, in __init__
+    else self._init_proxy_transport(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/1afbddeb34fe/.venv/lib/python3.12/site-packages/httpx/_client.py", line 750, in _init_proxy_transport
+    return HTTPTransport(
+           ^^^^^^^^^^^^^^
+  File "/workspace/scratch/1afbddeb34fe/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 191, in __init__
+    raise ImportError(
+ImportError: Using SOCKS proxy, but the 'socksio' package is not installed. Make sure to install httpx using `pip install httpx[socks]`.

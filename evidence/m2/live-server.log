@@ -1,0 +1,32 @@
+INFO:     Started server process [8]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:43329 (Press CTRL+C to quit)
+INFO:     127.0.0.1:47812 - "GET /api/ready HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47812 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47812 - "POST /api/proposals HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:47812 - "POST /api/proposals HTTP/1.1" 201 Created
+INFO:     127.0.0.1:47812 - "POST /api/proposals/db58892e-d9cf-423a-9f6e-5f869b5e6306/approve HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:47812 - "POST /api/proposals/db58892e-d9cf-423a-9f6e-5f869b5e6306/approve HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:47814 - "POST /api/proposals/db58892e-d9cf-423a-9f6e-5f869b5e6306/approve HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47818 - "POST /api/proposals/db58892e-d9cf-423a-9f6e-5f869b5e6306/approve HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47834 - "POST /api/proposals/db58892e-d9cf-423a-9f6e-5f869b5e6306/approve HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47838 - "POST /api/proposals/db58892e-d9cf-423a-9f6e-5f869b5e6306/approve HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47812 - "POST /api/proposals/db58892e-d9cf-423a-9f6e-5f869b5e6306/approve HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47812 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47812 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [8]
+INFO:     Started server process [17]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:43329 (Press CTRL+C to quit)
+INFO:     127.0.0.1:47926 - "GET /api/ready HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47926 - "POST /api/proposals/db58892e-d9cf-423a-9f6e-5f869b5e6306/approve HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47926 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [17]

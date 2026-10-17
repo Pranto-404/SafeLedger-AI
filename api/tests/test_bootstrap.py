@@ -31,9 +31,9 @@ def test_database_failure_is_redacted(client, monkeypatch):
     assert r.status_code == 503
     assert "private" not in r.text
 
-@pytest.mark.parametrize("route", ["/api/proposals", "/api/invoices/import", "/api/proposals/forged/execute"])
-def test_unimplemented_mutations_are_not_exposed(client, route):
-    assert client.post(route, json={"role":"owner", "amount_minor":1}).status_code == 404
+@pytest.mark.parametrize("route,expected", [("/api/proposals",401), ("/api/invoices/import",401), ("/api/proposals/forged/execute",404)])
+def test_financial_mutations_require_auth_and_direct_execute_is_absent(client, route, expected):
+    assert client.post(route, json={"role":"owner", "amount_minor":1}).status_code == expected
 
 @pytest.mark.parametrize("amount", [-1, 0, 1.2, "3500000", True, 10**12+1])
 def test_reject_non_integer_or_unsafe_money(amount):

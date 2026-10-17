@@ -17,18 +17,23 @@ def create_schema(connection):
     """)
 
 
-def store_dataset(connection, business_id: str, raw):
+def store_dataset(connection, business_id: str, raw, *, before_write=None, after_write=None):
     if not isinstance(business_id, str) or not business_id or len(business_id) > 80:
         raise ValueError("Trusted internal business ID is required")
     if connection.in_transaction:
         raise ValueError("Import requires its own transaction")
     ds = validated(raw)  # All validation before first write; no partial malformed batches.
     checksum = fingerprint(ds)
+    connection.execute("BEGIN IMMEDIATE")
     with connection:
+        if before_write is not None:
+            before_write()
         connection.execute("INSERT INTO financial_datasets VALUES (?,?,?)", (business_id, checksum, ds.model_dump_json()))
         records = [("invoice", x.invoice_id, x) for x in ds.invoices] + [("event", x.event_id, x) for x in ds.events]
         for kind, record_id, record in records:
             connection.execute("INSERT INTO source_records VALUES (?,?,?,?,?,?)", (business_id, record.source_record_id, kind, record_id, fingerprint(record), record.model_dump_json()))
+        if after_write is not None:
+            after_write(ds, checksum)
     return {"dataset_sha256": checksum, "invoice_count": len(ds.invoices), "event_count": len(ds.events)}
 
 

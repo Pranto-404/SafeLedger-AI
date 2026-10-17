@@ -1,0 +1,21 @@
+INFO:     Started server process [10]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:60147 (Press CTRL+C to quit)
+INFO:     127.0.0.1:45796 - "GET /api/ready HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45796 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45796 - "POST /api/proposals HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:45796 - "POST /api/proposals HTTP/1.1" 201 Created
+INFO:     127.0.0.1:45796 - "POST /api/proposals/d70f3438-2adf-4b83-a5b9-5e6ceaed376f/approve HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:45796 - "POST /api/proposals/d70f3438-2adf-4b83-a5b9-5e6ceaed376f/approve HTTP/1.1" 409 Conflict
+Database request rejected; exception_type=ProgrammingError
+INFO:     127.0.0.1:45806 - "POST /api/proposals/d70f3438-2adf-4b83-a5b9-5e6ceaed376f/approve HTTP/1.1" 503 Service Unavailable
+Database request rejected; exception_type=ProgrammingError
+Database request rejected; exception_type=ProgrammingError
+INFO:     127.0.0.1:45836 - "POST /api/proposals/d70f3438-2adf-4b83-a5b9-5e6ceaed376f/approve HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:45832 - "POST /api/proposals/d70f3438-2adf-4b83-a5b9-5e6ceaed376f/approve HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:45816 - "POST /api/proposals/d70f3438-2adf-4b83-a5b9-5e6ceaed376f/approve HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [10]

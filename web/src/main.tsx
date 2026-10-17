@@ -26,7 +26,7 @@ function App() {
       {error && <p role="alert" className="error">{error}</p>}
       <button onClick={() => void refresh()} disabled={loading}>{loading ? 'Checking…' : 'Check connection'}</button>
     </section>
-    <section aria-labelledby="scope"><h2 id="scope">Current build scope</h2><p>M1 financial analysis is available through the reproducible local demo. This screen verifies API connectivity; the authenticated financial dashboard, approvals, sandbox execution and AI integration are upcoming milestones.</p><ol><li>Evidence and exact financial calculations</li><li>Policy checks and independent human approval</li><li>Idempotent sandbox posting and audit replay</li></ol></section>
+    <section aria-labelledby="scope"><h2 id="scope">Current build scope</h2><p>M2 provides authenticated financial APIs, separate human approval and sandbox ledger execution. This screen verifies API connectivity; the connected dashboard and AI integration are upcoming milestones.</p><ol><li>Evidence and exact financial calculations</li><li>Policy checks and independent human approval</li><li>Idempotent sandbox posting and audit replay</li></ol></section>
     <footer>Competition prototype · Synthetic data only · Registration unconfirmed</footer>
   </main>;
 }
