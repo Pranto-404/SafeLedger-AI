@@ -1,3 +1,13 @@
+# Requested website release is complete
+
+Open https://safeledger-ai.vercel.app/. Guest, public accounts, workspace isolation, teammate approval, audit and persistent storage are released. Same-account balance/posting/audit survived actual redeployment. Read evidence/public-release/final.json first. App commit65fca730c9b2a3f8678a954b4be9a363ade54c82; later documentation-only commits do not imply an untested application change.
+
+No additional release action or user credential is needed. Preserve existing signing key, free model settings and database. Credentials remain only in ignored .private; never include them in the release package. No paid resource/billing activation is authorized.
+
+Optional future work only if requested: account recovery, physical-device/independent review, update historical presentation/video for final competition submission. Owner handles registration and submission; do not send externally without explicit authorization.
+
+## Historical continuation notes
+
 # Final release check
 
 Public site is functioning with accounts, guest demo, invited approval and persistent Turso. 23 actual public checks passed, including a real configured-model grounded balance answer. Read PROJECT_STATUS and evidence/public-release/verification.json.

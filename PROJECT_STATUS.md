@@ -1,3 +1,15 @@
+# RELEASE COMPLETE — 18 October 2026
+
+Public site: https://safeledger-ai.vercel.app/. Final application source 65fca730c9b2a3f8678a954b4be9a363ade54c82, Render deploy dep-db9vu81srm7s73a075ug LIVE, Vercel SUCCESS. No further release gate remains open for the requested public competition prototype. Git auto-deploy demonstrated on multiple actual main-branch updates. Documentation-only checkpoint commits may be newer; application source remains the qualified revision.
+
+FINAL VERIFICATION: 304 backend tests, 12 local browser scenarios, 4 axe scans and 360/390/768/1366px layouts. 23 actual public checks passed. Live free-model balance answer was source-grounded. After the subsequent deployment, the same account logged in, balance remained BDT85000, exactly one posting remained and the audit verified. Public guest overview/search/cashflow/financing/audit were inspected in CUA; Sign out was visible after desktop sidebar polish. Evidence: evidence/public-release/final.json, verification.json and persistence.json.
+
+Public users need no private token: Explore the demo or create a username/passphrase account. Each account has its own synthetic workspace; owners can invite a separately registered approver with a one-time code. No real funds move. Persistent Turso is configured on the existing free Render service, preserving its signing/model settings. Prior synthetic demo history was archived before cutover.
+
+Known disclosed limits: free Render cold starts, model quotas, no password recovery, no real customer data. This is not an independent security certification or physical-device test. Older decks/silent video are historical drafts; competition registration/submission is not performed. Do not request keys, permissions, new paid services or repeat unchanged QA just to continue.
+
+## Detailed release history (superseded where noted)
+
 # Public release verified — 18 October 2026
 
 LIVE: https://safeledger-ai.vercel.app with free Render backend https://safeledger-ai.onrender.com and persistent Turso. Public functional source 2961bdd18b7322e92555314635b4045be2f386fa: Render dep-db9vrfnlk1mc73cd0t10 live, Vercel success. Both Git integrations responded to actual main-branch updates. No paid services/billing were enabled.

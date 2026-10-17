@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "account_survived_redeploy": true,
+  "balance_minor": 8500000,
+  "posting_count": 1,
+  "audit_verified": true,
+  "build_commit": "65fca730c9b2a3f8678a954b4be9a363ade54c82",
+  "simulation_only": true
+}

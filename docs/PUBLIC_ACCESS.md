@@ -29,3 +29,7 @@ The earlier passed real-model eight-case report is historical evidence for the s
 ## Live guest regression caught before acceptance
 
 The first public-browser check exposed a shared demo audit signed during an earlier local/cloud qualification with a different signing identity. The API correctly failed closed. Guest rejection previously wrote a DENIED audit into that shared template. Guest financial mutations now stop in the authentication boundary, before any financial audit write, and the clean read-only example uses a versioned template. Existing accounts and their signing identity are preserved. The obsolete example is retained rather than deleting immutable audit history. A targeted real-remote regression checks that rejected guest actions leave an empty financial audit and the overview remains readable.
+
+## Final public acceptance
+
+Final application commit 65fca730c9b2a3f8678a954b4be9a363ade54c82 is live on Render and Vercel. 23 actual public checks passed, including a configured live-model source-grounded balance answer. After a later real deploy, the same account logged in and still had BDT85,000, one posting and a verified audit. Desktop Sign out placement was inspected in the live browser. See evidence/public-release/final.json and persistence.json.
