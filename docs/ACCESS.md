@@ -10,3 +10,5 @@
 Owner selected Pranto-404 and created SafeLedger-AI. Connector confirmed repository and push permission; terminal fetch succeeded. Remote initial commit 56a683414c5fc9028fdf5e6acc7700ce71964bf2 contains only `# SafeLedger-AI` README. Merge retains its history and uses the detailed M0 README. Origin: https://github.com/Pranto-404/SafeLedger-AI.git. No account password requested.
 
 Terminal push was attempted with prompting disabled and failed: no HTTPS username/credential. Use authenticated GitHub connector for publication. Keep local branch and recovery bundle; verify published tree against local tree before continuing.
+
+M1 publication: connected GitHub API published tested source commit7d91c26635cb524fbb3a444a8b8c21156d5126f1, identical tree449521168f42a147514a218a1ea819b722011fd5. Full source/log byte identity verified; raw CR characters in the original formatting-error log were explicitly preserved before updating main. Terminal still has read-only Git transport; future writes use connector with expected HEAD.

@@ -1,0 +1,108 @@
+{
+  "milestone": "M1",
+  "verified_at_utc": "2026-10-17T06:44:02.046710+00:00",
+  "source_commit": "7d91c26635cb524fbb3a444a8b8c21156d5126f1",
+  "source_tree_sha": "449521168f42a147514a218a1ea819b722011fd5",
+  "repository": "https://github.com/Pranto-404/SafeLedger-AI",
+  "publication": "GitHub connector; expected remote HEAD lease; exact full-tree SHA matched local index before updating main",
+  "test_summary": {
+    "tests": 116,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "generated_conservation_cases_in_one_test": 100,
+  "checks": [
+    {
+      "command": "../.venv/bin/python -m pytest -q --junitxml=evidence/m1/pytest.xml",
+      "exit_code": 0,
+      "log": "evidence/m1/pytest.log"
+    },
+    {
+      "command": "../.venv/bin/python scripts/m1_demo.py",
+      "exit_code": 0,
+      "output": "evidence/m1/financial-demo.json"
+    },
+    {
+      "command": "SAFELEDGER_EVIDENCE_DIR=evidence/m1 ../.venv/bin/python scripts/verify_bootstrap.py",
+      "exit_code": 0,
+      "log": "evidence/m1/live-smoke.log"
+    },
+    {
+      "command": "cd web && npm run build",
+      "exit_code": 0,
+      "log": "evidence/m1/web-build.log"
+    },
+    {
+      "command": "../.venv/bin/python -m compileall -q api scripts",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit_code": 0,
+      "log": "evidence/m1/format-check.log"
+    }
+  ],
+  "fixture_counts": {
+    "invoices": 45,
+    "events": 60,
+    "fictional_offers": 3
+  },
+  "warnings": [
+    "Starlette/httpx TestClient deprecation",
+    "Pydantic serialization warning from intentional malformed model mutation test",
+    "npm environment proxy configuration warning"
+  ],
+  "initial_failures": [
+    {
+      "log": "evidence/m1/pytest-first-run.log",
+      "tests": 111,
+      "failed": 1,
+      "passed": 110,
+      "fix": "Possible duplicate now requires number similarity >=0.85; exact/possible/baseline regressions pass"
+    },
+    {
+      "log": "evidence/m1/format-check-first-run.log",
+      "fix": "CSV generator now writes LF; raw log formatting excluded through explicit .gitattributes without changing logs"
+    }
+  ],
+  "scope_limits": [
+    "Internal services/CLI only; financial HTTP auth pending M2",
+    "No payment execution; no real LLM invocation",
+    "No browser/device/keyboard/independent QA",
+    "No public deployment or dependency vulnerability audit",
+    "Cash and financing assumptions documented in FINANCIAL_METHODS.md"
+  ],
+  "source_files_sha256": {
+    "api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "api/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "api/app/contracts.py": "90a9d4332bd2c5a9d7058090c34cfc627b6f509f3727eea6b45d46b4c8a9b80b",
+    "api/app/main.py": "df88a91846ab40e11201dd954417eb0dfc2243133c74f91c0b5cd306629c36dc",
+    "api/app/services/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "api/app/services/finance.py": "e27401b06c8ce99b6e7274d577ca56f8418057efa17a48934711678955f0b1b7",
+    "api/app/services/intake.py": "7d98f7cab9f55cb8e595767eb87017c9c922541930cfb6ecb4a3298cb5a29db4",
+    "api/app/services/storage.py": "a4a517e9f93d9ff685662f7c7bb0ed3b23efac5cb1d42c3bf935eb27001736c6",
+    "api/requirements-dev.txt": "41da2fb2041cff8c59ccdf17e51131deb2b4cc83186587201f271eda0752028f",
+    "api/requirements.lock.txt": "7403ca86c5b56915f5cb4f9b86a2713ab5773336e3aaf8f294f505a2d7bc38c1",
+    "api/requirements.txt": "7c2c790b58e7d7b7e2e802bb3bd569182df5194715a3b309459ca0431024dcc3",
+    "api/tests/test_bootstrap.py": "f7e7014e3fe3b3b72dd0ceee1132ef315148d110c861bcd03824b44fe509bbf8",
+    "api/tests/test_finance.py": "da10cedf282a59735f253838ab2c2639a5613363da1a5095dde04b4c70282cb5",
+    "api/tests/test_intake_storage.py": "f7073c30999126e07cd489541e32ec8cf1850f13ed8b9c73df19233f56538d68",
+    "data/fixtures/duplicate_exact.json": "b7ce7d41c2290332bff3ffe1c99daa2b4ea81ce4143738b8870fc8e3abb07640",
+    "data/fixtures/duplicate_possible.json": "cc10208edef011fcd5c51433f40665039a865617a01c98dfb217592cc3f2b7e8",
+    "data/fixtures/expected_results.json": "bc2ddd46ff80aaed2c99a510d879c66b6fcf1c4bfb21b3db5dbfde18e4763c12",
+    "data/fixtures/fictional_offers.json": "e86fed651fcc6bda0057347c4d0112ff5bcd3fe1650b51495c263e2f31708d66",
+    "data/fixtures/invalid_amount.json": "a775301f2ca6cb50527a8337a70e8c1b96e6b920ef6a4550a45070a0c33dd2ed",
+    "data/fixtures/manifest.json": "3892079687cbce924b4daff09e85b24be2619f4eb86014ebd7d6f075357a0d09",
+    "data/fixtures/seed_2026.json": "1ecc408bfa47129b59453f72b0a580a56b9c0f5dc8f357ede7d7001c325d370b",
+    "data/fixtures/seed_2026_events.csv": "436bf72c269bd4cd786f0e33bd8511c2b6f611eb18a8e502327668421875407b",
+    "data/fixtures/seed_2026_invoices.csv": "dac0f7a79514857dfa03daccca2745c7053b686377c5f5c3fb85a86ca962f92e",
+    "data/fixtures/untrusted_memo.json": "85f1c81374201e143c7dbf8c779506335a3b73028a9b4cee5fd72151121a94f1",
+    "scripts/build_fixtures.py": "0f1059f0e20774e3bf65205422497ed351faee5b45081f586d0bb2063eab7ba5",
+    "scripts/m1_demo.py": "533b3de714bd596a24defacdfa28669263b2aebc105c3a356dec51cd48a9ff5c",
+    "scripts/smoke.py": "c1515b8b5661c4cdf5e0f7164dd0a09503cd1a1abfcd9e4a601821eb75d89332",
+    "scripts/verify_bootstrap.py": "d4e6182e706eafbf2dc00eb10597f32a2253b556da84f44ab6ea9b95240f1bff",
+    "web/src/main.tsx": "2a93df1a80851c48fc5dd5bf6c06f1ed0ffd7d0c39781de100c176c631beaa16",
+    "web/src/style.css": "c8cb76ae052b615a642d76d04ac78973111520fdc0a579032907dfe1a1064b4b"
+  }
+}
