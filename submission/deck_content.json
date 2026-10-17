@@ -1,0 +1,197 @@
+[
+  {
+    "title": "SafeLedger AI",
+    "subtitle": "SME Finance Copilot",
+    "body": "Evidence-backed decisions with independent human approval",
+    "timing_seconds": 30,
+    "notes": "We are developing SafeLedger AI for Topic E of the 2026 Shenzhen International FinTech Competition. Our prototype uses synthetic financial records and a sandbox ledger. The purpose is to make a financial decision inspectable from the original invoice through deterministic calculations, backend policy and a separate human approval. This deck describes the verified local checkpoint. Live model evaluation and public deployment remain open. Source:docs/REQUIREMENTS.md and PROJECT_STATUS.md."
+  },
+  {
+    "title": "The SME payment decision",
+    "body": "Can we pay this invoice and still meet upcoming obligations?",
+    "lines": [
+      "An invoice needs a traceable source and a correct amount.",
+      "A healthy current balance can hide a cash shortage next week.",
+      "A recommendation needs a separate authority boundary before execution."
+    ],
+    "timing_seconds": 40,
+    "notes": "Consider a fictional small business with supplier invoices and scheduled customer receipts. The owner wants a practical decision, not simply a fluent answer. The application must distinguish cleared cash from future receipts, recognize duplicate invoices and explain the effect of an action. We treat this as a complete financial workflow. We do not claim customer adoption or measured market impact. The scenario is synthetic. Source:submission/TECHNICAL_REPORT.md and docs/FINANCIAL_METHODS.md."
+  },
+  {
+    "title": "Source-backed financial analysis",
+    "image": "evidence/m5/full-workflow-regression/desktop-overview.png",
+    "body": "BDT 120,000 available",
+    "lines": [
+      "BDT 100,000 opening cash",
+      "BDT 30,000 cleared income",
+      "BDT 10,000 cleared expenses",
+      "Source IDs and snapshot fingerprint"
+    ],
+    "timing_seconds": 55,
+    "notes": "The backend calculates every amount using integer minor units. The baseline equation is one hundred thousand plus thirty thousand minus ten thousand, which gives one hundred twenty thousand taka. The baseline seed contains forty-five invoices and sixty cash events. The duplicate-risk demo variant adds one invoice while preserving the cleared-cash baseline. The screenshot shows the actual local dashboard, not a generated mockup. The source IDs connect the displayed result to original records. Source:evidence/m5/full-workflow-regression/, data/fixtures/seed_2026.json and duplicate_exact.json."
+  },
+  {
+    "title": "Verified Decision Chain",
+    "steps": [
+      "1  Financial evidence",
+      "2  Deterministic calculation",
+      "3  Bounded AI recommendation",
+      "4  Backend security policy",
+      "5  Independent human approval",
+      "6  Idempotent sandbox execution",
+      "7  Verifiable audit trace"
+    ],
+    "body": "Every authority transition has an explicit backend check",
+    "timing_seconds": 60,
+    "notes": "This chain is our signature design contribution. Imported records retain their provenance. Deterministic tools calculate facts. A configured model may plan analysis, explain verified facts or propose a single permitted invoice. Backend policy checks duplicate risk, payee allowlisting, limits and available funds. A separate authenticated approver reviews the bound action. One transaction records approval, posting, balanced entries and audit. The current manual demo bypasses the unavailable AI step openly. We do not claim that a live model participated in the recorded payment. Source:docs/M2_SECURITY_DESIGN.md, docs/M3_AGENT_DESIGN.md and evidence/m5/."
+  },
+  {
+    "title": "Architecture and authority",
+    "table": [
+      [
+        "Component",
+        "Responsibility",
+        "Authority"
+      ],
+      [
+        "React / TypeScript",
+        "Evidence and review UI",
+        "No ledger permission"
+      ],
+      [
+        "Bounded LLM adapter",
+        "Plan and fact-linked rationale",
+        "Read or scoped proposal only"
+      ],
+      [
+        "FastAPI / Pydantic",
+        "Validate identity, policy and tools",
+        "Server enforcement"
+      ],
+      [
+        "SQLite transaction",
+        "Approval, posting, ledger, audit",
+        "Atomic and idempotent"
+      ]
+    ],
+    "body": "The model has no approve, execute, SQL or secret tool",
+    "timing_seconds": 50,
+    "notes": "We use one frontend, one Python API and a persistent SQLite prototype. Session tokens stay in browser memory and the server derives tenant and role from stored session state. A user cannot select a stronger role through the browser. The model receives only finite schema-validated tools. The backend rechecks identity and stale facts after the provider responds. The model cannot approve a payment or write a ledger row. The production frontend still needs a secure same-origin route to a durable backend. Source:docs/ARCHITECTURE.md, docs/API_CONTRACT.md and docs/M3_AGENT_DESIGN.md."
+  },
+  {
+    "title": "Deterministic cash-flow outlook",
+    "table": [
+      [
+        "Synthetic scenario",
+        "Verified result"
+      ],
+      [
+        "7-day closing balance",
+        "BDT -15,000"
+      ],
+      [
+        "30-day closing balance",
+        "BDT -18,750"
+      ],
+      [
+        "Baseline minimum balance",
+        "BDT -55,000"
+      ],
+      [
+        "7-day receipt delay:minimum",
+        "BDT -59,300"
+      ],
+      [
+        "First baseline reserve breach",
+        "22 October 2026"
+      ]
+    ],
+    "body": "Scheduled-cash scenarios with source evidence, not learned forecasts",
+    "timing_seconds": 55,
+    "notes": "These are deterministic scenarios based on the fixture's scheduled obligations and receipts. The seven-day and thirty-day closing amounts show why current cash alone does not settle affordability. A seven-day delay in scheduled receipts lowers the minimum balance to minus fifty-nine thousand three hundred taka. Scenario controls do not change ledger entries or the backend execution reserve. We keep the overview baseline separate from what-if state. Paying an invoice removes its future payable and adds its cleared posting once, so it cannot reduce the forecast twice. Source:docs/FINANCIAL_METHODS.md, evidence/m5/full-workflow-regression/browser-results.json and backend-regression/."
+  },
+  {
+    "title": "Fictional financing comparison",
+    "table": [
+      [
+        "Offer",
+        "Upfront fee",
+        "Interest",
+        "Total cost"
+      ],
+      [
+        "Fictional C",
+        "BDT 500",
+        "BDT 1,500",
+        "BDT 2,000"
+      ],
+      [
+        "Fictional B",
+        "BDT 100",
+        "BDT 2,000",
+        "BDT 2,100"
+      ],
+      [
+        "Fictional A",
+        "BDT 2,000",
+        "BDT 500",
+        "BDT 2,500"
+      ]
+    ],
+    "body": "BDT 50,000 principal,30 days, flat term interest\nAll three fail baseline modeled affordability",
+    "timing_seconds": 45,
+    "notes": "The offers are explicitly fictional. They compare a fifty-thousand-taka principal over thirty days using flat per-term interest and an upfront fee. Cost ranking does not imply that any offer is safe or affordable. In this baseline all three fail modeled repayment capacity. The application also displays net proceeds, total repayment and repayment gap with assumptions and source IDs. We do not call these rates APR, connect to a real lender or invent approval odds. Source:data/fixtures/fictional_offers.json, docs/FINANCIAL_METHODS.md and evidence/m5/full-workflow-regression/."
+  },
+  {
+    "title": "Independent approval and exact execution",
+    "lines": [
+      "INV-105 binds BDT 35,000 to its payee, source, hash and expiry.",
+      "An independent approver explicitly confirms the exact action.",
+      "One posting changes available cash from BDT 120,000 to BDT 85,000.",
+      "Four concurrent requests, retries and process restart preserve that posting."
+    ],
+    "body": "Rejected, altered or expired actions leave the ledger unchanged",
+    "timing_seconds": 65,
+    "notes": "Creating a proposal changes no balance. The immutable action binds the invoice, payee, currency, business, proposer, source hashes, version and fifteen-minute expiry. A separate approver submits the exact action hash. The server rechecks independence, current cash, reserve, duplicate risk, payee allowlist and expiry inside the transaction. Actual concurrent HTTP tests and a process restart retain one posting. New browser QA uses a genuinely signed expired proposal and altered hash, not fabricated error responses. Both fail with no payment. The signed audit records the attempt and outcome. Source:evidence/m5/backend-regression/, browser-final/ and docs/M2_SECURITY_DESIGN.md."
+  },
+  {
+    "title": "Recorded verification",
+    "table": [
+      [
+        "Executed check",
+        "Observed result"
+      ],
+      [
+        "Backend financial/security tests",
+        "226 passed, no skips"
+      ],
+      [
+        "Full workflow +adversarial browser scenarios",
+        "18 passed, zero page errors"
+      ],
+      [
+        "Automated accessibility scans",
+        "10 scans, zero reported violations"
+      ],
+      [
+        "Locked dependency advisory scans",
+        "Zero known advisories reported"
+      ]
+    ],
+    "body": "Commands, source hashes and original failures remain in the repository",
+    "timing_seconds": 55,
+    "notes": "These are actual executed local results, not planned tests. The eighteen browser scenarios comprise ten full-workflow scenarios and eight adversarial scenarios. Accessibility results cover an automated WCAG two and two-point-one A and AA subset, not complete conformance. The runs use Chromium on Linux with four viewport widths, not physical Android or iOS devices. We fixed actual focus, contrast and accessible-name failures and kept their logs. Dependency scans are point-in-time known-advisory checks. The implementer performed this QA, so we do not call it an independent external audit. The additional M6 regression verifies child-process cleanup. Source:evidence/m6/pytest.xml and evidence/m5/verification.json, checks.log, pytest.xml and docs/M5_QA_REPORT.md."
+  },
+  {
+    "title": "Current limits and release gates",
+    "lines": [
+      "Real-model task and prompt-injection evaluation remains pending.",
+      "Public durable hosting and Vercel automatic deployment remain blocked.",
+      "Independent reviewer and physical-device checks remain open.",
+      "Registration, license decision and final submission need owner completion."
+    ],
+    "body": "A working local financial prototype with evidence for each tested action",
+    "timing_seconds": 55,
+    "notes": "We close by separating completed evidence from open work. The bounded adapter is implemented and mock-tested. No real provider is configured at this checkpoint, and the UI reports that honestly. Vercel project creation returned a scope-access error, and a durable FastAPI and SQLite host is still needed. We have no public working URL or verified auto-deployment. Registration is not complete and the owner is handling it. We will not claim these gates are resolved until there is actual evidence. A clean-clone qualification is prepared separately. The repository is github.com/Pranto-404/SafeLedger-AI. Source:PROJECT_STATUS.md, docs/DEPLOYMENT_STATUS.md and submission/SUBMISSION_CHECKLIST.md."
+  }
+]

@@ -1,0 +1,51 @@
+1
+00:00:00,002 --> 00:00:07,007
+SafeLedger AI:actual local prototype. Synthetic BDT data and sandbox only. No real money moves.
+
+2
+00:00:07,007 --> 00:00:15,080
+Cleared balance:BDT 120,000. The backend preserves source IDs and uses exact integer minor units.
+
+3
+00:00:15,080 --> 00:00:23,281
+Deterministic 30-day outlook:BDT -18,750. Upcoming obligations reveal a reserve shortage.
+
+4
+00:00:23,281 --> 00:00:31,637
+What-if:delay scheduled receipts by 7 days. The lowest projected balance falls to BDT -59,300.
+
+5
+00:00:31,637 --> 00:00:39,794
+Fictional financing only. Total costs rank BDT 2,000 /2,100 /2,500. All fail baseline affordability.
+
+6
+00:00:39,794 --> 00:00:48,057
+Real LLM is not configured at this checkpoint. AI unavailability does not stop deterministic finance.
+
+7
+00:00:48,057 --> 00:00:56,393
+Duplicate invoice risk:the actual backend rejects INV-104 before it can create a payment proposal.
+
+8
+00:00:56,393 --> 00:01:05,815
+INV-105:BDT 35,000. The owner creates a signed pending proposal. Creating it moves no funds.
+
+9
+00:01:05,822 --> 00:01:15,046
+A separate authenticated approver session reviews the payee, amount, source and immutable action hash.
+
+10
+00:01:15,047 --> 00:01:22,349
+Explicit confirmation enables approval. The backend rechecks permission, expiry, policy and funds before posting.
+
+11
+00:01:22,351 --> 00:01:36,549
+One sandbox posting completes. Available cash reconciles from BDT 120,000 to BDT 85,000.
+
+12
+00:01:36,549 --> 00:01:45,651
+The backend verifies the audit chain. Proposal, approval and execution remain linked to one trace.
+
+13
+00:01:45,652 --> 00:01:53,666
+Open release gates:live-model evaluation, public durable hosting and independent review. Repository contains actual test evidence.

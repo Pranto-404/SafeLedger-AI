@@ -1,0 +1,10 @@
+EINVAL: invalid argument, chown '/tmp/fonts'
+Traceback (most recent call last):
+  File "/tmp/safeledger-fresh-clone-1do4_7lh/repository/scripts/m4_browser_demo.py", line 57, in <module>
+    if __name__=='__main__':run()
+                            ^^^^^
+  File "/tmp/safeledger-fresh-clone-1do4_7lh/repository/scripts/m4_browser_demo.py", line 50, in run
+    subprocess.run(['node',str(ROOT/'scripts'/script_name)],cwd=ROOT,env=dict(os.environ,SAFELEDGER_BROWSER_URL=f'http://127.0.0.1:{web_port}',SAFELEDGER_BROWSER_ACCESS=str(private/'sessions.json'),SAFELEDGER_EVIDENCE_DIR=str(OUT)),check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['node', '/tmp/safeledger-fresh-clone-1do4_7lh/repository/scripts/m4_browser_demo.cjs']' returned non-zero exit status 1.

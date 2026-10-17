@@ -1,0 +1,11 @@
+Inspect result written to file: /workspace/scratch/1afbddeb34fe/deck-build/candidate.pptx.inspect.ndjson
+file:///root/.codex/skills/builtins/presentations/container_tools/artifact_tool_utils.mjs:371
+    throw new Error("Every source-required native-table owner must have exactly one validation policy");
+          ^
+
+Error: Every source-required native-table owner must have exactly one validation policy
+    at verifyRequiredNativeTableOwners (file:///root/.codex/skills/builtins/presentations/container_tools/artifact_tool_utils.mjs:371:11)
+    at finalizePresentation (file:///root/.codex/skills/builtins/presentations/container_tools/artifact_tool_utils.mjs:866:3)
+    at async file:///workspace/scratch/1afbddeb34fe/deck-build/build.mjs:28:1
+
+Node.js v24.19.0

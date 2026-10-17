@@ -1,0 +1,2 @@
+{"status":"passed","checks":10,"browser":"153.0.8010.0","page_errors":0}
+PASS:both local server ports closed after browser harness cleanup.

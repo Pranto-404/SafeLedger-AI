@@ -1,0 +1,2 @@
+health: {"ai_status": "not_configured", "build_commit": "development", "milestone": "M3", "simulation_only": true, "status": "ok", "version": "0.3.0"}
+ready: {"database": "sqlite", "schema_version": 1, "status": "ready"}

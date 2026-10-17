@@ -1,0 +1,17 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> safeledger-web@0.0.1 dev
+> vite --host 127.0.0.1 --port 40691 --strictPort
+
+
+  VITE v7.3.7  ready in 261 ms
+
+  ➜  Local:   http://127.0.0.1:40691/
+10:21:40 AM [vite] changed tsconfig file detected: /tmp/safeledger-fresh-clone-1do4_7lh/repository/web/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+10:21:40 AM [vite] vite.config.ts changed, restarting server...
+10:21:40 AM [vite] (client) page reload index.html
+10:21:40 AM [vite] (client) page reload src/api.ts
+10:21:40 AM [vite] (client) page reload src/App.tsx
+10:21:40 AM [vite] (client) page reload src/main.tsx
+10:21:40 AM [vite] (client) hmr update /src/style.css
+10:21:40 AM [vite] server restarted.

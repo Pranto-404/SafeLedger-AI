@@ -1,0 +1,46 @@
+INFO:     Started server process [10]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:51803 (Press CTRL+C to quit)
+INFO:     127.0.0.1:50136 - "GET /api/ready HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50138 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50148 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50176 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50158 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50168 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50180 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50184 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50198 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47990 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45916 - "POST /api/agent/tasks HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:44514 - "POST /api/proposals HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:44530 - "POST /api/proposals HTTP/1.1" 201 Created
+INFO:     127.0.0.1:44550 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44536 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44564 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44568 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44584 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44590 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44598 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34216 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34236 - "GET /api/session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34252 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34264 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34242 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34240 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34276 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34292 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34298 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43368 - "POST /api/proposals/396a6db6-6b17-4b14-9725-c82a252c299f/approve HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43382 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43412 - "GET /api/audit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43398 - "GET /api/proposals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43390 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35210 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35214 - "POST /api/finance/compare HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35208 - "POST /api/cashflow/scenarios HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [10]

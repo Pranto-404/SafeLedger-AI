@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "method": "Actual Chromium Page.startScreencast frames,paused during login/session switch,English captions burned into real-timeline recording",
+  "simulation_only": true,
+  "live_ai_used": false,
+  "narration_audio": false,
+  "scenes": 13,
+  "frames": 28,
+  "duration_seconds": 117.12,
+  "size_bytes": 1613528,
+  "credentials_captured": false,
+  "output_filename": "SafeLedger_AI_Local_Demo_v2.mp4"
+}

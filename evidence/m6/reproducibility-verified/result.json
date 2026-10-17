@@ -1,0 +1,185 @@
+{
+  "source_commit": "7c7f03f43f6963ed4d642091676e5d7445a610bb",
+  "repository": "https://github.com/Pranto-404/SafeLedger-AI",
+  "started_at_utc": "2026-10-17T08:28:46.431442+00:00",
+  "checks": [
+    {
+      "name": "clone",
+      "command": [
+        "git",
+        "clone",
+        "--no-checkout",
+        "https://github.com/Pranto-404/SafeLedger-AI.git",
+        "/tmp/safeledger-fresh-clone-knm6jv6s/repository"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 5.91,
+      "log": "clone.log"
+    },
+    {
+      "name": "checkout",
+      "command": [
+        "git",
+        "checkout",
+        "--detach",
+        "7c7f03f43f6963ed4d642091676e5d7445a610bb"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.07,
+      "log": "checkout.log"
+    },
+    {
+      "name": "create-venv",
+      "command": [
+        "/workspace/scratch/1afbddeb34fe/safeledger-ai/../.venv/bin/python",
+        "-m",
+        "venv",
+        "/tmp/safeledger-fresh-clone-knm6jv6s/repository/.venv"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.32,
+      "log": "create-venv.log"
+    },
+    {
+      "name": "python-install",
+      "command": [
+        "/tmp/safeledger-fresh-clone-knm6jv6s/repository/.venv/bin/python",
+        "-m",
+        "pip",
+        "install",
+        "-r",
+        "api/requirements.lock.txt"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 29.75,
+      "log": "python-install.log"
+    },
+    {
+      "name": "python-version",
+      "command": [
+        "/tmp/safeledger-fresh-clone-knm6jv6s/repository/.venv/bin/python",
+        "--version"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.01,
+      "log": "python-version.log"
+    },
+    {
+      "name": "python-packages",
+      "command": [
+        "/tmp/safeledger-fresh-clone-knm6jv6s/repository/.venv/bin/python",
+        "-m",
+        "pip",
+        "list",
+        "--format=json"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.5,
+      "log": "python-packages.log"
+    },
+    {
+      "name": "dependency-consistency",
+      "command": [
+        "/tmp/safeledger-fresh-clone-knm6jv6s/repository/.venv/bin/python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.54,
+      "log": "dependency-consistency.log"
+    },
+    {
+      "name": "pytest",
+      "command": [
+        "/tmp/safeledger-fresh-clone-knm6jv6s/repository/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "--junitxml=/workspace/scratch/1afbddeb34fe/safeledger-ai/evidence/m6/reproducibility-verified/pytest.xml"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 31.36,
+      "log": "pytest.log"
+    },
+    {
+      "name": "npm-ci",
+      "command": [
+        "npm",
+        "ci",
+        "--prefix",
+        "web"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.43,
+      "log": "npm-ci.log"
+    },
+    {
+      "name": "node-version",
+      "command": [
+        "node",
+        "--version"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.03,
+      "log": "node-version.log"
+    },
+    {
+      "name": "frontend-build",
+      "command": [
+        "npm",
+        "run",
+        "build",
+        "--prefix",
+        "web"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 7.3,
+      "log": "frontend-build.log"
+    },
+    {
+      "name": "bootstrap-smoke",
+      "command": [
+        "/tmp/safeledger-fresh-clone-knm6jv6s/repository/.venv/bin/python",
+        "scripts/verify_bootstrap.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.74,
+      "log": "bootstrap-smoke.log"
+    },
+    {
+      "name": "live-http",
+      "command": [
+        "/tmp/safeledger-fresh-clone-knm6jv6s/repository/.venv/bin/python",
+        "scripts/m2_http_demo.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.26,
+      "log": "live-http.log"
+    },
+    {
+      "name": "browser-workflow",
+      "command": [
+        "/tmp/safeledger-fresh-clone-knm6jv6s/repository/.venv/bin/python",
+        "scripts/m4_browser_demo.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 13.75,
+      "log": "browser-workflow.log"
+    },
+    {
+      "name": "browser-adversarial",
+      "command": [
+        "/tmp/safeledger-fresh-clone-knm6jv6s/repository/.venv/bin/python",
+        "scripts/m5_browser_qa.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 23.26,
+      "log": "browser-adversarial.log"
+    }
+  ],
+  "status": "passed",
+  "scope": "Fresh remote checkout,Python venv and npm ci. Existing OS/Python/Node and optional Chromium binary reused;not a pristine VM/browser-install proof.",
+  "observed_commit": "7c7f03f43f6963ed4d642091676e5d7445a610bb",
+  "finished_at_utc": "2026-10-17T08:30:53.001380+00:00"
+}

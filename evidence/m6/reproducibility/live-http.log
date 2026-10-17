@@ -1,0 +1,1 @@
+PASS: live HTTP, duplicate/viewer/tampered-hash denials, 4 concurrent approvals + retry, one posting, balanced ledger, cash12000000 ->8500000, forecast unchanged, actual process restart/replay, offline audit hashes verified. No real money or LLM used.

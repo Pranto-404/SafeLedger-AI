@@ -1,19 +1,26 @@
-# M0 architecture and trust boundaries
-Single React/TypeScript frontend -> same-origin FastAPI -> SQLite on persistent disk. LLM provider adapter calls bounded READ/PROPOSE tools via server dispatch. Separate human approval and server transaction executor control ledger changes. No additional services until necessary.
+# Implemented architecture and trust boundaries
+Current at M5 local QA. Scope:synthetic BDT finance prototype,not a banking service.
 
-Financial truth lives in deterministic Python services and validated DB records. Uploaded memo is untrusted data. Provider narrative never supplies authoritative monetary values, source IDs or permissions. Frontend displays server state; never optimistic execution success.
+React19/TypeScript uses same-origin /api requests to FastAPI/Pydantic. Vite proxy connects them locally. SQLite stores immutable imported datasets,private session hashes,policies,payee allowlist,proposals,approvals,postings,balanced ledger entries and signed audit events. Production same-origin routing and persistent backend hosting remain unconfigured.
 
-M0 only: liveness, SQLite schema readiness, development UI and strict input contracts. Authentication, financial services, persistence entities, tool dispatch, approval and audit are not implemented.
+## Authority
+Financial truth comes from validated source records and deterministic integer-minor-unit Python services. Browser role labels/control visibility never authorize a request. Server authentication derives user,business and role from a random opaque bearer token's stored hash and active session. Generated private owner/approver/viewer/agent sessions expire;there is no public default credential,role switch or account provisioning route. Browser retains token only in memory.
 
-M1: read-only deterministic engine and validated staged imports. Keep authenticated data routes closed until M2 server sessions and tenant scoping exist; unit-test finance core independently. M2: server-side bearer sessions from isolated seeded accounts; hashed tokens in DB, expiry, role and tenant from server state. No shared public default credentials. Agent identity cannot inherit human approval privilege. Token transport, rate limits and deployment headers require testing before exposure.
+LLM adapter sends a bounded task/context to an admin-allowlisted HTTPS provider. Strict native tool plans select finite read functions or one explicitly permitted invoice proposal. Structured rationale references backend facts. No tool approves/executes a payment or writes the ledger. Provider outages return503 while financial analysis continues. Adapter/tool/security behavior is mock/HTTP-transport tested;live provider configuration and real-model evaluation remain absent.
 
-M2 execution transaction: BEGIN IMMEDIATE; fetch tenant-scoped immutable proposal; verify hash/version/expiry/independent approval; recheck duplicates, allowlisted payee and funds/reserve; write uniquely constrained proposal posting, paired balanced entries and hash-linked audit event; commit all or rollback. Idempotent retry returns same execution ID. Approval consumes only once; no public direct ledger endpoint. Concurrent distinct proposals must not overdraw. Audit tamper evidence does not protect against a privileged DB admin rewriting the whole chain; export anchored digest with release evidence.
+## Data and calculations
+Imports validate up to1MiB JSON with unique keys,strict integer minor units,dates,currency,counts,source IDs and entity relationships. One immutable snapshot per business;atomic owner import adds signed audit evidence. CSV parsers/fixtures exist internally;the UI supports JSON upload only. Dataset checksums bind original sources.
 
-Single currency BDT, UTC audit timestamps, Asia/Dhaka business dates. Explicit as_of date prevents runtime-clock-dependent fixture forecasts. Cleared cash affects current balance; scheduled events after as_of affect forecasts. Invoice obligations linked to events to prevent double counting. Paid invoices excluded from future payables.
+Cleared events determine income,expenses and current balance. Scheduled events/open invoices after explicit as_of determine deterministic7/30-day forecasts. Linked obligations count once. Execution overlays a verified posting and removes its corresponding future payable,so a payment never reduces the forecast twice. Receipt-delay/reserve inputs change a scenario,not execution policy. Duplicate exact/near-match flags fail closed before a proposal. Three fictional offers use flat per-term interest and an upfront fee;cost ranking and affordability are backend calculations.
 
-M3 provider-neutral structured adapter: finite tool list, per-tool Pydantic arguments, time/call/token budget, provenance/numeric fact verification, no approval or execution functions. AI offline shown explicitly; no fallback presented as a real LLM result.
+## Sandbox transaction
+POST/api/proposals binds invoice,payee,amount,currency,business,proposer,source/dataset hashes,version and15-minute expiry into immutable signed details. It returns policy preview and changes no balance. A separate authenticated approver submits exact action hash plus approve/reject. No self-approval or public /execute exists.
 
-Deployment: frontend Vercel if selected account available, Python backend on an authorized persistent host. SQLite must survive restart. Static frontend build alone cannot host FastAPI/SQLite. Do not assume backend account access.
+BEGIN IMMEDIATE serializes execution. Server rechecks identity,independence,source integrity,hash,expiry,duplicates,allowlisted vendor,current funds,reserve and limit. Approval,unique posting,paired balanced ledger entries and chained audit commit together or roll back. Same approved action replay returns the existing posting;distinct concurrent proposals cannot overdraw. Tests include transaction failure,concurrency and real child-process restart.
 
-## M2 implemented status
-Authenticated bearer sessions,tenant-scoped routes,immutable source-bound HMAC proposals,separate human approval,atomic idempotent sandbox ledger and signed audit chain are now implemented and tested. See M2_SECURITY_DESIGN.md for actual controls and limits; evidence/m2/ for real HTTP/process-restart/concurrency results. M3 LLM,M4 finance UI and M6 public deployment remain future work.
+## Audit and operational limits
+HMAC-signed hash chain plus immutable triggers detect record alteration without the signing key. API verifies the tenant chain before audit export. Independent offline hashes/captured anchors support inspection. A privileged administrator controlling both DB/key can replace/truncate history;external durable anchors/key management remain future controls. No admin-proof claim.
+
+Request budgets,provider call/time/output limits,redacted errors,no-store API responses and private credential files are implemented. Public TLS/security headers,session lifecycle/key rotation,backup/restore and hosted availability still need deployment verification. Persistent SQLite must survive process restart;ephemeral serverless disk is unsuitable. Vercel Git-project creation previously returned403. No public URL/auto-update success exists.
+
+Detailed contracts:API_CONTRACT.md. Financial assumptions:FINANCIAL_METHODS.md. Security:M2_SECURITY_DESIGN.md,M3_AGENT_DESIGN.md,SECURITY_SELF_ASSESSMENT.md. Evidence:evidence/m5/verification.json. Production release/real-model/independent reviewer gates remain open.

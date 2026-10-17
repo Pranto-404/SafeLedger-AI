@@ -1,0 +1,112 @@
+{
+  "source_commit": "ffbce2e2ba802647542849afe2dd1c039acc703e",
+  "repository": "https://github.com/Pranto-404/SafeLedger-AI",
+  "started_at_utc": "2026-10-17T08:26:28.156161+00:00",
+  "checks": [
+    {
+      "name": "clone",
+      "command": [
+        "git",
+        "clone",
+        "--no-checkout",
+        "https://github.com/Pranto-404/SafeLedger-AI.git",
+        "/tmp/safeledger-fresh-clone-estxzujd/repository"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 6.06,
+      "log": "clone.log"
+    },
+    {
+      "name": "checkout",
+      "command": [
+        "git",
+        "checkout",
+        "--detach",
+        "ffbce2e2ba802647542849afe2dd1c039acc703e"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.06,
+      "log": "checkout.log"
+    },
+    {
+      "name": "create-venv",
+      "command": [
+        "/workspace/scratch/1afbddeb34fe/safeledger-ai/../.venv/bin/python",
+        "-m",
+        "venv",
+        "/tmp/safeledger-fresh-clone-estxzujd/repository/.venv"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.63,
+      "log": "create-venv.log"
+    },
+    {
+      "name": "python-install",
+      "command": [
+        "/tmp/safeledger-fresh-clone-estxzujd/repository/.venv/bin/python",
+        "-m",
+        "pip",
+        "install",
+        "-r",
+        "api/requirements.lock.txt"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 17.44,
+      "log": "python-install.log"
+    },
+    {
+      "name": "python-version",
+      "command": [
+        "/tmp/safeledger-fresh-clone-estxzujd/repository/.venv/bin/python",
+        "--version"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.01,
+      "log": "python-version.log"
+    },
+    {
+      "name": "python-packages",
+      "command": [
+        "/tmp/safeledger-fresh-clone-estxzujd/repository/.venv/bin/python",
+        "-m",
+        "pip",
+        "list",
+        "--format=json"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.35,
+      "log": "python-packages.log"
+    },
+    {
+      "name": "dependency-consistency",
+      "command": [
+        "/tmp/safeledger-fresh-clone-estxzujd/repository/.venv/bin/python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.4,
+      "log": "dependency-consistency.log"
+    },
+    {
+      "name": "pytest",
+      "command": [
+        "/tmp/safeledger-fresh-clone-estxzujd/repository/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "--junitxml=/workspace/scratch/1afbddeb34fe/safeledger-ai/evidence/m6/reproducibility-final/pytest.xml"
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 52.44,
+      "log": "pytest.log"
+    }
+  ],
+  "status": "failed",
+  "scope": "Fresh remote checkout,Python venv and npm ci. Existing OS/Python/Node and optional Chromium binary reused;not a pristine VM/browser-install proof.",
+  "observed_commit": "ffbce2e2ba802647542849afe2dd1c039acc703e",
+  "failure": "pytest failed;inspect saved log.",
+  "first_failed_check": "pytest",
+  "finished_at_utc": "2026-10-17T08:27:49.609455+00:00"
+}

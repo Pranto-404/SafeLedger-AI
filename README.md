@@ -1,7 +1,7 @@
 # SafeLedger AI
 Topic E — SME Finance Copilot. Competition prototype; synthetic data and sandbox only.
 
-**Current checkpoint: M3 adapter implemented; live AI evaluation pending.** Authenticated financial APIs and secure sandbox execution remain verified. The bounded agent adapter/dispatcher are mock-tested; actual provider configuration, connected financial UI and deployment remain pending. Registration is unconfirmed. See PROJECT_STATUS.md before continuing.
+**Current checkpoint: M5 local QA verified.** The connected financial dashboard, deterministic services and secure sandbox execution are implemented. Backend tests, real browser workflows and automated accessibility scans passed. M3's bounded agent adapter is mock-tested, but real-model evaluation is still pending. No public deployment or registration completion is claimed. See PROJECT_STATUS.md for exact source commits, results and remaining gates.
 
 ## Local setup
 Python 3.12 and Node 22.12+ (validated here on Node 24.19.0). Run from the repository root:
@@ -29,7 +29,7 @@ Frontend production deployment and a persistent Python backend are not configure
 Read PROJECT_STATUS.md, NEXT_STEPS.md, docs/REQUIREMENTS.md and `git log -5 --oneline`. Do not re-read the PDFs unless a requirement is missing or changes. Verify the current test suite before editing. Source hashes are in docs/SOURCE_MANIFEST.json; attachments contain no implementation evidence.
 
 ## Safety and ownership
-No real banking integrations. Never commit real financial data, IDs, passports, credentials or `.env` files. Owner must select the GitHub account/repository and provide registration status. Dependency licenses and a project license need an owner decision before public release. No compliance certification is claimed.
+No real banking integrations. Never commit real financial data, IDs, passports, credentials or `.env` files. The owner authorized Pranto-404/SafeLedger-AI. Registration remains pending and the owner is handling it. Dependency licenses and a project license need an owner decision before public release. No compliance certification is claimed.
 
 
 ## M1 reproducible financial demo
@@ -98,3 +98,17 @@ SAFELEDGER_EVIDENCE_DIR=evidence/new-m5-run .venv/bin/python scripts/m5_browser_
 This reuses the local real-server harness with private fixture setup,no public test/admin endpoint. It exercises server-denied expired/tampered approvals,rejection replay,tenant/role bypass,network failure/recovery,in-flight logout isolation,inert stored HTML/instruction memos,session401 and10 automated axe accessibility scans. No real LLM/payment call. Environment-specific optional browser runtime settings remain as documented for M4. The full successful owner→independent approval→ledger workflow remains `scripts/m4_browser_demo.py`.
 
 Known-advisory checks:`npm audit --prefix web` and `python -m pip_audit -r api/requirements.lock.txt` (install pip-audit separately as a QA tool). `python scripts/security_scan.py` checks limited credential patterns across reachable Git history/tracked working files and ignored private paths,reporting locations only. Scope is intentionally stated;passing is not proof of complete security. esbuild0.28.1 is a deliberate override to remediate the reported dev-server advisory;reconsider when Vite supports it natively. Full M5 findings,evidence and remaining release limits:docs/M5_QA_REPORT.md.
+
+
+## M6 qualification and submission materials
+`python scripts/verify_clean_clone.py --commit FULL_PUBLISHED_SHA --output evidence/new-qualification` clones the exact remote commit into a temporary checkout,creates a fresh Python venv,runs locked installs/tests,`npm ci`,build,bootstrap,live HTTP and both browser suites. It stops and preserves the first failure. This uses existing OS/Python/Node/browser tools,not a pristine VM. Browser install/access must be prepared first. Normal Playwright Chromium is supported;`SAFELEDGER_CHROMIUM_EXECUTABLE` can select a known installed compatible executable without optional package extraction. M6 reproduced and fixed POSIX npm/Vite child leakage;the harness now terminates process groups and checks both ports close. Windows process-tree teardown still needs platform qualification.
+
+English submission drafts live in `submission/`:technical report,release checklist,10-slide content with speaker notes,target8min30s,and demo script. Deck authoring source uses the separate Artifact Tool presentation runtime,not an application dependency. Final PPTX/video handoff hashes are recorded with M6 evidence. They are checkpoint drafts until live-model/deployment/independent-review/registration/license gates close. No submission was sent.
+
+Optional actual silent English-captioned demo capture:
+
+```bash
+SAFELEDGER_DEMO_OUTPUT=/absolute/path/new-demo.mp4 SAFELEDGER_EVIDENCE_DIR=evidence/new-demo .venv/bin/python scripts/record_demo.py
+```
+
+Requires Playwright Chromium and ffmpeg/ffprobe. The screencast starts after private login,pauses before session changes,records real UI/API/SQLite actions,then burns English captions over the recorded timeline. It has no narration audio and makes no live-model/public-host claim. Output must be a new absolute path;private intermediate frames are deleted. Do not record real credentials or customer data.

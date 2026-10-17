@@ -1,0 +1,44 @@
+........................................................................ [ 31%]
+.......................................................F................ [ 63%]
+........................................................................ [ 95%]
+..........                                                               [100%]
+=================================== FAILURES ===================================
+_______________ test_process_group_cleanup_closes_child_listener _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-3/test_process_group_cleanup_clo0')
+
+    @pytest.mark.skipif(os.name!='posix',reason='POSIX process-group cleanup;Windows requires separate qualification')
+    def test_process_group_cleanup_closes_child_listener(tmp_path):
+        ready=tmp_path/'ready'
+        child="import socket,time;import pytest;s=socket.socket();s.bind(('127.0.0.1',0));s.listen();Path(%r).write_text(str(s.getsockname()[1]));time.sleep(60)"%str(ready)
+        parent="import subprocess,sys,time;subprocess.Popen([sys.executable,'-c',%r]);time.sleep(60)"%child
+        process=subprocess.Popen([sys.executable,'-c',parent],start_new_session=True)
+        try:
+            import time
+            for _ in range(100):
+                if ready.exists():break
+                time.sleep(.02)
+>           assert ready.exists()
+E           AssertionError: assert False
+E            +  where False = exists()
+E            +    where exists = PosixPath('/tmp/pytest-of-root/pytest-3/test_process_group_cleanup_clo0/ready').exists
+
+api/tests/test_harness_cleanup.py:21: AssertionError
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'Path' is not defined
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /tmp/safeledger-fresh-clone-estxzujd/repository/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+api/tests/test_finance.py::test_source_order_and_model_mutation
+  /tmp/safeledger-fresh-clone-estxzujd/repository/.venv/lib/python3.12/site-packages/pydantic/main.py:464: UserWarning: Pydantic serializer warnings:
+    PydanticSerializationUnexpectedValue(Expected `int` - serialized value may not be as expected [field_name='amount_minor', input_value=1.5, input_type=float])
+    return self.__pydantic_serializer__.to_python(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED api/tests/test_harness_cleanup.py::test_process_group_cleanup_closes_child_listener
+1 failed, 225 passed, 2 warnings in 51.04s

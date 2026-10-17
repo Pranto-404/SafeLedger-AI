@@ -1,0 +1,50 @@
+{
+  "status": "reviewed local checkpoint handoff,not final competition release",
+  "application_qualified_commit": "7c7f03f43f6963ed4d642091676e5d7445a610bb",
+  "files": [
+    {
+      "kind": "slides",
+      "filename": "SafeLedger_AI_Competition_Deck_v3.pptx",
+      "bytes": 201898,
+      "sha256": "15974b39690ddea56f75d043ae518a2b58315798c0668e7f0816ab0c38c0b00b"
+    },
+    {
+      "kind": "demo",
+      "filename": "SafeLedger_AI_Local_Demo_v2.mp4",
+      "bytes": 1613528,
+      "sha256": "91cfb3d14d4348eba5f38ac1d16c2a4471ebf73f1a73d822105740b253d15cde"
+    }
+  ],
+  "presentation": {
+    "slides": 10,
+    "target_seconds": 510,
+    "actual_spoken_rehearsal": "not measured",
+    "editable_native_tables": [
+      5,
+      6,
+      7,
+      9
+    ],
+    "package_validation": "evidence/m6/deck-validation.json",
+    "render_review": "All10 slides inspected individually;missing image fixed via embedded PNG bytes,updated slides rerendered/reviewed. Not opened in native PowerPoint."
+  },
+  "video": {
+    "status": "passed",
+    "method": "Actual Chromium Page.startScreencast frames,paused during login/session switch,English captions burned into real-timeline recording",
+    "simulation_only": true,
+    "live_ai_used": false,
+    "narration_audio": false,
+    "scenes": 13,
+    "frames": 28,
+    "duration_seconds": 117.12,
+    "size_bytes": 1613528,
+    "credentials_captured": false,
+    "output_filename": "SafeLedger_AI_Local_Demo_v2.mp4"
+  },
+  "remaining_gates": [
+    "Real-model evaluation",
+    "Public persistent deployment and actual subsequent Git auto-update",
+    "Independent/device review",
+    "Owner registration/license/final external submission"
+  ]
+}

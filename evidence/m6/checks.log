@@ -1,0 +1,24 @@
+M6 actual qualification and handoff commands (2026-10-17 UTC)
+SAFELEDGER_CHROMIUM_MODULE=optional-package ../.venv/bin/python scripts/verify_clean_clone.py --commit f1e58c65a1fdf9a711e789880a7ba1de98396009
+Exit1:initial remote clone/newvenv/locked install/225 tests/npm ci/build/bootstrap/HTTP passed;browser package extraction failed EINVAL chown,and npm/Vite orphan prevented temp cleanup. Actual command arrays/exit codes and logs in reproducibility/.
+SAFELEDGER_CHROMIUM_EXECUTABLE=/tmp/chromium ../.venv/bin/python scripts/m4_browser_demo.py
+Exit0:10 scenarios and both server ports closed after POSIX process-group fix. harness-fix.log/directory.
+../.venv/bin/python -m pytest -q --junitxml=evidence/m6/pytest.xml
+Exit0:226 passed,2 warnings (prior to test platform-decorator edit). pytest.log/xml.
+../.venv/bin/python -m pytest -q api/tests/test_harness_cleanup.py
+First exit1:an import-edit typo in child fixture;retained cleanup-test.log. Corrected explicit pathlib import,then exit0:1 passed;cleanup-test-fixed.log.
+SAFELEDGER_CHROMIUM_EXECUTABLE=/tmp/chromium ../.venv/bin/python scripts/verify_clean_clone.py --commit ffbce2e2ba802647542849afe2dd1c039acc703e --output evidence/m6/reproducibility-final
+Exit1:225 passed +1 child-fixture NameError. No test removed/hidden. reproducibility-final/ preserved.
+SAFELEDGER_CHROMIUM_EXECUTABLE=/tmp/chromium ../.venv/bin/python scripts/verify_clean_clone.py --commit 7c7f03f43f6963ed4d642091676e5d7445a610bb --output evidence/m6/reproducibility-verified
+Exit0:all15 commands passed. Independent checkout/venv/site-packages/npm ci.226 pytest(0 skips),TypeScript/Vite build,bootstrap,live HTTP concurrency/restart,10 browser full-workflow +8 adversarial scenarios,10axe scans/0 violations. Exact commands,versions,exit codes in result.json and logs. Existing OS/Python/Node/Chromium tools reused,not pristine VM. Browser extraction/CDN install not qualified.
+Artifact Tool deck builder via bundled CODEX_PRIMARY_RUNTIME_NODE
+Final exit0:10-slide PPTX,510-second target speaker timing,4 native tables. First missing table-owner validation declarations corrected;second existing receipt-path collision corrected with new output/receipt;missing image from path source fixed using embedded PNG bytes. Failures retained:deck-build.log,deck-build-final.log,deck-build-v2.log. Final:deck-build-v3.log,deck-validation.json. All10 rendered slides reviewed,affected slides re-rendered. Not opened in native PowerPoint.
+SAFELEDGER_CHROMIUM_EXECUTABLE=/tmp/chromium SAFELEDGER_DEMO_OUTPUT=absolute/new.mp4 SAFELEDGER_EVIDENCE_DIR=evidence/m6/demo-final ../.venv/bin/python scripts/record_demo.py
+Final exit0:13 actual browser/API/SQLite scenes,117.12 seconds,English captions,no narration audio,no credential fields captured. Page screencast pauses before login/account switching. ffmpeg/ffprobe encoded/probed. Actual final-frame samples inspected;approval controls visible. First121.68-second capture had captions covering controls;revised capture/font/viewport. Both run logs/manifests retained,only final video handed off. No real LLM/public endpoint/real money.
+../.venv/bin/python scripts/security_scan.py
+Exit0:19 reachable commits/268 unique historical blobs +staged tracked worktree,0 known-pattern candidates. Output copied toM6;originalM5 evidence restored byte-for-byte,not overwritten. Limited patterns,not proof of complete secret/PII absence.
+../.venv/bin/python -m compileall -q api scripts
+node --check scripts/record_demo.cjs
+node --check submission/build_deck.mjs
+git diff --cached --check
+All exit0. No financial policy or money-calculation change in M6. Remaining release gates in docs/M6_PREPARATION_REPORT.md and submission/SUBMISSION_CHECKLIST.md.

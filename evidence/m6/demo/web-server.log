@@ -1,0 +1,9 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> safeledger-web@0.0.1 dev
+> vite --host 127.0.0.1 --port 43491 --strictPort
+
+
+  VITE v7.3.7  ready in 498 ms
+
+  ➜  Local:   http://127.0.0.1:43491/

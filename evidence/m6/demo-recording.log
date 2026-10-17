@@ -1,0 +1,2 @@
+{"status":"passed","scenes":13,"duration_seconds":121.68,"credentials_captured":false}
+PASS:both local server ports closed after browser harness cleanup.
