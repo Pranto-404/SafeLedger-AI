@@ -18,7 +18,8 @@ from urllib.parse import urlsplit
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import Field, field_validator
 from api.app import security as sec
-from api.app.contracts import Contract
+from api.app.contracts import Contract, Currency
+from api.app.currencies import scale
 from api.app.services.finance import fingerprint
 from api.app.routes import db_connection, principal
 
@@ -88,9 +89,8 @@ def set_cookie(response, token):
 
 
 def identity(db, actor):
-    row=db.execute('SELECT a.username FROM auth_accounts a JOIN account_members m ON m.account_id=a.account_id WHERE m.user_id=?',(actor.user_id,)).fetchone()
-    meta=db.execute('SELECT name,kind FROM workspace_meta WHERE business_id=?',(actor.business_id,)).fetchone()
-    return dict(workspace_name=meta[0] if meta else ('Example workspace' if actor.business_id in PUBLIC_TEMPLATES else 'Existing workspace'), workspace_kind=meta[1] if meta else 'demo',user_id=actor.user_id,business_id=actor.business_id,role=actor.role,username=row[0] if row else None,guest=actor.business_id in PUBLIC_TEMPLATES,simulation_only=True)
+    row=db.execute("SELECT w.name,w.kind,a.username FROM (SELECT ? AS business_id,? AS user_id) p LEFT JOIN workspace_meta w ON w.business_id=p.business_id LEFT JOIN account_members m ON m.user_id=p.user_id LEFT JOIN auth_accounts a ON a.account_id=m.account_id",(actor.business_id,actor.user_id)).fetchone()
+    return dict(workspace_name=row[0] if row[0] else ('Example workspace' if actor.business_id in PUBLIC_TEMPLATES else 'Existing workspace'), workspace_kind=row[1] or 'demo',user_id=actor.user_id,business_id=actor.business_id,role=actor.role,username=row[2],guest=actor.business_id in PUBLIC_TEMPLATES,simulation_only=True)
 
 
 class Credentials(Contract):
@@ -112,8 +112,12 @@ class Credentials(Contract):
         return value
 
 
+class SignupCredentials(Credentials):
+    currency: Currency = 'BDT'
+
+
 @router.post('/auth/signup',status_code=201)
-def signup(body:Credentials, request:Request, response:Response, db=Depends(db_connection)):
+def signup(body:SignupCredentials, request:Request, response:Response, db=Depends(db_connection)):
     browser_origin(request);rate(request,db,'signup',4)
     hashed=password_hash(body.password)
     account=uuid.uuid4().hex;business='workspace-'+uuid.uuid4().hex;user='user-'+uuid.uuid4().hex;code=secrets.token_urlsafe(24)
@@ -123,7 +127,7 @@ def signup(body:Credentials, request:Request, response:Response, db=Depends(db_c
             db.execute('INSERT INTO auth_accounts VALUES (?,?,?,?)',(account,body.username,hashed,sec.now()))
             db.execute("INSERT INTO security_users VALUES (?,?, 'owner',1)",(user,business))
             db.execute('INSERT INTO account_members VALUES (?,?,?)',(account,business,user))
-            create_workspace_data(db,business,'personal','My workspace')
+            create_workspace_data(db,business,'personal','My workspace',body.currency)
             db.execute('INSERT INTO auth_recovery VALUES (?,?)',(account,hashlib.sha256(code.encode()).hexdigest()))
             token=issue(db,user)
             sec.audit(db,sec.authenticate(db,token),'account-'+account,'WORKSPACE_CREATED',{'sample_data':False})
@@ -232,12 +236,12 @@ def today_bd():
     return datetime.now(timezone(timedelta(hours=6))).date()
 
 
-def create_workspace_data(db,business,kind,name):
+def create_workspace_data(db,business,kind,name,currency="BDT"):
     from api.app.services.finance import Dataset
     if kind!='personal':sec.fail(422,'PERSONAL_WORKSPACE_REQUIRED')
-    ds=Dataset(opening_source_id='opening-zero',opening_on=date(1970,1,1),as_of=today_bd(),opening_balance_minor=0,currency='BDT',invoices=[],events=[])
+    ds=Dataset(opening_source_id='opening-zero',opening_on=date(1970,1,1),as_of=today_bd(),opening_balance_minor=0,currency=currency,invoices=[],events=[])
     db.execute('INSERT INTO financial_datasets VALUES (?,?,?)',(business,fingerprint(ds),ds.model_dump_json()))
-    db.execute('INSERT INTO security_policies VALUES (?,?,?)',(business,0,10000000))
+    db.execute('INSERT INTO security_policies VALUES (?,?,?)',(business,0,100000 * scale(currency)))
     db.execute('INSERT INTO workspace_meta VALUES (?,?,?)',(business,name,'personal'))
 
 
@@ -254,6 +258,7 @@ def personal_member(db,account):
 
 
 class NewWorkspace(Contract):
+    currency: Currency = 'BDT'
     kind: str = Field(pattern='^personal$',default='personal')
     name: str = Field(min_length=1,max_length=60)
 
@@ -268,7 +273,7 @@ def new_workspace(body:NewWorkspace,response:Response,actor=Depends(principal),d
         business='workspace-'+uuid.uuid4().hex;user='user-'+uuid.uuid4().hex
         db.execute("INSERT INTO security_users VALUES (?,?,'owner',1)",(user,business))
         db.execute('INSERT INTO account_members VALUES (?,?,?)',(member[0],business,user))
-        create_workspace_data(db,business,body.kind,body.name)
+        create_workspace_data(db,business,body.kind,body.name,body.currency)
         token=issue(db,user)
         sec.audit(db,sec.authenticate(db,token),'workspace-'+business,'WORKSPACE_CREATED',{'sample_data':False})
     set_cookie(response,token)

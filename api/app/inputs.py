@@ -50,12 +50,12 @@ def add_record(body:InputRecord,actor=Depends(principal),db=Depends(db_connectio
             if not body.vendor_id or not body.invoice_number or not body.due_on:sec.fail(422,'INVOICE_FIELDS_REQUIRED')
             if body.effective_on>today_bd() or body.due_on<body.effective_on:sec.fail(422,'INVALID_INVOICE_DATES')
             if body.direction!='inflow' or body.status!='cleared':sec.fail(422,'UNEXPECTED_INVOICE_CASH_FIELDS')
-            record=dict(source_record_id=record_id,invoice_id=record_id,vendor_id=body.vendor_id,invoice_number=body.invoice_number,issued_on=body.effective_on.isoformat(),due_on=body.due_on.isoformat(),amount_minor=body.amount_minor,currency='BDT',status='open',memo=body.memo)
+            record=dict(source_record_id=record_id,invoice_id=record_id,vendor_id=body.vendor_id,invoice_number=body.invoice_number,issued_on=body.effective_on.isoformat(),due_on=body.due_on.isoformat(),amount_minor=body.amount_minor,currency=ds.currency,status='open',memo=body.memo)
             raw['invoices'].append(record);kind='invoice'
         else:
             if body.vendor_id or body.invoice_number or body.due_on or body.trust_vendor:sec.fail(422,'UNEXPECTED_CASH_INVOICE_FIELDS')
             if body.status=='cleared' and body.effective_on>today_bd():sec.fail(422,'CLEARED_DATE_IN_FUTURE')
-            record=dict(source_record_id=record_id,event_id=record_id,direction=body.direction,status=body.status,effective_on=body.effective_on.isoformat(),amount_minor=body.amount_minor,currency='BDT',invoice_id=None)
+            record=dict(source_record_id=record_id,event_id=record_id,direction=body.direction,status=body.status,effective_on=body.effective_on.isoformat(),amount_minor=body.amount_minor,currency=ds.currency,invoice_id=None)
             raw['events'].append(record);kind='event'
         raw['as_of']=max(ds.as_of,today_bd()).isoformat()
         try:new=validated(raw)
@@ -88,6 +88,7 @@ def import_initial(body:Dataset,actor=Depends(principal),db=Depends(db_connectio
         previous=sec.original_dataset(db,current.business_id)
         if previous.invoices or previous.events or previous.opening_balance_minor or db.execute('SELECT 1 FROM proposals WHERE business_id=?',(current.business_id,)).fetchone():sec.fail(409,'WORKSPACE_NOT_EMPTY')
         new=validated(body)
+        if new.currency!=previous.currency:sec.fail(409,'IMPORT_CURRENCY_MISMATCH')
         db.execute('INSERT OR IGNORE INTO dataset_versions VALUES (?,?,?)',(current.business_id,fingerprint(previous),previous.model_dump_json()))
         db.execute('UPDATE financial_datasets SET dataset_sha256=?,payload=? WHERE business_id=?',(fingerprint(new),new.model_dump_json(),current.business_id))
         for kind,record_id,record in [('invoice',i.invoice_id,i) for i in new.invoices]+[('event',e.event_id,e) for e in new.events]:
@@ -112,3 +113,30 @@ def vendor_permission(body:VendorPermission,actor=Depends(principal),db=Depends(
         db.execute('INSERT INTO trusted_vendors VALUES (?,?,?) ON CONFLICT(business_id,vendor_id) DO UPDATE SET enabled=excluded.enabled',(current.business_id,body.vendor_id,int(body.enabled)))
         sec.audit(db,current,'payee-'+uuid.uuid4().hex,'PAYEE_PERMISSION_CHANGED',{'vendor_id':body.vendor_id,'enabled':body.enabled})
     return {'simulation_only':True}
+
+
+from api.app.contracts import Currency
+from api.app.currencies import scale
+
+class WorkspaceCurrency(Contract):
+    currency: Currency
+    expected_revision: str = Field(pattern=r'^[a-f0-9]{64}$')
+
+
+@router.post('/workspace/currency')
+def set_currency(body:WorkspaceCurrency,actor=Depends(principal),db=Depends(db_connection)):
+    if actor.role!='owner':sec.fail(403,'OWNER_REQUIRED')
+    with sec.transaction(db):
+        current=sec.recheck(db,actor)
+        if current.role!='owner':sec.fail(403,'OWNER_REQUIRED')
+        sec.verified_audit(db,current.business_id)
+        previous=sec.original_dataset(db,current.business_id)
+        if fingerprint(previous)!=body.expected_revision:sec.fail(409,'DATA_CHANGED_REFRESH_REQUIRED')
+        if body.currency==previous.currency:return dict(simulation_only=True)
+        if previous.invoices or previous.events or previous.opening_balance_minor or db.execute('SELECT 1 FROM proposals WHERE business_id=?',(current.business_id,)).fetchone():sec.fail(409,'WORKSPACE_CURRENCY_LOCKED')
+        raw=previous.model_dump(mode='json');raw['currency']=body.currency;new=validated(raw)
+        db.execute('INSERT OR IGNORE INTO dataset_versions VALUES (?,?,?)',(current.business_id,fingerprint(previous),previous.model_dump_json()))
+        db.execute('UPDATE financial_datasets SET dataset_sha256=?,payload=? WHERE business_id=?',(fingerprint(new),new.model_dump_json(),current.business_id))
+        db.execute('UPDATE security_policies SET reserve_minor=0,payment_limit_minor=? WHERE business_id=?',(100000*scale(new.currency),current.business_id))
+        sec.audit(db,current,'currency-'+uuid.uuid4().hex,'CURRENCY_CHANGED',dict(previous_currency=previous.currency,currency=new.currency,dataset_sha256=fingerprint(new),reserve_minor=0,payment_limit_minor=100000*scale(new.currency)))
+    return dict(simulation_only=True)

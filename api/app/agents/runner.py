@@ -73,7 +73,7 @@ def run_task(db,actor,request,provider=None):
             policy=db.execute('SELECT reserve_minor FROM security_policies WHERE business_id=?',(actor.business_id,)).fetchone()
             if policy is None:sec.fail(409,'POLICY_NOT_CONFIGURED')
             def fact(identity,value,sources):
-                facts[identity]={'fact_id':identity,'value_minor':value,'currency':'BDT','source_ids':list(sources)}
+                facts[identity]={'fact_id':identity,'value_minor':value,'currency':ds.currency,'source_ids':list(sources)}
             for name,args in plan:
                 if name=='get_business_snapshot':
                     result=snapshot(ds);fact('balance',result['balance_minor'],result['source_ids']);reasons.add('VERIFIED_BALANCE')

@@ -45,7 +45,7 @@ def test_valid_invoice_preserves_source_and_exact_amount():
     assert parsed.amount_minor == 3500000
     assert parsed.source_record_id == "row-1"
 
-@pytest.mark.parametrize("field,value", [("currency","USD"), ("due_on","2026-09-01"), ("business_id","other-tenant"), ("role","approver")])
+@pytest.mark.parametrize("field,value", [("currency","INVALID"), ("due_on","2026-09-01"), ("business_id","other-tenant"), ("role","approver")])
 def test_reject_currency_dates_and_client_authority(field, value):
     row = invoice(); row[field] = value
     with pytest.raises(ValidationError): InvoiceInput.model_validate(row)

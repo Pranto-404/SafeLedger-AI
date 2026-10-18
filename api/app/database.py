@@ -142,5 +142,6 @@ def connect():
     else:
         if os.environ.get('VERCEL')=='1':raise sqlite3.DatabaseError('Persistent database required on Vercel')
         connection=sqlite3.connect(os.environ.get('SAFELEDGER_DB','./safeledger.sqlite3'),timeout=5,check_same_thread=False)
-    connection.execute('PRAGMA foreign_keys=ON')
+    # RemoteConnection enables foreign keys in its first pipeline request.
+    if not isinstance(connection,RemoteConnection):connection.execute('PRAGMA foreign_keys=ON')
     return connection

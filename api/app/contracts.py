@@ -15,6 +15,14 @@ def iso_date(value):
     return date.fromisoformat(value)
 
 ISODate = Annotated[date, BeforeValidator(iso_date)]
+
+def valid_currency(value):
+    from api.app.currencies import CURRENCIES
+    if not isinstance(value,str) or value not in CURRENCIES:
+        raise ValueError('Choose a supported ISO 4217 currency')
+    return value
+
+Currency = Annotated[str, BeforeValidator(valid_currency)]
 RecordId = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$")]
 
 class Contract(BaseModel):
@@ -28,7 +36,7 @@ class InvoiceInput(Contract):
     issued_on: ISODate
     due_on: ISODate
     amount_minor: PositiveMinor
-    currency: Literal["BDT"]
+    currency: Currency
     status: Literal["open", "paid"] = "open"
     memo: Annotated[str, Field(max_length=2000)] = ""
 
@@ -45,7 +53,7 @@ class CashEventInput(Contract):
     status: Literal["cleared", "scheduled"]
     effective_on: ISODate
     amount_minor: PositiveMinor
-    currency: Literal["BDT"]
+    currency: Currency
 
     invoice_id: RecordId | None = None
 
