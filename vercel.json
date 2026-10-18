@@ -1,15 +1,10 @@
 {
-  "buildCommand": "npm run build --prefix web",
-  "outputDirectory": "web/dist",
-  "installCommand": "npm install --prefix web",
-  "framework": null,
+  "buildCommand": "npm ci --prefix web && npm run build --prefix web && python scripts/build_vercel_frontend.py",
+  "installCommand": "python -m pip install -r requirements.txt",
+  "framework": "fastapi",
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://safeledger-ai.onrender.com/api/:path*"
-    },
-    {
-      "source": "/(.*)",
+      "source": "/",
       "destination": "/index.html"
     }
   ],
@@ -35,5 +30,13 @@
         }
       ]
     }
-  ]
+  ],
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "fluid": true,
+  "functions": {
+    "api/app/main.py": {
+      "maxDuration": 300,
+      "excludeFiles": "{.private/**,api/tests/**,data/**,docs/**,evidence/**,scripts/**,submission/**,web/**,node_modules/**,public/**}"
+    }
+  }
 }

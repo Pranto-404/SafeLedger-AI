@@ -1,3 +1,6 @@
 [tool.pytest.ini_options]
 testpaths = ["api/tests"]
 addopts = "-ra"
+
+[tool.vercel]
+entrypoint = "api.app.main:app"

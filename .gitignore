@@ -14,3 +14,6 @@ test-results/
 *.key
 
 .private/
+
+# Generated static frontend for native Vercel deployment
+/public/
