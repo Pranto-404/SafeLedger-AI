@@ -2,7 +2,7 @@
 
 Current scope supersedes every demo instruction below: no public examples, no preloaded figures or fictional financing. Personal records preserved; archived sample access withdrawn without deletion. Empty signup, manual inputs/history, exact money, independent approval, signed audit, private export, one-time recovery and deferred optional AI are implemented. Explicit sharing consent is mandatory for external AI; no real provider is contacted by the new acceptance suite.
 
-Local qualification:318backend tests passed,14browser scenarios,5axe scans with zero violations,4responsive widths. Initial JavaScript65.62KB gzip; workspace and Assistant separate. Publication/live verification is in progress; consult REAL_DATA_CHECKPOINT.md for the current deployment and known authentication blocker. Render still serves the API; no paid resources enabled. Do not claim completed Vercel backend migration.
+Local qualification:318backend tests passed,14browser scenarios,5axe scans with zero violations,4responsive widths. Initial JavaScript65.62KB gzip; workspace and Assistant separate. Application2bf4e22146d6b441c1d6a6f208ffa163588c6fde is published: Render dep-dba6v05g1s2s73b1iu5g LIVE, Vercel SUCCESS,39public checks passed. Old personal account/balance/audit/one posting retained across actual deployment. Public initial asset bytes match qualified build. Consult REAL_DATA_CHECKPOINT.md for the remaining Google-origin authentication blocker. Render still serves the API; no paid resources enabled. Do not claim completed Vercel backend migration.
 
 ## Historical status (superseded where it conflicts)
 

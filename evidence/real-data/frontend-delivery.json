@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "public_initial_asset": "/assets/index-lr3QR0u2.js",
+  "sha256": "968fded0faf1b58642509bc12a9953cf390253e10f49213b69e50e844592d2ad",
+  "matches_local_qualified_build": true,
+  "csp_present": true,
+  "nosniff": true
+}

@@ -1,4 +1,10 @@
-# Active real-data release — 18 October 2026
+# Real-records release published — 18 October 2026
+
+PUBLIC: https://safeledger-ai.vercel.app/ . Application commit 2bf4e22146d6b441c1d6a6f208ffa163588c6fde, qualified tree3ce157fcea22ffd46289241109f907c95fd0af98. Render dep-dba6v05g1s2s73b1iu5g LIVE and Vercel SUCCESS.39actual public checks passed; old personal balance/audit and exactly one previous posting survived this app deployment. Public initial JS bytes match the locally qualified build. No real provider calls made by new acceptance.318backend tests/14browser scenarios/5zero-violation axe scans/4widths. Evidence:evidence/real-data/. No paid resource enabled.
+
+ONLY BLOCKED HOSTING WORK: native Vercel backend cutover; API remains Render. Vercel403 and secure Google sign-in's accounts.google.com observation rejected by automatic approval review. Need explicit Google login-origin permission from user before resuming that flow; never ask for pasted secrets. Native candidate24files in ignored .private/vercel-real-records-candidate, local import/startup/empty-workspace/no-provider passed; missing persistent database is correctly refused when VERCEL=1. Do not repoint production before authenticated preview/persistent-secret qualification.
+
+CONTINUE: user can authorize accounts.google.com solely for completing Vercel sign-in. Then verify scope/access, privately provision persistent DB and existing signing identity/free-model settings, test native preview end-to-end/persistence, change frontend rewrite only after it passes, deploy and verify again. Do not delete/suspend Render before the replacement is qualified. Keep BDT0 budget. Local browser plugin is unavailable; use the existing supported secure cloud browser flow.
 
 User supersedes demo scope: NO demo/sample/fictional content in product, own actual financial records only, optional AI on demand/lazy load, lighter and more polished UI, production-readiness analysis, Render→Vercel with browser if necessary, BDT0 budget. Explicitly authorized publication, testing and deployments persists. No real bank-transfer integration is requested or available; recordkeeping must not imply moving funds.
 
@@ -23,3 +29,9 @@ Vercel plugin still403 in challanger2. Cloud tab3 briefly rendered a project she
 ## Release next steps
 
 Publish tested source using expected GitHub head08d0e69, no force. Observe auto-deploys; run scripts/verify_real_records_live.py to prove old personal records retained, guest/fictional/sample routes retired, new account empty, own-input approval/export/recovery and consent gate. Save deployment commit/evidence/checkpoint and secret-free ZIP; test persistence after actual app deploy. Do not call external AI with private customer data during acceptance.
+
+## Final public verification
+
+39checks passed at application2bf4e22: old personal account/balance/audit retained, guest410, zero8-character signup, Secure HttpOnly cookie, manual exact-cent input/retry/idempotency, invoice forecast, self-approval denied, tenant isolation, invited independent approval/execution retry, one posting, continued input integrity, CSRF denial, sample creation422, fictional financing410, private export, optional-AI config read/no provider, missing consent403, revoked logout/restored password login, recovery rotation/data preservation/spent code401. Separate prior-personal-persistence evidence confirms old audited posting exactly once after actual app deployment. Same build initial asset hash and live security headers checked.
+
+Known limits: user-entered records are not bank-verified; no bank transfers. Forecast uses the displayed dataset snapshot date, advanced when records are entered; it is not an automatic bank feed. Append-only inputs have no edit/delete UI. Recovery needs saved code; no email recovery. AI is optional, explicit opt-in for non-confidential input only; free-provider data terms and quota apply. Free Render cold starts/API latency remain; no independent penetration-test certification, uptime guarantee, or physical-device qualification claimed. Historical source fixtures/reports are development provenance and are not runtime user defaults.

@@ -1,0 +1,9 @@
+{
+  "status": "passed_local_only",
+  "candidate_import_and_startup": true,
+  "empty_workspace": true,
+  "fixtures_present": false,
+  "provider_deferred": true,
+  "vercel_ephemeral_storage_guard": "correctly_rejected_no_persistent_database",
+  "native_vercel_deploy": "not_attempted_authentication_blocked"
+}
