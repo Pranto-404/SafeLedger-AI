@@ -1,4 +1,4 @@
-"""M2 authenticated synthetic-finance API; sandbox posting only after human approval."""
+"""Authenticated financial recordkeeping; ledger posting only after human approval."""
 from contextlib import asynccontextmanager, closing
 import os
 import logging
@@ -10,8 +10,8 @@ from fastapi.exceptions import RequestValidationError
 from api.app import security
 from api.app.body_limit import BodyLimitMiddleware
 from api.app.routes import router
-from api.app.agents import runner
-from api.app.agents.provider import ProviderError
+from api.app.agents.schema import create_schema as agent_schema
+from api.app.agents.errors import ProviderError
 from api.app.database import connect
 from api.app import accounts, inputs
 
@@ -33,9 +33,9 @@ async def lifespan(app: FastAPI):
             db.execute("CREATE TABLE IF NOT EXISTS schema_meta (version INTEGER PRIMARY KEY)")
             db.execute("INSERT OR IGNORE INTO schema_meta(version) VALUES (?)", (SCHEMA_VERSION,))
         security.create_schema(db)
-        runner.create_schema(db)
+        agent_schema(db)
         accounts.schema(db)
-        accounts.prepare_template(db)
+        accounts.archive_legacy_examples(db)
     yield
 
 app = FastAPI(title="SafeLedger AI", version="0.3.0", lifespan=lifespan)

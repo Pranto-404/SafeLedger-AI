@@ -24,12 +24,11 @@ def test_empty_account_eight_chars_and_exact_whitespace_password(world):
     assert c.post('/api/auth/login',json={'username':'new_user','password':' abcd123 '}).status_code==200
 
 
-def test_demo_opt_in_and_personal_isolation(world):
+def test_only_empty_personal_workspaces_allowed(world):
     c,_=world;personal=signup(c,'personal_user')
-    demo=c.post('/api/account/workspaces',json={'kind':'demo','name':'My practice'});assert demo.status_code==201
-    assert c.get('/api/workspace').json()['snapshot']['balance_minor']==12000000
-    assert demo.json()['business_id']!=personal['business_id']
-    c.post('/api/account/switch',json={'business_id':personal['business_id']})
+    assert c.post('/api/account/workspaces',json={'kind':'demo','name':'Not allowed'}).status_code==422
+    added=c.post('/api/account/workspaces',json={'kind':'personal','name':'Second business'})
+    assert added.status_code==201 and added.json()['business_id']!=personal['business_id']
     assert c.get('/api/workspace').json()['snapshot']['balance_minor']==0
     assert len(c.get('/api/account/workspaces').json()['workspaces'])==2
 
@@ -83,9 +82,8 @@ def test_prior_approval_and_posting_survive_new_evidence(world):
 
 
 def test_guest_csrf_tenant_no_trust_and_import_overwrite(world):
-    c,_=world;c.post('/api/auth/guest',json={})
-    assert record(c)[0].status_code==403
-    assert c.post('/api/account/workspaces',json={'kind':'demo','name':'No'}).status_code==403
+    c,_=world;assert c.post('/api/auth/guest',json={}).status_code==410
+    assert c.post('/api/workspace/records',json={'request_id':str(uuid.uuid4()),'expected_revision':'0'*64,'kind':'cash','amount_minor':100,'effective_on':today_bd().isoformat()}).status_code==401
     personal=signup(c,'input_owner')
     b=c.get('/api/workspace').json();r,body=record(c,amount_minor=123)
     assert c.post('/api/workspace/records',json={**body,'request_id':str(uuid.uuid4())},headers={'Origin':'https://evil.test'}).status_code==403

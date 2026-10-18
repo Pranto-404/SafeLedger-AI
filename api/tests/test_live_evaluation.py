@@ -24,7 +24,7 @@ def budget(calls=14,usd='1'):return ev.Budget(calls,Decimal(usd),Decimal('2'),De
 @pytest.mark.parametrize('index,plan',[
     (0,[call('get_business_snapshot')]),
     (1,[call('project_cash_flow',{'horizon_days':30,'delay_inflows_days':0})]),
-    (2,[call('compare_financing')]),
+    (2,[call('project_cash_flow',{'horizon_days':7,'delay_inflows_days':0})]),
     (3,[call('analyze_invoice',{'invoice_id':'INV-105'}),call('propose_payment',{'invoice_id':'INV-105'})]),
     (4,[call('analyze_invoice',{'invoice_id':'INV-104'})]),
     (5,[call('get_business_snapshot')]),

@@ -1,9 +1,9 @@
 const messages:Record<string,string> = {
   DUPLICATE_INVOICE_BLOCKED:'This invoice may be a duplicate. Review its evidence before continuing.',
-  INVOICE_ALREADY_PAID:'This invoice has already been paid in the sandbox.',
+  INVOICE_ALREADY_PAID:'This invoice has already been recorded as paid.',
   INSUFFICIENT_AVAILABLE_CASH:'There is not enough available cash after the required reserve.',
   PROPOSAL_EXPIRED:'This proposal expired. Review the invoice and prepare a new proposal.',
-  AI_QUOTA_EXHAUSTED:'The free AI quota is temporarily exhausted. Cash flow and sandbox payments still work.',
+  AI_QUOTA_EXHAUSTED:'The free AI quota is temporarily exhausted. Cash flow and payment recording still work.',
   AI_NOT_CONFIGURED:'The assistant is not available yet. You can still explore the other tools.',
   AI_TIMEOUT_OR_NETWORK_FAILURE:'The assistant took too long to respond. Please try again later.',
   REQUEST_BUDGET_EXCEEDED:'Too many requests. Please wait a minute before trying again.',
@@ -40,4 +40,20 @@ export function parseMinor(text: string): number {
   if (!/^\d{1,9}(\.\d{1,2})?$/.test(text)) throw new Error('Enter a nonnegative BDT amount with at most two decimal places.');
   const [whole, fraction = ''] = text.split('.');
   return Number(whole) * 100 + Number(fraction.padEnd(2, '0'));
+}
+
+const friendly: Record<string,string> = {
+  INVALID_USERNAME_OR_PASSWORD: 'That username and password do not match. Please try again.',
+  USERNAME_UNAVAILABLE: 'That username is already in use. Try another one.',
+  REQUEST_BUDGET_EXCEEDED: 'A few too many requests. Please wait a minute and try again.',
+  INVITATION_INVALID_OR_EXPIRED: 'This invitation has expired or was already used. Ask the workspace owner for a new one.',
+  INVALID_RECOVERY_DETAILS:'The username and recovery code do not match. Check your saved code.',
+  ALREADY_A_WORKSPACE_MEMBER: 'You already belong to that workspace. Select it from the workspace list.',
+};
+export async function accountRequest<T>(path:string, body?:unknown, signal?:AbortSignal):Promise<T> {
+  const r = await fetch('/api'+path,{method:body===undefined?'GET':'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-SafeLedger-Client':'web'},body:body===undefined?undefined:JSON.stringify(body),signal:signal?AbortSignal.any([signal,AbortSignal.timeout(90000)]):AbortSignal.timeout(90000)});
+  const data=await r.json().catch(()=>null);
+  if(!r.ok) throw new Error(friendly[data?.error?.code] || (r.status===422?'Check your username and use a password of at least 8 characters.':data?.error?.code?.replaceAll('_',' ') || 'The server is unavailable. Please try again.'));
+  if(data?.simulation_only!==true)throw new Error('Unexpected server response. Please try again.');
+  return data as T;
 }

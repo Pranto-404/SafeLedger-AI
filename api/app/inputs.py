@@ -53,7 +53,7 @@ def add_record(body:InputRecord,actor=Depends(principal),db=Depends(db_connectio
             record=dict(source_record_id=record_id,invoice_id=record_id,vendor_id=body.vendor_id,invoice_number=body.invoice_number,issued_on=body.effective_on.isoformat(),due_on=body.due_on.isoformat(),amount_minor=body.amount_minor,currency='BDT',status='open',memo=body.memo)
             raw['invoices'].append(record);kind='invoice'
         else:
-            if body.vendor_id or body.invoice_number or body.due_on or body.trust_vendor or body.memo:sec.fail(422,'UNEXPECTED_CASH_INVOICE_FIELDS')
+            if body.vendor_id or body.invoice_number or body.due_on or body.trust_vendor:sec.fail(422,'UNEXPECTED_CASH_INVOICE_FIELDS')
             if body.status=='cleared' and body.effective_on>today_bd():sec.fail(422,'CLEARED_DATE_IN_FUTURE')
             record=dict(source_record_id=record_id,event_id=record_id,direction=body.direction,status=body.status,effective_on=body.effective_on.isoformat(),amount_minor=body.amount_minor,currency='BDT',invoice_id=None)
             raw['events'].append(record);kind='event'
@@ -71,7 +71,7 @@ def add_record(body:InputRecord,actor=Depends(principal),db=Depends(db_connectio
         runtime=sec.runtime_dataset(db,current.business_id)
         if len(runtime.events)>2000:sec.fail(409,'RUNTIME_EVENT_CAPACITY_EXCEEDED')
         db.execute('INSERT INTO workspace_input_requests VALUES (?,?,?)',(current.business_id,body.request_id,digest))
-        sec.audit(db,current,'input-'+body.request_id,'RECORD_ADDED',dict(source_id=record_id,kind=kind,previous_revision=fingerprint(ds),dataset_sha256=fingerprint(new),record_sha256=fingerprint(typed),payee_allowed=body.trust_vendor))
+        sec.audit(db,current,'input-'+body.request_id,'RECORD_ADDED',dict(source_id=record_id,kind=kind,previous_revision=fingerprint(ds),dataset_sha256=fingerprint(new),record_sha256=fingerprint(typed),payee_allowed=body.trust_vendor,note=body.memo))
     return dict(source_id=record_id,replayed=False,simulation_only=True)
 
 

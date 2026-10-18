@@ -7,10 +7,7 @@ from urllib.parse import urlsplit
 import httpx
 
 
-class ProviderError(Exception):
-    def __init__(self,code='AI_UNAVAILABLE'):
-        self.code=code
-        super().__init__(code)
+from api.app.agents.errors import ProviderError
 
 
 def strict_json(text):

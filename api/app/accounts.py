@@ -1,5 +1,5 @@
-"""Self-service synthetic workspaces. Passwords are scrypt hashes; sessions are HttpOnly.
-No email delivery or external identity service is required for this zero-budget demo.
+"""Self-service private financial record workspaces. Passwords are scrypt hashes; sessions are HttpOnly.
+No email delivery or external identity service is required for this zero-budget application.
 """
 from contextlib import closing
 from datetime import datetime, timezone, timedelta, date
@@ -19,8 +19,6 @@ from fastapi import APIRouter, Depends, Request, Response
 from pydantic import Field, field_validator
 from api.app import security as sec
 from api.app.contracts import Contract
-from api.app.services.intake import parse_json
-from api.app.services.storage import store_dataset
 from api.app.services.finance import fingerprint
 from api.app.routes import db_connection, principal
 
@@ -34,6 +32,7 @@ DUMMY_SALT = '0'*32
 
 def schema(db):
     db.executescript('''
+    CREATE TABLE IF NOT EXISTS auth_recovery(account_id TEXT PRIMARY KEY REFERENCES auth_accounts(account_id), code_hash TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS auth_accounts(account_id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, created_at INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS account_members(account_id TEXT NOT NULL REFERENCES auth_accounts(account_id), business_id TEXT NOT NULL, user_id TEXT UNIQUE NOT NULL REFERENCES security_users(user_id), PRIMARY KEY(account_id,business_id));
     CREATE TABLE IF NOT EXISTS workspace_meta(business_id TEXT PRIMARY KEY, name TEXT NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('personal','demo')));
@@ -42,21 +41,14 @@ def schema(db):
     ''')
 
 
-def prepare_template(db):
-    if not db.execute('SELECT 1 FROM financial_datasets WHERE business_id=?', (TEMPLATE,)).fetchone():
-        ds = parse_json((Path(__file__).resolve().parents[2]/'data/fixtures/duplicate_exact.json').read_bytes())
-        previous=db.execute('SELECT dataset_sha256 FROM financial_datasets WHERE business_id=?',('public-demo-v2',)).fetchone()
-        if previous and previous[0]==fingerprint(ds):
-            with db:
-                db.execute('INSERT OR IGNORE INTO financial_datasets SELECT ?,dataset_sha256,payload FROM financial_datasets WHERE business_id=?',(TEMPLATE,'public-demo-v2'))
-                db.execute('INSERT OR IGNORE INTO source_records SELECT ?,source_record_id,kind,record_id,record_sha256,payload FROM source_records WHERE business_id=?',(TEMPLATE,'public-demo-v2'))
-        else:
-            try:store_dataset(db, TEMPLATE, ds)
-            except sqlite3.IntegrityError:pass  # Concurrent startup may have created this immutable template.
-    with db:
-        db.execute('INSERT OR IGNORE INTO security_policies VALUES (?,?,?)', (TEMPLATE,1000000,10000000))
-        db.execute("INSERT OR IGNORE INTO trusted_vendors SELECT ?,json_extract(payload,'$.vendor_id'),1 FROM source_records WHERE business_id=? AND kind='invoice'", (TEMPLATE,TEMPLATE))
-        db.execute("INSERT OR IGNORE INTO security_users VALUES ('public-visitor-v3',?,'viewer',1)", (TEMPLATE,))
+def archive_legacy_examples(db):
+    """Retain historical evidence, but withdraw all old example/legacy access once."""
+    db.execute('CREATE TABLE IF NOT EXISTS product_migrations(name TEXT PRIMARY KEY)')
+    db.commit()
+    with sec.transaction(db):
+        if db.execute("SELECT 1 FROM product_migrations WHERE name='real-records-v1'").fetchone():return
+        db.execute("UPDATE security_users SET active=0 WHERE business_id IN (SELECT business_id FROM workspace_meta WHERE kind='demo') OR business_id IN ('public-demo-v2','public-demo-v3') OR user_id NOT IN (SELECT user_id FROM account_members)")
+        db.execute("INSERT INTO product_migrations VALUES ('real-records-v1')")
 
 
 def browser_origin(request):
@@ -124,19 +116,20 @@ class Credentials(Contract):
 def signup(body:Credentials, request:Request, response:Response, db=Depends(db_connection)):
     browser_origin(request);rate(request,db,'signup',4)
     hashed=password_hash(body.password)
-    account=uuid.uuid4().hex;business='workspace-'+uuid.uuid4().hex;user='user-'+uuid.uuid4().hex
+    account=uuid.uuid4().hex;business='workspace-'+uuid.uuid4().hex;user='user-'+uuid.uuid4().hex;code=secrets.token_urlsafe(24)
     try:
         with sec.transaction(db):
-            if db.execute('SELECT count(*) FROM auth_accounts').fetchone()[0]>=1000:sec.fail(503,'DEMO_ACCOUNT_CAPACITY_REACHED')
+            if db.execute('SELECT count(*) FROM auth_accounts').fetchone()[0]>=1000:sec.fail(503,'ACCOUNT_CAPACITY_REACHED')
             db.execute('INSERT INTO auth_accounts VALUES (?,?,?,?)',(account,body.username,hashed,sec.now()))
             db.execute("INSERT INTO security_users VALUES (?,?, 'owner',1)",(user,business))
             db.execute('INSERT INTO account_members VALUES (?,?,?)',(account,business,user))
             create_workspace_data(db,business,'personal','My workspace')
+            db.execute('INSERT INTO auth_recovery VALUES (?,?)',(account,hashlib.sha256(code.encode()).hexdigest()))
             token=issue(db,user)
             sec.audit(db,sec.authenticate(db,token),'account-'+account,'WORKSPACE_CREATED',{'sample_data':False})
     except sqlite3.IntegrityError:sec.fail(409,'USERNAME_UNAVAILABLE')
     set_cookie(response,token)
-    return identity(db,sec.authenticate(db,token))
+    return dict(identity(db,sec.authenticate(db,token)),recovery_code=code)
 
 
 @router.post('/auth/login')
@@ -147,19 +140,23 @@ def login(body:Credentials,request:Request,response:Response,db=Depends(db_conne
     stored=row[1] if row else 'scrypt-v1$'+DUMMY_SALT+'$'+'0'*64
     computed=password_hash(body.password,stored.split('$')[1])
     if not row or not hmac.compare_digest(computed,stored):sec.fail(401,'INVALID_USERNAME_OR_PASSWORD')
-    member=db.execute("SELECT m.user_id FROM account_members m JOIN security_users u ON m.user_id=u.user_id WHERE m.account_id=? AND u.active=1 ORDER BY CASE u.role WHEN 'owner' THEN 0 ELSE 1 END,m.rowid LIMIT 1",(row[0],)).fetchone()
-    if not member:sec.fail(403,'ACCOUNT_UNAVAILABLE')
-    with db:token=issue(db,member[0])
-    set_cookie(response,token);return identity(db,sec.authenticate(db,token))
+    with sec.transaction(db):
+        member=personal_member(db,row[0])
+        token=issue(db,member)
+        code=None
+        if not db.execute('SELECT 1 FROM auth_recovery WHERE account_id=?',(row[0],)).fetchone():
+            code=secrets.token_urlsafe(24)
+            db.execute('INSERT INTO auth_recovery VALUES (?,?)',(row[0],hashlib.sha256(code.encode()).hexdigest()))
+    set_cookie(response,token)
+    result=identity(db,sec.authenticate(db,token))
+    if code:result['recovery_code']=code
+    return result
 
 
-@router.post('/auth/guest',status_code=201)
-def guest(request:Request,response:Response,db=Depends(db_connection)):
-    browser_origin(request);rate(request,db,'guest',20)
-    with db:
-        db.execute('DELETE FROM security_sessions WHERE user_id=? AND expires_at<?',('public-visitor-v3',sec.now()))
-        token=issue(db,'public-visitor-v3')
-    set_cookie(response,token);return identity(db,sec.authenticate(db,token))
+@router.post('/auth/guest')
+def guest(request:Request):
+    browser_origin(request)
+    sec.fail(410,'EXAMPLE_ACCESS_RETIRED')
 
 
 @router.post('/auth/logout')
@@ -174,7 +171,7 @@ def logout(request:Request,response:Response,db=Depends(db_connection)):
 @router.get('/account/workspaces')
 def workspaces(actor=Depends(principal),db=Depends(db_connection)):
     member=db.execute('SELECT account_id FROM account_members WHERE user_id=?',(actor.user_id,)).fetchone()
-    rows=db.execute("SELECT m.business_id,u.role,COALESCE(w.name,'Existing workspace'),COALESCE(w.kind,'demo') FROM account_members m JOIN security_users u ON u.user_id=m.user_id LEFT JOIN workspace_meta w ON w.business_id=m.business_id WHERE m.account_id=? AND u.active=1",(member[0],)).fetchall() if member else []
+    rows=db.execute("SELECT m.business_id,u.role,COALESCE(w.name,'Existing workspace'),COALESCE(w.kind,'demo') FROM account_members m JOIN security_users u ON u.user_id=m.user_id LEFT JOIN workspace_meta w ON w.business_id=m.business_id WHERE m.account_id=? AND u.active=1 AND w.kind='personal'",(member[0],)).fetchall() if member else []
     return {'workspaces':[{'business_id':r[0],'role':r[1],'name':r[2],'kind':r[3]} for r in rows],'simulation_only':True}
 
 
@@ -186,7 +183,7 @@ class WorkspaceChoice(Contract):
 def switch(body:WorkspaceChoice,response:Response,actor=Depends(principal),db=Depends(db_connection)):
     member=db.execute('SELECT account_id FROM account_members WHERE user_id=?',(actor.user_id,)).fetchone()
     if not member:sec.fail(403,'ACCOUNT_REQUIRED')
-    user=db.execute('SELECT m.user_id FROM account_members m JOIN security_users u ON u.user_id=m.user_id WHERE m.account_id=? AND m.business_id=? AND u.active=1',(member[0],body.business_id)).fetchone()
+    user=db.execute('SELECT m.user_id FROM account_members m JOIN security_users u ON u.user_id=m.user_id WHERE m.account_id=? AND m.business_id=? AND u.active=1 AND EXISTS (SELECT 1 FROM workspace_meta w WHERE w.business_id=m.business_id AND w.kind="personal")',(member[0],body.business_id)).fetchone()
     if not user:sec.fail(403,'WORKSPACE_ACCESS_DENIED')
     with db:token=issue(db,user[0])
     set_cookie(response,token);return identity(db,sec.authenticate(db,token))
@@ -218,7 +215,7 @@ def join(body:AcceptRequest,response:Response,actor=Depends(principal),db=Depend
     sec.budget(db,'join:'+actor.user_id,10)
     with sec.transaction(db):
         invitation=db.execute('SELECT business_id,role,created_by FROM workspace_invites WHERE code_hash=? AND expires_at>? AND used_by IS NULL',(hashlib.sha256(body.code.encode()).hexdigest(),sec.now())).fetchone()
-        if not invitation:sec.fail(409,'INVITATION_INVALID_OR_EXPIRED')
+        if not invitation or not db.execute("SELECT 1 FROM workspace_meta WHERE business_id=? AND kind='personal'",(invitation[0],)).fetchone():sec.fail(409,'INVITATION_INVALID_OR_EXPIRED')
         if db.execute('SELECT 1 FROM account_members WHERE account_id=? AND business_id=?',(member[0],invitation[0])).fetchone():sec.fail(409,'ALREADY_A_WORKSPACE_MEMBER')
         creator=db.execute('SELECT role,active FROM security_users WHERE user_id=?',(invitation[2],)).fetchone()
         if not creator or tuple(creator)!=('owner',1):sec.fail(409,'INVITATION_INVALID_OR_EXPIRED')
@@ -237,19 +234,27 @@ def today_bd():
 
 def create_workspace_data(db,business,kind,name):
     from api.app.services.finance import Dataset
-    if kind=='demo':
-        db.execute('INSERT INTO financial_datasets SELECT ?,dataset_sha256,payload FROM financial_datasets WHERE business_id=?',(business,TEMPLATE))
-        db.execute('INSERT INTO source_records SELECT ?,source_record_id,kind,record_id,record_sha256,payload FROM source_records WHERE business_id=?',(business,TEMPLATE))
-        db.execute('INSERT INTO trusted_vendors SELECT ?,vendor_id,enabled FROM trusted_vendors WHERE business_id=?',(business,TEMPLATE))
-    else:
-        ds=Dataset(opening_source_id='opening-zero',opening_on=date(1970,1,1),as_of=today_bd(),opening_balance_minor=0,currency='BDT',invoices=[],events=[])
-        db.execute('INSERT INTO financial_datasets VALUES (?,?,?)',(business,fingerprint(ds),ds.model_dump_json()))
-    db.execute('INSERT INTO security_policies VALUES (?,?,?)',(business,0 if kind=='personal' else 1000000,10000000))
-    db.execute('INSERT INTO workspace_meta VALUES (?,?,?)',(business,name,kind))
+    if kind!='personal':sec.fail(422,'PERSONAL_WORKSPACE_REQUIRED')
+    ds=Dataset(opening_source_id='opening-zero',opening_on=date(1970,1,1),as_of=today_bd(),opening_balance_minor=0,currency='BDT',invoices=[],events=[])
+    db.execute('INSERT INTO financial_datasets VALUES (?,?,?)',(business,fingerprint(ds),ds.model_dump_json()))
+    db.execute('INSERT INTO security_policies VALUES (?,?,?)',(business,0,10000000))
+    db.execute('INSERT INTO workspace_meta VALUES (?,?,?)',(business,name,'personal'))
+
+
+def personal_member(db,account):
+    row=db.execute("SELECT m.user_id FROM account_members m JOIN security_users u ON u.user_id=m.user_id JOIN workspace_meta w ON w.business_id=m.business_id WHERE m.account_id=? AND u.active=1 AND w.kind='personal' ORDER BY CASE u.role WHEN 'owner' THEN 0 ELSE 1 END,m.rowid LIMIT 1",(account,)).fetchone()
+    if row:return row[0]
+    business='workspace-'+uuid.uuid4().hex;user='user-'+uuid.uuid4().hex
+    db.execute("INSERT INTO security_users VALUES (?,?,'owner',1)",(user,business))
+    db.execute('INSERT INTO account_members VALUES (?,?,?)',(account,business,user))
+    create_workspace_data(db,business,'personal','My workspace')
+    token=issue(db,user)
+    sec.audit(db,sec.authenticate(db,token),'workspace-'+business,'WORKSPACE_CREATED',{'sample_data':False,'reason':'personal_records'})
+    return user
 
 
 class NewWorkspace(Contract):
-    kind: str = Field(pattern='^(personal|demo)$')
+    kind: str = Field(pattern='^personal$',default='personal')
     name: str = Field(min_length=1,max_length=60)
 
 
@@ -265,6 +270,31 @@ def new_workspace(body:NewWorkspace,response:Response,actor=Depends(principal),d
         db.execute('INSERT INTO account_members VALUES (?,?,?)',(member[0],business,user))
         create_workspace_data(db,business,body.kind,body.name)
         token=issue(db,user)
-        sec.audit(db,sec.authenticate(db,token),'workspace-'+business,'WORKSPACE_CREATED',{'sample_data':body.kind=='demo'})
+        sec.audit(db,sec.authenticate(db,token),'workspace-'+business,'WORKSPACE_CREATED',{'sample_data':False})
     set_cookie(response,token)
     return identity(db,sec.authenticate(db,token))
+
+
+class RecoveryRequest(Credentials):
+    recovery_code: str = Field(min_length=20,max_length=100)
+
+
+@router.post('/auth/recover')
+def recover(body:RecoveryRequest,request:Request,response:Response,db=Depends(db_connection)):
+    browser_origin(request);rate(request,db,'recover',4)
+    sec.budget(db,'recover-name:'+hashlib.sha256(body.username.encode()).hexdigest(),4)
+    row=db.execute('SELECT a.account_id,r.code_hash FROM auth_accounts a JOIN auth_recovery r ON r.account_id=a.account_id WHERE a.username=?',(body.username,)).fetchone()
+    supplied=hashlib.sha256(body.recovery_code.encode()).hexdigest()
+    if row is None or not hmac.compare_digest(supplied,row[1]):sec.fail(401,'INVALID_RECOVERY_DETAILS')
+    hashed=password_hash(body.password);code=secrets.token_urlsafe(24)
+    with sec.transaction(db):
+        current=db.execute('SELECT code_hash FROM auth_recovery WHERE account_id=?',(row[0],)).fetchone()
+        if not current or not hmac.compare_digest(supplied,current[0]):sec.fail(401,'INVALID_RECOVERY_DETAILS')
+        db.execute('UPDATE auth_accounts SET password_hash=? WHERE account_id=?',(hashed,row[0]))
+        db.execute('UPDATE auth_recovery SET code_hash=? WHERE account_id=?',(hashlib.sha256(code.encode()).hexdigest(),row[0]))
+        db.execute('DELETE FROM security_sessions WHERE user_id IN (SELECT user_id FROM account_members WHERE account_id=?)',(row[0],))
+        user=personal_member(db,row[0]);token=issue(db,user)
+        actor=sec.authenticate(db,token);sec.verified_audit(db,actor.business_id)
+        sec.audit(db,actor,'recovery-'+uuid.uuid4().hex,'ACCOUNT_RECOVERED',{'sessions_revoked':True})
+    set_cookie(response,token)
+    return dict(identity(db,sec.authenticate(db,token)),recovery_code=code)

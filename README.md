@@ -1,130 +1,29 @@
-# SafeLedger AI — public sandbox
-
-Explore **https://safeledger-ai.vercel.app**. Choose **Explore the demo** without an account, or create a free username/passphrase account for an isolated synthetic workspace. To test approval, invite a teammate from **Workspace & teammates**; they register separately and join with your one-time code. No real funds move.
-
-New accounts start at BDT0. Add cash/invoices in Data, or explicitly open a separate practice demo from Workspace & teammates. Guest examples stay read-only. Public users do not need session tokens. Account passwords require 8–128 characters; use a unique passphrase. Password recovery is not available in this competition prototype. Render Free may need time to wake. The free assistant has quotas; financial calculations and approval controls work independently.
-
-See [public access and verification](docs/PUBLIC_ACCESS.md). Local development and trusted legacy-token instructions below remain available for reproducibility.
-
----
-
 # SafeLedger AI
-Topic E — SME Finance Copilot. Competition prototype; synthetic data and sandbox only.
 
-**Current checkpoint: local QA/reproduction verified;live AI and public release pending.** The connected financial dashboard, deterministic services and secure sandbox execution are implemented. Backend tests, real browser workflows and automated accessibility scans passed. M3's bounded agent adapter is mock-tested, but real-model evaluation is still pending. No public deployment or registration completion is claimed. See PROJECT_STATUS.md for exact source commits, results and remaining gates.
+Private financial recordkeeping at https://safeledger-ai.vercel.app. Create a username/password account: every workspace starts with BDT0, no invoices and no cash events. Add your own cash activity and invoices in **Data**, or import your own conforming records JSON into an empty workspace. No demo, guest example or fictional lender offers are exposed by the product.
 
-## Local setup
-Python 3.12 and Node 22.12+ (validated here on Node 24.19.0). Run from the repository root:
+Passwords accept 8–128 exact characters and have a strength indicator. Sessions use Secure HttpOnly cookies on the deployed site; no token needs to be pasted. Save the one-time recovery code securely. A password reset rotates the code and revokes all sessions. Losing both the password and recovery code prevents self-service recovery; no email service is configured.
 
-```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install -r api/requirements.lock.txt
-.venv/bin/python -m pytest -q
-.venv/bin/python -m uvicorn api.app.main:app --host 127.0.0.1 --port 8000
+Cash amounts use integer poysha and exact decimal validation. An unpaid invoice affects the forecast, not cleared cash. Owners explicitly allow a payee and create a proposal; a separately registered, invited approver reviews it. Approval creates a ledger record once, with signed audit evidence. **No bank connection, bank verification or bank transfer is provided.** Record accuracy depends on the records you enter.
+
+Export records privately with **Export records**. Existing personal accounts, cash records, postings and signed history are retained. Older sample workspaces are access-disabled and archived without deletion; accounts with only an old example receive a new empty personal workspace on password login.
+
+The landing page, workspace and optional Assistant load separately. No external model is contacted on startup or when opening the Assistant. A request needs explicit consent to share non-confidential details. The free provider may use submissions to improve its services: do not submit confidential, sensitive or personal information. The deterministic dashboard, forecasts and approval controls work without AI. There is no paid fallback.
+
+## Run and verify locally
+
+Use Python3.12 and Node22. Install `api/requirements.txt`, `api/requirements-dev.txt` and `npm ci --prefix web`. Set a private `SAFELEDGER_DB_PATH` and `SAFELEDGER_SIGNING_KEY` (see `.env.example`); never publish secrets. Run `python -m uvicorn api.app.main:app`, then `npm run dev --prefix web`. New databases start empty. Keep the signing identity and persistent database together across deployments.
+
+```sh
+python -m pytest api/tests -q
+npm run build --prefix web
+SAFELEDGER_BROWSER_SCRIPT=scripts/real_records_browser.cjs python scripts/run_finalization_browser.py
 ```
 
-In a second terminal:
+The finite browser suite uses isolated test records and does not call a real model. It needs a Playwright Chromium installation; `SAFELEDGER_CHROMIUM_MODULE` can select an installed serverless Chromium runtime. Current evidence is in `evidence/real-data/` and release status in `REAL_DATA_CHECKPOINT.md`.
 
-```bash
-cd web
-npm ci
-npm run build
-npm run dev
-```
-Open http://127.0.0.1:5173. Windows: use `.venv\Scripts\python.exe` instead of `.venv/bin/python`. API documentation: http://127.0.0.1:8000/docs. Health: `/api/health`; readiness: `/api/ready`. Standalone live smoke: `.venv/bin/python scripts/verify_bootstrap.py` (starts and stops its own local API). `SAFELEDGER_DB` selects a local SQLite path; parent directory must exist. Never expose this development server to the public internet as a financial service.
+## Hosting and limits
 
-Frontend production deployment and a persistent Python backend are not configured. Vite's development proxy is local only; production needs an explicit same-origin reverse proxy or validated CORS configuration. Do not put SQLite on ephemeral serverless storage.
+Vercel serves the frontend; Render Free currently handles the API with persistent Turso storage. No paid service is enabled. Render cold starts and free quotas remain. Native Vercel FastAPI preparation is in `scripts/prepare_vercel_backend.py`; the generated candidate excludes development fixtures. Backend cutover requires a successful authenticated preview and persistence qualification before changing the working production route.
 
-## Recovery
-Read PROJECT_STATUS.md, NEXT_STEPS.md, docs/REQUIREMENTS.md and `git log -5 --oneline`. Do not re-read the PDFs unless a requirement is missing or changes. Verify the current test suite before editing. Source hashes are in docs/SOURCE_MANIFEST.json; attachments contain no implementation evidence.
-
-## Safety and ownership
-No real banking integrations. Never commit real financial data, IDs, passports, credentials or `.env` files. The owner authorized Pranto-404/SafeLedger-AI. Registration remains pending and the owner is handling it. Dependency licenses and a project license need an owner decision before public release. No compliance certification is claimed.
-
-
-## M1 reproducible financial demo
-After installing `api/requirements.lock.txt`, run:
-
-```bash
-.venv/bin/python scripts/m1_demo.py
-```
-
-It stages 45 synthetic invoices and 60 cash events into a temporary SQLite database, verifies fixed expected outcomes, and prints source-linked 7/30-day projections plus three fictional offers. It executes no payments and calls no AI provider. Regenerate fixtures with `.venv/bin/python scripts/build_fixtures.py`; byte/checksum reproducibility is tested. Invoice/event CSV samples are included; amounts are integer poysha, e.g. BDT35,000 = 3,500,000 minor units. M2 exposes these services through authenticated APIs; the standalone M1 demo remains credential-free. See docs/FINANCIAL_METHODS.md and evidence/m1/ for formulas, results and limitations.
-
-
-## M2 local authenticated sandbox
-Generate a private demo (random credentials,24-hour sessions, synthetic data only):
-
-```bash
-.venv/bin/python scripts/bootstrap_demo.py
-source .private/demo/demo.env
-.venv/bin/python -m uvicorn api.app.main:app --host 127.0.0.1 --port 8000
-```
-
-`source` is for Bash. Other shells must load the two environment variables privately using their own syntax. Generated `.private/demo/sessions.json` holds distinct owner/approver/viewer/agent bearer tokens: use them only in the Authorization header, never URLs, screenshots, shared chat, public frontend configuration or Git. POSIX directory/file permissions are700/600; check appropriate private ACLs on other operating systems. No public/default credentials or HTTP role-switch endpoint. Keep `demo.env` and SQLite together across restart; changing the signing key invalidates historical verification. Expired sessions require trusted local administrator provisioning; there is no public renewal/login or recovery endpoint yet. Bootstrap refuses to overwrite an existing demo.
-
-For a complete automated live HTTP proof without handling credentials manually:
-
-```bash
-.venv/bin/python scripts/m2_http_demo.py
-```
-
-The runner creates temporary private credentials, starts the real API, proves duplicate/viewer/hash denials, sends4 concurrent human approvals plus retries, verifies a single balanced posting, restarts the actual process, checks replay and offline audit hashes, then deletes private credentials. Public evidence goes in evidence/m2/. No real money or LLM calls. This is API E2E evidence; M4 adds actual browser/mobile evidence below.
-
-M2 routes are documented in docs/API_CONTRACT.md. There is no public `/execute`; authenticated approval invokes a server-only executor atomically. An owner may import one validated snapshot into its own business; import never allowlists payees or configures limits. Those are trusted local admin decisions. Prototype DB/event caps, single BDT currency, full invoice payments and financial assumptions remain documented limits.
-
-## M3 bounded agent (live provider not yet evaluated)
-Authenticated POST /api/agent/tasks accepts `{task,invoice_id?,allow_proposal:false}`. Model tool calls are schema-validated; all money/source facts come from backend services. Explicit allow_proposal=true with invoice_id only permits a pending proposal when caller and M2 policy allow it. AI cannot approve/execute. Rationale uses constrained codes/references rendered alongside verified facts; unverified model prose is never displayed.
-
-Set SAFELEDGER_LLM_BASE_URL,SAFELEDGER_LLM_MODEL,SAFELEDGER_LLM_API_KEY privately. Compatible HTTPS /v1 endpoint must match the admin-configured host allowlist. No live provider key/model/budget is configured in this checkpoint. Tests use clearly labeled mocks/MockTransport; real-model evaluation remains pending. Missing service returns503,while deterministic financial APIs continue. See docs/M3_AGENT_DESIGN.md.
-
-## Vercel and updates
-Owner authorized Vercel/Git auto-deployment. Actual Git-project creation attempt returned403 Forbidden for scope challanger2; no deployment URL or automatic-update success is claimed. CLI fallback credentials are absent. See docs/DEPLOYMENT_STATUS.md and evidence/m3/vercel-attempt.json. Frontend hosting also needs an authorized durable Python backend: React-only Vercel hosting cannot make the SQLite finance workflow live by itself.
-
-## M4 connected dashboard
-With the private M2 API running on port 8000, run `npm ci --prefix web` then `npm run dev --prefix web`. Open the displayed localhost URL and paste a privately generated session token into the password field. Sign out of owner and sign in with the separate approver session to approve a proposal. Reload/sign-out clears the token; it is never stored in browser storage. No demo credentials ship in the application.
-
-Eight views connect real APIs: overview, invoice register with source IDs, deterministic 7/30-day outlook and 30-day what-if scenario, fictional financing, bounded assistant, approval confirmation, verified audit JSON export, and owner-only immutable JSON import. All financial totals/policy decisions come from the backend. AI-offline errors do not disable deterministic finance. JSON import preserves the original request text so duplicate keys cannot be silently normalized by browser parsing. CSV file upload, real lenders and real payments are not provided. The UI deliberately has no independent role or tenant selector.
-
-Browser proof (real Vite proxy/FastAPI/SQLite, private temporary sessions):
-
-```bash
-npm ci --prefix web
-cd web && npx playwright install chromium && cd ..
-.venv/bin/python scripts/m4_browser_demo.py
-```
-
-The runner starts/stops its own loopback servers on free ports and writes synthetic screenshots, server logs, audit export and browser-results.json to evidence/m4/browser. Set `SAFELEDGER_EVIDENCE_DIR` to a fresh directory to retain earlier runs. No browser trace/request-header recording is enabled because authorization headers are secrets. If using a separately installed Playwright/browser runtime, `SAFELEDGER_PLAYWRIGHT_MODULE` may select its module and `SAFELEDGER_CHROMIUM_MODULE` the optional @sparticuz/chromium module entry. This is test infrastructure only, not a production browser dependency. Default Playwright browser download failed in the current environment; actual successful execution used Playwright1.62.1 + npm-provided Chromium153.0.8010.0. See evidence/m4/ for setup failures and actual successes.
-
-For a custom local backend port, set `SAFELEDGER_DEV_API_URL=http://127.0.0.1:PORT` when starting Vite. This setting is proxy-only, not a browser credential or production deployment configuration.
-
-## M5 security and failure-path QA
-After installing the locked Python/web dependencies and Playwright Chromium,run:
-
-```bash
-SAFELEDGER_EVIDENCE_DIR=evidence/new-m5-run .venv/bin/python scripts/m5_browser_qa.py
-```
-
-This reuses the local real-server harness with private fixture setup,no public test/admin endpoint. It exercises server-denied expired/tampered approvals,rejection replay,tenant/role bypass,network failure/recovery,in-flight logout isolation,inert stored HTML/instruction memos,session401 and10 automated axe accessibility scans. No real LLM/payment call. Environment-specific optional browser runtime settings remain as documented for M4. The full successful owner→independent approval→ledger workflow remains `scripts/m4_browser_demo.py`.
-
-Known-advisory checks:`npm audit --prefix web` and `python -m pip_audit -r api/requirements.lock.txt` (install pip-audit separately as a QA tool). `python scripts/security_scan.py` checks limited credential patterns across reachable Git history/tracked working files and ignored private paths,reporting locations only. Scope is intentionally stated;passing is not proof of complete security. esbuild0.28.1 is a deliberate override to remediate the reported dev-server advisory;reconsider when Vite supports it natively. Full M5 findings,evidence and remaining release limits:docs/M5_QA_REPORT.md.
-
-
-## M6 qualification and submission materials
-`python scripts/verify_clean_clone.py --commit FULL_PUBLISHED_SHA --output evidence/new-qualification` clones the exact remote commit into a temporary checkout,creates a fresh Python venv,runs locked installs/tests,`npm ci`,build,bootstrap,live HTTP and both browser suites. It stops and preserves the first failure. This uses existing OS/Python/Node/browser tools,not a pristine VM. Browser install/access must be prepared first. Normal Playwright Chromium is supported;`SAFELEDGER_CHROMIUM_EXECUTABLE` can select a known installed compatible executable without optional package extraction. M6 reproduced and fixed POSIX npm/Vite child leakage;the harness now terminates process groups and checks both ports close. Windows process-tree teardown still needs platform qualification.
-
-English submission drafts live in `submission/`:technical report,release checklist,10-slide content with speaker notes,target8min30s,and demo script. Deck authoring source uses the separate Artifact Tool presentation runtime,not an application dependency. Final PPTX/video handoff hashes are recorded with M6 evidence. They are checkpoint drafts until live-model/deployment/independent-review/registration/license gates close. No submission was sent.
-
-Optional actual silent English-captioned demo capture:
-
-```bash
-SAFELEDGER_DEMO_OUTPUT=/absolute/path/new-demo.mp4 SAFELEDGER_EVIDENCE_DIR=evidence/new-demo .venv/bin/python scripts/record_demo.py
-```
-
-Requires Playwright Chromium and ffmpeg/ffprobe. The screencast starts after private login,pauses before session changes,records real UI/API/SQLite actions,then burns English captions over the recorded timeline. It has no narration audio and makes no live-model/public-host claim. Output must be a new absolute path;private intermediate frames are deleted. Do not record real credentials or customer data.
-
-## Real-model qualification (pending private configuration)
-`scripts/evaluate_live_agent.py` now provides a finite8-case agent evaluation (5financial tasks,2instruction-injection cases,1server viewer denial). Default preflight sends zero provider requests and exits3 when blocked. Actual live mode requires explicit `--live`,caller-supplied rates/estimated USD ceiling and a fresh evidence directory. Up to14 call attempts,600 output tokens each,no automatic retries,no approval/execution path. Budget estimate is checked after each response and cannot replace a provider-side hard cap. Missing model/token metadata fails qualification instead of inventing zero cost. Each case records verified facts,sanitized usage and server-verified audit evidence. See docs/LIVE_AGENT_EVALUATION.md for exact commands,scoring,privacy and limits. No live-model pass has been recorded.
-
-## Free AI configuration
-Owner budget:BDT0. Default Gemini Free Tier profile,private free-account confirmation,finite --free-tier evaluation,and quota failure without retry/paid fallback are implemented. Actual Gemini compatibility/quality is not yet verified. See [FREE_AI_SETUP.md](docs/FREE_AI_SETUP.md). No key or billing activation is included.
+This is an application release, not an independent security certification, bank service or guaranteed availability contract. Historical competition documents, videos, sample fixtures and reports remain under their original paths for provenance; their demo/token instructions are superseded. See `docs/HISTORICAL_README.md` for those development-only instructions.

@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "steps": [
+    "empty real-data entry; no guest or preloaded figures; workspace and AI code deferred",
+    "eight-character signup, one-time recovery code, zero-balance workspace and no model startup",
+    "HttpOnly restoration and recovery code not re-exposed",
+    "excess money precision rejected",
+    "actual input form and visible cash history preserve cents and note",
+    "unpaid invoice changes forecast without prematurely deducting cash",
+    "human-friendly invoice reference and independent review gate",
+    "separate person records one approved payment; exact-cent reconciliation",
+    "cash input after signed posting preserves balance and historical integrity",
+    "private records export includes reconciled data and excludes authentication secrets",
+    "AI code loads only on demand; no provider call; non-confidential consent and unavailable state",
+    "360/390/768/1366px without horizontal overflow",
+    "recovery rotates code, signs in and preserves entered financial records",
+    "responsive entry and revoked logout"
+  ],
+  "page_errors": [],
+  "provider_calls": 0,
+  "confidential_data_used": false
+}

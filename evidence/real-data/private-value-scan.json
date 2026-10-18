@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "changed_files_scanned": 39,
+  "private_values_compared": 3,
+  "issues": [],
+  "scope": "Known private values and common patterns, not independent certification"
+}

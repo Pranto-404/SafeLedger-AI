@@ -39,8 +39,9 @@ def principal(request: Request, db=Depends(db_connection)):
         raise
     sec.budget(db,'session:'+actor.token_hash,240 if request.method=='GET' else 60)
     from api.app.accounts import PUBLIC_TEMPLATES
-    if actor.business_id in PUBLIC_TEMPLATES and request.method not in {'GET','HEAD','OPTIONS'} and request.url.path not in {'/api/cashflow/scenarios','/api/finance/compare'}:
-        sec.fail(403,'GUEST_READ_ONLY')
+    meta=db.execute('SELECT kind FROM workspace_meta WHERE business_id=?',(actor.business_id,)).fetchone()
+    if actor.business_id in PUBLIC_TEMPLATES or (meta and meta[0]=='demo'):
+        sec.fail(403,'ARCHIVED_EXAMPLE_WORKSPACE')
     return actor
 
 
@@ -94,16 +95,8 @@ class CompareRequest(Contract):
 
 
 @router.post('/finance/compare')
-def financing(body: CompareRequest,actor=Depends(principal),db=Depends(db_connection)):
-    from pathlib import Path
-    ds=sec.runtime_dataset(db,actor.business_id)
-    forecast=project_cashflow(ds,ScenarioRequest(as_of=ds.as_of,horizon_days=30,reserve_minor=0))
-    policy=db.execute('SELECT reserve_minor FROM security_policies WHERE business_id=?',(actor.business_id,)).fetchone()
-    if policy is None:sec.fail(409,'POLICY_NOT_CONFIGURED')
-    offers=json.loads((Path(__file__).resolve().parents[2]/'data/fixtures/fictional_offers.json').read_text())
-    if any(x['principal_minor']!=body.principal_minor for x in offers):sec.fail(422,'NO_FICTIONAL_OFFERS_FOR_PRINCIPAL')
-    result=compare_financing(FinancingRequest(principal_minor=body.principal_minor,repayment_capacity_minor=max(0,forecast['closing_balance_minor']-policy[0]),capacity_source_ids=forecast['source_ids'],offers=offers))
-    return dict(result,simulation_only=True)
+def financing(body:CompareRequest,actor=Depends(principal)):
+    sec.fail(410,'FICTIONAL_FINANCING_RETIRED')
 
 
 @router.post('/proposals',status_code=201)
@@ -146,14 +139,15 @@ def export_audit(actor=Depends(principal),db=Depends(db_connection)):
 
 
 from api.app.agents.models import TaskRequest
-from api.app.agents import runner
 
 @router.post('/agent/tasks')
 def agent_task(body: TaskRequest,actor=Depends(principal),db=Depends(db_connection)):
     from api.app.accounts import PUBLIC_TEMPLATES
     if actor.business_id in PUBLIC_TEMPLATES:sec.fail(403,'CREATE_ACCOUNT_FOR_ASSISTANT')
+    if not body.external_ai_consent:sec.fail(403,'EXTERNAL_AI_CONSENT_REQUIRED')
     if db.execute('SELECT 1 FROM account_members WHERE user_id=?',(actor.user_id,)).fetchone():
         sec.budget(db,'public-ai-global',8)
+    from api.app.agents import runner
     return runner.run_task(db,actor,body)
 
 @router.get('/workspace')
@@ -166,11 +160,28 @@ def workspace_bundle(actor=Depends(principal),db=Depends(db_connection)):
         ds=sec.runtime_dataset(db,actor.business_id)
         rows=db.execute('SELECT * FROM proposals WHERE business_id=? ORDER BY rowid DESC LIMIT 200',(actor.business_id,)).fetchall()
         for row in rows:sec.verify_proposal(db,row)
-        week=project_cashflow(ds,ScenarioRequest(as_of=ds.as_of,horizon_days=7,reserve_minor=1000000,delay_inflows_days=0))
-        month=project_cashflow(ds,ScenarioRequest(as_of=ds.as_of,horizon_days=30,reserve_minor=1000000,delay_inflows_days=0))
-        zero_reserve=project_cashflow(ds,ScenarioRequest(as_of=ds.as_of,horizon_days=30,reserve_minor=0))
-        policy=db.execute('SELECT reserve_minor FROM security_policies WHERE business_id=?',(actor.business_id,)).fetchone()
+        policy=db.execute('SELECT reserve_minor,payment_limit_minor FROM security_policies WHERE business_id=?',(actor.business_id,)).fetchone()
         if policy is None:sec.fail(409,'POLICY_NOT_CONFIGURED')
-        offers=json.loads((Path(__file__).resolve().parents[2]/'data/fixtures/fictional_offers.json').read_text())
-        finance=compare_financing(FinancingRequest(principal_minor=5000000,repayment_capacity_minor=max(0,zero_reserve['closing_balance_minor']-policy[0]),capacity_source_ids=zero_reserve['source_ids'],offers=offers))
-        return dict(dataset_revision=sec.fingerprint(sec.original_dataset(db,actor.business_id)),snapshot=snapshot(ds),invoices=[i.model_dump(mode='json') for i in ds.invoices],proposals=[sec.proposal_view(row) for row in rows],audit=dict(events=events,chain_verified=True,tenant_chain_head=events[-1]['event_hash'] if events else '0'*64),week=week,month=month,financing=finance,simulation_only=True)
+        week=project_cashflow(ds,ScenarioRequest(as_of=ds.as_of,horizon_days=7,reserve_minor=policy[0],delay_inflows_days=0))
+        month=project_cashflow(ds,ScenarioRequest(as_of=ds.as_of,horizon_days=30,reserve_minor=policy[0],delay_inflows_days=0))
+        notes={a['payload']['source_id']:a['payload'].get('note','') for a in events if a['kind']=='RECORD_ADDED'}
+        return dict(dataset_revision=sec.fingerprint(sec.original_dataset(db,actor.business_id)),snapshot=snapshot(ds),invoices=[i.model_dump(mode='json') for i in ds.invoices],events=[dict(e.model_dump(mode='json'),note=notes.get(e.source_record_id,'')) for e in ds.events],proposals=[sec.proposal_view(row) for row in rows],audit=dict(events=events,chain_verified=True,tenant_chain_head=events[-1]['event_hash'] if events else '0'*64),week=week,month=month,policy=dict(reserve_minor=policy[0],payment_limit_minor=policy[1]),simulation_only=True)
+
+
+@router.get('/workspace/export')
+def export_workspace(actor=Depends(principal),db=Depends(db_connection)):
+    db.execute('BEGIN')
+    with db:
+        events=sec.verified_audit(db,actor.business_id)
+        original=sec.original_dataset(db,actor.business_id)
+        current=sec.runtime_dataset(db,actor.business_id)
+        return dict(format_version=1,workspace_id=actor.business_id,original_dataset=original.model_dump(mode='json'),current_dataset=current.model_dump(mode='json'),audit_events=events,recordkeeping_only=True,simulation_only=True)
+
+
+@router.get('/agent/status')
+def agent_status(actor=Depends(principal)):
+    import os
+    profile=os.environ.get('SAFELEDGER_LLM_PROFILE','gemini_free')
+    configured=bool(os.environ.get('SAFELEDGER_LLM_API_KEY'))
+    if profile=='gemini_free':configured=configured and os.environ.get('SAFELEDGER_LLM_FREE_TIER_CONFIRMED')=='1'
+    return dict(provider_name='Google Gemini' if profile=='gemini_free' else 'Configured external provider',configured=configured,availability_checked=False,simulation_only=True)

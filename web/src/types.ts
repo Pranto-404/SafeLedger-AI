@@ -1,4 +1,4 @@
-export type Session = { user_id: string; business_id: string; role: 'owner' | 'approver' | 'viewer' | 'agent'; workspace_name?:string; workspace_kind?:'personal'|'demo'; username?:string|null; guest?:boolean };
+export type Session = { user_id: string; business_id: string; role: 'owner' | 'approver' | 'viewer' | 'agent'; recovery_code?:string;workspace_name?:string; workspace_kind?:'personal'|'demo'; username?:string|null; guest?:boolean };
 export type Snapshot = { currency: string; as_of: string; opening_balance_minor: number; income_minor: number; expenses_minor: number; balance_minor: number; source_ids: string[]; dataset_sha256: string; assumptions: string[] };
 export type Invoice = { invoice_id: string; source_record_id: string; vendor_id: string; invoice_number: string; due_on: string; amount_minor: number; status: string; memo: string };
 export type Risk = { risk: string; invoice_ids: string[]; source_ids: string[]; execution_blocked: boolean };
@@ -8,3 +8,5 @@ export type Financing = { offers: Offer[]; repayment_capacity_minor: number; ass
 export type Proposal = { proposal_id: string; state: string; action_hash: string; details: { invoice_id: string; vendor_id: string; amount_minor: number; proposer_id: string; source_id: string; dataset_sha256: string; expires_at: number }; preview?: { available_minor: number; after_payment_minor: number; reserve_minor: number; payment_limit_minor: number } };
 export type Audit = { chain_verified: boolean; tenant_chain_head: string; events: { event_id: string; trace_id: string; kind: string; actor_id: string; created_at: number; event_hash: string; payload: unknown }[] };
 export type AgentResult = { run_id: string; ai_mode: string; disposition: string; explanation: string[]; facts: { fact_id: string; value_minor: number; source_ids: string[] }[]; limitations: string[]; proposal: Proposal | null };
+
+export type CashEvent={event_id:string;source_record_id:string;direction:'inflow'|'outflow';status:'cleared'|'scheduled';effective_on:string;amount_minor:number;invoice_id?:string|null;note?:string};

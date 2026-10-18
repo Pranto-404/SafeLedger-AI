@@ -88,12 +88,6 @@ def run_task(db,actor,request,provider=None):
                     result=project_cashflow(ds,ScenarioRequest(as_of=ds.as_of,horizon_days=args.horizon_days,delay_inflows_days=args.delay_inflows_days,reserve_minor=policy[0]))
                     fact('closing-'+str(args.horizon_days)+'-delay-'+str(args.delay_inflows_days),result['closing_balance_minor'],result['source_ids'])
                     if result['first_shortfall_on']:reasons.add('LIQUIDITY_RISK');risks.append({'risk':'LIQUIDITY_SHORTFALL','date':result['first_shortfall_on']})
-                elif name=='compare_financing':
-                    forecast=project_cashflow(ds,ScenarioRequest(as_of=ds.as_of,horizon_days=30,reserve_minor=policy[0]))
-                    offers=json.loads((Path(__file__).resolve().parents[3]/'data/fixtures/fictional_offers.json').read_text())
-                    result=compare_financing(FinancingRequest(principal_minor=5000000,repayment_capacity_minor=max(0,forecast['closing_balance_minor']-policy[0]),capacity_source_ids=forecast['source_ids'],offers=offers))
-                    for offer in result['offers']:fact('cost-'+offer['offer_id'],offer['total_cost_minor'],offer['source_ids'])
-                    reasons.add('FINANCING_COST')
                 else:
                     # Preview only: actual proposal is deferred until rationale is validated.
                     try:
@@ -111,7 +105,7 @@ def run_task(db,actor,request,provider=None):
         if not set(rationale.fact_ids)==set(facts) or set(rationale.reason_codes)!=reasons:raise ProviderError('AI_UNGROUNDED_RATIONALE')
         expected='PROPOSE_FOR_APPROVAL' if candidate else ('REVIEW_REQUIRED' if risks else 'READ_ONLY')
         if rationale.disposition!=expected:raise ProviderError('AI_UNSAFE_DISPOSITION')
-        result={'run_id':run_id,'simulation_only':True,'ai_mode':'mock_test_only' if provider.is_mock else 'configured_live_provider','disposition':expected,'explanation':[TEXTS[code] for code in rationale.reason_codes],'facts':[facts[x] for x in rationale.fact_ids],'risk_flags':risks,'tools':tool_results,'proposal':None,'limitations':['Synthetic data only; no real money','Rationale is constrained and rendered from verified facts; no unverified model prose']}
+        result={'run_id':run_id,'simulation_only':True,'ai_mode':'mock_test_only' if provider.is_mock else 'configured_live_provider','disposition':expected,'explanation':[TEXTS[code] for code in rationale.reason_codes],'facts':[facts[x] for x in rationale.fact_ids],'risk_flags':risks,'tools':tool_results,'proposal':None,'limitations':['User-entered records; no bank transfer or independent verification','Rationale is constrained and rendered from verified facts; no unverified model prose']}
         def complete(proposal=None):
             result['proposal']=proposal
             sec.audit(db,actor,run_id,'AGENT_RECOMMENDED',{'disposition':expected,'fact_ids':rationale.fact_ids,'runtime_sha256':runtime_sha,'proposal_id':proposal['proposal_id'] if proposal else None})

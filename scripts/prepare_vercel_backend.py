@@ -11,7 +11,7 @@ def prepare(destination):
     destination=Path(destination).resolve()
     if destination.exists():raise ValueError('Choose a new empty output path')
     destination.mkdir(parents=True)
-    for package in ['api/app','data/fixtures']:
+    for package in ['api/app']:
         shutil.copytree(ROOT/package,destination/package,ignore=shutil.ignore_patterns('__pycache__','*.pyc','*.sqlite*','.env*'))
     for name in ['api/__init__.py']:
         if (ROOT/name).exists():shutil.copy2(ROOT/name,destination/name)

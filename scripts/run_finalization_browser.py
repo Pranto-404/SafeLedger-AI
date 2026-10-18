@@ -10,7 +10,7 @@ ROOT=Path(__file__).resolve().parents[1]
 
 def main():
     env=os.environ.copy()
-    for key in ['TURSO_DATABASE_URL','TURSO_AUTH_TOKEN','RENDER','VERCEL']:env.pop(key,None)
+    for key in ['TURSO_DATABASE_URL','TURSO_AUTH_TOKEN','RENDER','VERCEL']+[k for k in env if k.startswith('SAFELEDGER_LLM_')]:env.pop(key,None)
     # Serverless Chromium's tar extractor tries unsupported chown on this host.
     # Pre-extract its official bundled fonts without restoring archive ownership.
     cached=Path(tempfile.gettempdir())/'chromium'
@@ -32,6 +32,6 @@ def main():
                     except Exception:
                         if process.poll() is not None:raise RuntimeError('Local server failed; inspect server.log')
                         time.sleep(.1)
-                return subprocess.run(['node','scripts/finalization_browser.cjs'],cwd=ROOT,env=env).returncode
+                return subprocess.run(['node',env.get('SAFELEDGER_BROWSER_SCRIPT','scripts/finalization_browser.cjs')],cwd=ROOT,env=env).returncode
             finally:process.terminate();process.wait()
 if __name__=='__main__':raise SystemExit(main())

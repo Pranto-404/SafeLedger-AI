@@ -55,21 +55,25 @@ def test_csrf_origin_and_overposting_rejected(world):
     assert c.post('/api/account/invitations',json={'role':'owner'}).status_code==422
 
 
-def test_guest_read_only_financial_exploration_and_no_ai(world):
-    c,_=world
-    r=c.post('/api/auth/guest',json={});assert r.status_code==201 and r.json()['guest']
-    data=c.get('/api/workspace');assert data.status_code==200 and data.json()['snapshot']['balance_minor']==12000000
-    assert c.post('/api/proposals',json={'invoice_id':'INV-105'}).status_code==403
-    assert c.post('/api/account/invitations',json={'role':'approver'}).status_code==403
-    assert c.post('/api/agent/tasks',json={'task':'What is my balance?','allow_proposal':False}).status_code==403
-    assert c.get('/api/audit').json()['events']==[]
-    assert c.get('/api/workspace').status_code==200
+def test_guest_access_retired_no_builtin_financial_data(world):
+    c,path=world
+    assert c.post('/api/auth/guest',json={}).status_code==410
+    assert c.get('/api/workspace').status_code==401
+    with sqlite3.connect(path) as db:assert db.execute('SELECT count(*) FROM financial_datasets').fetchone()[0]==0
+
+
 
 
 def test_separate_registered_approver_single_posting_and_invite_replay(world):
     c,path=world
-    signup(c,'owner_person')
-    owner=c.post('/api/account/workspaces',json={'kind':'demo','name':'Practice demo'}).json();owner_cookie=c.cookies.get(COOKIE)
+    owner=signup(c,'owner_person')
+    import json
+    from pathlib import Path
+    fixture=json.loads(Path('data/fixtures/duplicate_exact.json').read_text())
+    assert c.post('/api/workspace/import',json=fixture).status_code==201
+    vendor=next(i['vendor_id'] for i in fixture['invoices'] if i['invoice_id']=='INV-105')
+    assert c.post('/api/workspace/vendor-permission',json={'vendor_id':vendor,'enabled':True}).status_code==200
+    owner_cookie=c.cookies.get(COOKIE)
     proposal=c.post('/api/proposals',json={'invoice_id':'INV-105'});assert proposal.status_code==201
     p=proposal.json();body={'proposal_hash':p['action_hash'],'decision':'approve'}
     route='/api/proposals/'+p['proposal_id']+'/approve'

@@ -1,3 +1,11 @@
+# Current real-records release — 18 October 2026
+
+Current scope supersedes every demo instruction below: no public examples, no preloaded figures or fictional financing. Personal records preserved; archived sample access withdrawn without deletion. Empty signup, manual inputs/history, exact money, independent approval, signed audit, private export, one-time recovery and deferred optional AI are implemented. Explicit sharing consent is mandatory for external AI; no real provider is contacted by the new acceptance suite.
+
+Local qualification:318backend tests passed,14browser scenarios,5axe scans with zero violations,4responsive widths. Initial JavaScript65.62KB gzip; workspace and Assistant separate. Publication/live verification is in progress; consult REAL_DATA_CHECKPOINT.md for the current deployment and known authentication blocker. Render still serves the API; no paid resources enabled. Do not claim completed Vercel backend migration.
+
+## Historical status (superseded where it conflicts)
+
 # Current finalization status — 18 October 2026
 
 Phase one is published and publicly verified: zero-start personal accounts, separate optional demos, own cash/invoice/JSON input, explicit payee permission,8-character passwords/strength meter, lightweight futuristic UI and easier assistant.312backend tests and34actual public acceptance checks passed; old accounts/ledger preserved and live AI answered from manual data. Final app4a4bbd7 is live on both hosts; same manual account/balance/one posting/audit survived actual redeployment.16 browser scenarios/6 axe scans passed. See FINALIZATION_CHECKPOINT.md and evidence/finalization/.

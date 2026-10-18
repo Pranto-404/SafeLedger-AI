@@ -6,6 +6,7 @@ class TaskRequest(Contract):
     task: Annotated[str,Field(min_length=1,max_length=2000)]
     invoice_id: RecordId | None = None
     allow_proposal: StrictBool = False
+    external_ai_consent: StrictBool = False
 
     @model_validator(mode='after')
     def explicit_target(self):
@@ -18,7 +19,7 @@ class CashArgs(Contract):
     horizon_days: Literal[7,30]
     delay_inflows_days: Annotated[int,Field(strict=True,ge=0,le=30)]
 
-TOOLS={'get_business_snapshot':NoArgs,'analyze_invoice':InvoiceArgs,'project_cash_flow':CashArgs,'compare_financing':NoArgs,'propose_payment':InvoiceArgs}
+TOOLS={'get_business_snapshot':NoArgs,'analyze_invoice':InvoiceArgs,'project_cash_flow':CashArgs,'propose_payment':InvoiceArgs}
 
 class Rationale(Contract):
     disposition: Literal['READ_ONLY','REVIEW_REQUIRED','PROPOSE_FOR_APPROVAL']

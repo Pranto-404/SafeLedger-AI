@@ -366,13 +366,10 @@ def test_invalid_auth_attempts_are_rate_limited(rig):
     assert rig.client.get('/api/session').status_code==429
 
 
-def test_fictional_financing_and_session_have_server_facts(rig):
+def test_fictional_financing_retired_and_session_has_server_identity(rig):
     session=rig.request('viewer','GET','/api/session').json();assert session['role']=='viewer' and session['business_id']=='company-A'
     result=rig.request('viewer','POST','/api/finance/compare',json={'principal_minor':5000000})
-    assert result.status_code==200,result.text
-    assert [x['total_cost_minor'] for x in result.json()['offers']]==[200000,210000,250000]
-    assert all(not x['affordable'] for x in result.json()['offers'])
-    assert rig.request('viewer','POST','/api/finance/compare',json={'principal_minor':1}).status_code==422
+    assert result.status_code==410 and result.json()['error']['code']=='FICTIONAL_FINANCING_RETIRED'
 
 
 @pytest.mark.parametrize('variant',['duplicate_exact.json','duplicate_possible.json'])

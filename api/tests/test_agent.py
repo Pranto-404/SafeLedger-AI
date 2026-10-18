@@ -30,7 +30,7 @@ class MockProvider:
 
 def post(rig,monkeypatch,provider,body=None,role='owner'):
     monkeypatch.setattr(runner,'get_provider',lambda:provider)
-    return rig.request(role,'POST','/api/agent/tasks',json=body or {'task':'Summarize verified cash'})
+    return rig.request(role,'POST','/api/agent/tasks',json={**(body or {'task':'Summarize verified cash'}),'external_ai_consent':True})
 
 
 def test_agent_snapshot_is_source_linked_and_explicit_mock(rig,monkeypatch):
@@ -93,13 +93,12 @@ def test_agent_needs_explicit_structured_permission_and_same_target(rig,monkeypa
     assert rig.postings()==0
 
 
-def test_agent_forecast_and_financing_stay_deterministic(rig,monkeypatch):
-    provider=MockProvider([call('project_cash_flow',{'horizon_days':7,'delay_inflows_days':0}),call('compare_financing')])
-    response=post(rig,monkeypatch,provider)
+def test_agent_forecast_remains_deterministic_and_fictional_tool_removed(rig,monkeypatch):
+    response=post(rig,monkeypatch,MockProvider([call('project_cash_flow',{'horizon_days':7,'delay_inflows_days':0})]))
     assert response.status_code==200,response.text
-    facts={x['fact_id']:x['value_minor'] for x in response.json()['facts']}
-    assert facts=={'closing-7-delay-0':-1500000,'cost-FICTION-C':200000,'cost-FICTION-B':210000,'cost-FICTION-A':250000}
-    assert response.json()['disposition']=='REVIEW_REQUIRED'
+    assert {x['fact_id']:x['value_minor'] for x in response.json()['facts']}=={'closing-7-delay-0':-1500000}
+    rejected=post(rig,monkeypatch,MockProvider([call('compare_financing')]))
+    assert rejected.status_code==503 and rejected.json()['error']['code']=='AI_INVALID_TOOL_PLAN'
 
 
 def test_agent_duplicate_is_blocked_even_with_proposal_permission(rig,monkeypatch):
@@ -115,7 +114,7 @@ def test_agent_duplicate_is_blocked_even_with_proposal_permission(rig,monkeypatc
 
 def test_ai_outage_is_explicit_and_finance_stays_available(rig,monkeypatch):
     for key in ['SAFELEDGER_LLM_BASE_URL','SAFELEDGER_LLM_MODEL','SAFELEDGER_LLM_API_KEY']:monkeypatch.delenv(key,raising=False)
-    response=rig.request('owner','POST','/api/agent/tasks',json={'task':'Analyze cash'})
+    response=rig.request('owner','POST','/api/agent/tasks',json={'task':'Analyze cash','external_ai_consent':True})
     assert response.status_code==503 and response.json()['error']['code']=='AI_NOT_CONFIGURED'
     assert response.json()['deterministic_finance_available'] and rig.balance()==12000000
 
