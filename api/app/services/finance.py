@@ -1,4 +1,4 @@
-"""Deterministic BDT finance. These services have no LLM/network/write authority."""
+"""Deterministic single-currency finance. These services have no LLM/network/write authority."""
 from collections import defaultdict
 from datetime import timedelta
 from decimal import Decimal
@@ -8,7 +8,7 @@ import json
 import re
 from typing import Annotated, Literal
 from pydantic import Field, model_validator
-from api.app.contracts import Contract, ImportRequest, ISODate, Minor, PositiveMinor, RecordId, ScenarioRequest
+from api.app.contracts import Contract, ImportRequest, ISODate, Minor, PositiveMinor, RecordId, ScenarioRequest, Currency
 
 
 def bdt_minor(value: str) -> int:
@@ -37,7 +37,7 @@ class Dataset(ImportRequest):
     opening_on: ISODate
     as_of: ISODate
     opening_balance_minor: Minor
-    currency: Literal["BDT"]
+    currency: Currency
 
     @model_validator(mode="after")
     def consistent(self):
@@ -50,6 +50,8 @@ class Dataset(ImportRequest):
             ids = [getattr(x, field) for x in records]
             if len(ids) != len(set(ids)):
                 raise ValueError(f"Duplicate {field}; assign unique source identities")
+        if any(x.currency != self.currency for x in self.invoices + self.events):
+            raise ValueError("All records must use the workspace currency; conversion is not implied")
         by_id = {x.invoice_id: x for x in self.invoices}
         canonical = {}
         for invoice in self.invoices:
@@ -133,7 +135,7 @@ def snapshot(dataset: Dataset) -> dict:
     debits = [x for x in ds.events if x.status == "cleared" and x.direction == "outflow"]
     income = sum(x.amount_minor for x in credits)
     expenses = sum(x.amount_minor for x in debits)
-    return {"currency": "BDT", "as_of": ds.as_of.isoformat(), "opening_balance_minor": ds.opening_balance_minor,
+    return {"currency": ds.currency, "as_of": ds.as_of.isoformat(), "opening_balance_minor": ds.opening_balance_minor,
             "income_minor": income, "expenses_minor": expenses, "balance_minor": ds.opening_balance_minor + income - expenses,
             "source_ids": [ds.opening_source_id] + sorted(x.source_record_id for x in credits + debits),
             "dataset_sha256": fingerprint(ds), "assumptions": ["Cash basis; cleared income/expenses are cash movements, not accrual profit", "Opening balance is start-of-day opening_on; cleared events are included through end-of-day as_of"]}
@@ -176,7 +178,7 @@ def project_cashflow(dataset: Dataset, request: ScenarioRequest) -> dict:
                        "source_ids": sorted(source for _, _, source in movements)})
     alerts = [x["date"] for x in result if x["shortfall_minor"]]
     duplicate_flags = analyze_duplicates(ds)
-    return {"currency": "BDT", "as_of": ds.as_of.isoformat(), "horizon_days": request.horizon_days,
+    return {"currency": ds.currency, "as_of": ds.as_of.isoformat(), "horizon_days": request.horizon_days,
             "reserve_minor": request.reserve_minor, "opening_balance_minor": snapshot(ds)["balance_minor"],
             "closing_balance_minor": cash, "minimum_balance_minor": min([snapshot(ds)["balance_minor"]] + [x["projected_balance_minor"] for x in result]),
             "first_shortfall_on": alerts[0] if alerts else None, "days": result, "risk_flags": duplicate_flags,
@@ -191,7 +193,7 @@ class FictionalOffer(Contract):
     offer_id: RecordId
     label: Annotated[str, Field(min_length=1, max_length=100)]
     fictional: Literal[True]
-    currency: Literal["BDT"]
+    currency: Currency
     principal_minor: PositiveMinor
     rate_convention: Literal["flat_per_term"]
     rate_bps: Annotated[int, Field(strict=True, ge=0, le=10000)]
@@ -221,6 +223,8 @@ class FinancingRequest(Contract):
             raise ValueError("Duplicate financing source IDs")
         if any(x.principal_minor != self.principal_minor for x in self.offers):
             raise ValueError("Offers must quote the requested principal")
+        if len({x.currency for x in self.offers}) != 1:
+            raise ValueError("Offers must use one currency")
         if len({x.term_days for x in self.offers}) != 1:
             raise ValueError("Compare equal terms only; otherwise separate scenarios required")
         return self
@@ -233,7 +237,7 @@ def compare_financing(request: FinancingRequest) -> dict:
         # Integer half-up to a minor unit for a nonnegative interest numerator.
         interest = (offer.principal_minor * offer.rate_bps + 5000) // 10000
         repayment = offer.principal_minor + interest
-        rows.append({"offer_id": offer.offer_id, "label": offer.label, "fictional": True, "currency": "BDT",
+        rows.append({"offer_id": offer.offer_id, "label": offer.label, "fictional": True, "currency": offer.currency,
                      "principal_minor": offer.principal_minor, "net_proceeds_minor": offer.principal_minor - offer.upfront_fee_minor,
                      "interest_minor": interest, "upfront_fee_minor": offer.upfront_fee_minor, "total_repayment_minor": repayment,
                      "total_cost_minor": interest + offer.upfront_fee_minor, "term_days": offer.term_days,

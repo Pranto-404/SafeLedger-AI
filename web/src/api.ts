@@ -1,4 +1,8 @@
+import {currencies} from './currencies';
 const messages:Record<string,string> = {
+  WORKSPACE_CURRENCY_LOCKED:'This workspace already has records. Create another workspace for a different currency.',
+  IMPORT_CURRENCY_MISMATCH:'The import currency must match your workspace. Change the empty workspace currency first.',
+  AI_PROVIDER_REJECTED:'The AI provider rejected the request. Check its model and credentials, or use the private helper.',
   DUPLICATE_INVOICE_BLOCKED:'This invoice may be a duplicate. Review its evidence before continuing.',
   INVOICE_ALREADY_PAID:'This invoice has already been recorded as paid.',
   INSUFFICIENT_AVAILABLE_CASH:'There is not enough available cash after the required reserve.',
@@ -35,11 +39,15 @@ export function client(token: string, signal: AbortSignal, onUnauthorized: () =>
   };
 }
 // Display only. All balances, costs and projections come from backend integer calculations.
-export const money = (minor: number) => new Intl.NumberFormat('en-BD', { style: 'currency', currency: 'BDT', currencyDisplay:'code', maximumFractionDigits: 2 }).format(minor / 100);
-export function parseMinor(text: string): number {
-  if (!/^\d{1,9}(\.\d{1,2})?$/.test(text)) throw new Error('Enter a nonnegative BDT amount with at most two decimal places.');
-  const [whole, fraction = ''] = text.split('.');
-  return Number(whole) * 100 + Number(fraction.padEnd(2, '0'));
+export const currencyDigits = (currency:string) => currencies.find(c=>c.code===currency)?.digits ?? 2;
+export const money = (minor:number,currency='BDT') => new Intl.NumberFormat(undefined,{style:'currency',currency,currencyDisplay:'code',minimumFractionDigits:currencyDigits(currency),maximumFractionDigits:currencyDigits(currency)}).format(minor / 10**currencyDigits(currency));
+export function parseMinor(text:string,currency='BDT'):number {
+  const digits=currencyDigits(currency);
+  if(!new RegExp('^\\d{1,13}'+(digits?'(\\.\\d{1,'+digits+'})?':'')+'$').test(text))throw new Error(`Enter a nonnegative ${currency} amount with at most ${digits} decimal places.`);
+  const [whole,fraction='']=text.split('.');
+  const result=BigInt(whole)*10n**BigInt(digits)+BigInt(fraction.padEnd(digits,'0')||'0');
+  if(result>1000000000000n)throw new Error('Amount exceeds the supported limit.');
+  return Number(result);
 }
 
 const friendly: Record<string,string> = {

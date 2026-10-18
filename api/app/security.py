@@ -142,8 +142,7 @@ def budget(db, scope, limit):
     window = now() // 60
     with transaction(db):
         db.execute('DELETE FROM request_budgets WHERE window<?',(window-1,))
-        db.execute('INSERT INTO request_budgets VALUES (?,?,1) ON CONFLICT(scope,window) DO UPDATE SET count=count+1',(scope,window))
-        count = db.execute('SELECT count FROM request_budgets WHERE scope=? AND window=?',(scope,window)).fetchone()[0]
+        count = db.execute('INSERT INTO request_budgets VALUES (?,?,1) ON CONFLICT(scope,window) DO UPDATE SET count=count+1 RETURNING count',(scope,window)).fetchone()[0]
     if count > limit:
         fail(429,'REQUEST_BUDGET_EXCEEDED')
 
@@ -288,7 +287,7 @@ def runtime_dataset(db, business_id):
         day=datetime.fromtimestamp(posting['created_at'],timezone(timedelta(hours=6))).date()
         raw['as_of']=max(ds.as_of,day).isoformat()
         identity='posted-'+posting['posting_id']
-        raw['events'].append(dict(source_record_id=identity,event_id=identity,direction='outflow',status='cleared',effective_on=max(ds.as_of,day).isoformat(),amount_minor=payload['amount_minor'],currency='BDT',invoice_id=invoice.invoice_id))
+        raw['events'].append(dict(source_record_id=identity,event_id=identity,direction='outflow',status='cleared',effective_on=max(ds.as_of,day).isoformat(),amount_minor=payload['amount_minor'],currency=ds.currency,invoice_id=invoice.invoice_id))
     try:
         return validated(raw)
     except ValueError:
@@ -342,7 +341,7 @@ def propose(db, principal, invoice_id, *, expected_runtime_sha=None, on_result=N
                 audit(db,current,old['proposal_id'],'EXPIRED',{'action_hash':old['action_hash']})
             timestamp=now()
             payload=dict(proposal_id=trace,business_id=current.business_id,invoice_id=invoice.invoice_id,proposer_id=current.user_id,
-                         vendor_id=invoice.vendor_id,amount_minor=invoice.amount_minor,currency='BDT',source_id=invoice.source_record_id,
+                         vendor_id=invoice.vendor_id,amount_minor=invoice.amount_minor,currency=invoice.currency,source_id=invoice.source_record_id,
                          source_sha256=fingerprint(invoice),dataset_sha256=fingerprint(ds),version=1,created_at=timestamp,expires_at=timestamp+900)
             digest=hashlib.sha256(canonical(payload).encode()).hexdigest()
             db.execute('INSERT INTO proposals VALUES (?,?,?,?,?,?,?,?)',(trace,current.business_id,invoice_id,current.user_id,canonical(payload),digest,signature('proposal',digest),'AWAITING_APPROVAL'))

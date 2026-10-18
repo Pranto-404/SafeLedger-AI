@@ -1,3 +1,9 @@
+# Continuation — 19 October 2026 (Asia/Dhaka)
+
+Production now uses f4b0193a6336b5e758c01b75c4c8f12e2373165d, including global currency and workspace chat. These changes have been merged into this native migration candidate so cutover will preserve all current behavior. The 21 entrypoint/currency integration tests and frontend production build pass. The original qualification below describes the earlier candidate, not this updated build.
+
+The local Vercel connection dialog now has Production + Preview selected but NOT saved. Temporary Preview database access and copying existing Render signing/provider secrets into this same Vercel project still require specific user confirmation. No secrets were changed during the currency/chat release. Keep Production access, do not create paid resources, and withdraw temporary Preview access after successful cutover. Live Gemini inference also remains unverified because automatic approval review blocked the earlier live-data transmission; ask for synthetic-only Google Gemini test permission.
+
 # Native Vercel migration — 18 October 2026
 
 Status: preview build and CDN delivery verified; database qualification and
