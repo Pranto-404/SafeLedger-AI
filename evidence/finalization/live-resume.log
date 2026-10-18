@@ -1,0 +1,81 @@
+PASS deployed health
+PASS persistent database
+PASS existing account preserved
+PASS existing ledger and audit preserved
+PASS 8-character signup
+PASS secure cookie
+PASS zero initial account with no fake invoices
+PASS own exact-cent cash input
+PASS input retry idempotent
+PASS request payload reuse rejected
+PASS exact cash balance
+PASS manual supplier invoice
+PASS unpaid invoice not deducted from cleared cash
+PASS manual invoice proposal
+PASS self approval denied
+PASS separate approver invitation
+PASS separate account
+PASS tenant leakage denied
+PASS invited join
+PASS independent approval executes
+PASS execution retry one posting
+PASS balance 75000 after exact-cent payment
+PASS new input after signed posting
+PASS historical proof and balance remain valid
+PASS exactly one audited execution
+PASS input CSRF denied
+PASS optional separate demo
+PASS sample balance only in demo
+PASS switch to own inputs
+PASS personal data unchanged by demo
+PASS live AI grounded in manual data
+PASS logout revoked
+PASS 8-character password login
+PASS own records restored on login
+{
+  "status": "passed",
+  "build_commit": "25a255e240465435a4e1616a6d900bf3fb671fbb",
+  "checks": [
+    "deployed health",
+    "persistent database",
+    "existing account preserved",
+    "existing ledger and audit preserved",
+    "8-character signup",
+    "secure cookie",
+    "zero initial account with no fake invoices",
+    "own exact-cent cash input",
+    "input retry idempotent",
+    "request payload reuse rejected",
+    "exact cash balance",
+    "manual supplier invoice",
+    "unpaid invoice not deducted from cleared cash",
+    "manual invoice proposal",
+    "self approval denied",
+    "separate approver invitation",
+    "separate account",
+    "tenant leakage denied",
+    "invited join",
+    "independent approval executes",
+    "execution retry one posting",
+    "balance 75000 after exact-cent payment",
+    "new input after signed posting",
+    "historical proof and balance remain valid",
+    "exactly one audited execution",
+    "input CSRF denied",
+    "optional separate demo",
+    "sample balance only in demo",
+    "switch to own inputs",
+    "personal data unchanged by demo",
+    "live AI grounded in manual data",
+    "logout revoked",
+    "8-character password login",
+    "own records restored on login"
+  ],
+  "ai": {
+    "attempted": true,
+    "status_code": 200,
+    "mode": "configured_live_provider",
+    "error_code": null
+  },
+  "simulation_only": true
+}

@@ -19,6 +19,8 @@ def run():
         assert c.post('/api/proposals',json={'invoice_id':'INV-105'}).status_code==403
         c.post('/api/auth/logout',json={})
         r=c.post('/api/auth/signup',json={'username':'cloud_owner_'+suffix,'password':password});assert r.status_code==201,r.text
+        personal=r.json()['business_id']
+        r=c.post('/api/account/workspaces',json={'kind':'demo','name':'Cloud smoke demo'});assert r.status_code==201
         business=r.json()['business_id']
         p=c.post('/api/proposals',json={'invoice_id':'INV-105'}).json()
         code=c.post('/api/account/invitations',json={'role':'approver'}).json()['code']
@@ -31,6 +33,7 @@ def run():
         assert c.get('/api/workspace').json()['snapshot']['balance_minor']==8500000
         audit=c.get('/api/audit/'+p['proposal_id']).json();assert audit['chain_verified'] and sum(x['kind']=='EXECUTED' for x in audit['events'])==1
         assert c.post('/api/auth/login',json={'username':'cloud_owner_'+suffix,'password':password}).status_code==200
+        assert c.post('/api/account/switch',json={'business_id':business}).status_code==200
         assert c.get('/api/workspace').json()['snapshot']['balance_minor']==8500000
     with closing(connect()) as db:
         assert db.execute('SELECT count(*) FROM postings WHERE business_id=?',(business,)).fetchone()[0]==1

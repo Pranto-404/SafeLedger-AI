@@ -1,0 +1,9 @@
+{
+  "status": "local_preflight_passed",
+  "native_deployment_verified": false,
+  "persistent_database_required": true,
+  "runtime_import": true,
+  "candidate_files": 33,
+  "blocker": "Vercel project scope 403; no authenticated CLI fallback",
+  "production_api_route_unchanged": true
+}

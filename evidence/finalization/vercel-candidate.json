@@ -1,0 +1,7 @@
+{
+  "status": "prepared_not_deployed",
+  "files": 33,
+  "entrypoint": "api.app.main:app",
+  "secrets_included": false,
+  "production_config_changed": false
+}

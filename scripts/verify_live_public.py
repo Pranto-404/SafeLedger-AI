@@ -39,6 +39,7 @@ def run(include_ai=False):
  suffix=secrets.token_hex(5);password=secrets.token_urlsafe(24);owner='release_owner_'+suffix;reviewer='release_reviewer_'+suffix
  status,session,headers=c.call('auth/signup',{'username':owner,'password':password});check('self-service owner account',status==201 and session['role']=='owner')
  cookie=headers.get('Set-Cookie','');check('secure HttpOnly cookie',all(x in cookie for x in ['HttpOnly','Secure','SameSite=lax']))
+ status,session,_=c.call('account/workspaces',{'kind':'demo','name':'Release smoke demo'});check('explicit practice demo',status==201)
  account={'username':owner,'password':password,'business_id':session['business_id']}
  (private/'account.json').write_text(json.dumps(account));(private/'account.json').chmod(0o600)
  if include_ai:
@@ -61,6 +62,7 @@ def run(include_ai=False):
  status,_,_=c.call('account/invitations',{'role':'approver'},origin='https://untrusted.example');check('cookie CSRF denied',status==403)
  c.call('auth/logout',{});status,_,_=c.call('session');check('logout revokes session',status==401)
  status,_,_=c.call('auth/login',{'username':owner,'password':password});check('password login',status==200)
+ c.call('account/switch',{'business_id':account['business_id']})
  status,data,_=c.call('workspace');check('login restores persisted ledger',status==200 and data['snapshot']['balance_minor']==8500000)
  account.update(proposal_id=p['proposal_id'],expected_balance_minor=8500000)
  (private/'account.json').write_text(json.dumps(account));(private/'account.json').chmod(0o600)
@@ -72,6 +74,7 @@ def run(include_ai=False):
 def after_redeploy():
  account=json.loads((ROOT/'.private/release/account.json').read_text());c=Client()
  status,_,_=c.call('auth/login',{'username':account['username'],'password':account['password']});assert status==200
+ c.call('account/switch',{'business_id':account['business_id']})
  status,data,_=c.call('workspace');assert status==200 and data['snapshot']['balance_minor']==account['expected_balance_minor']
  status,audit,_=c.call('audit/'+account['proposal_id']);assert status==200 and audit['chain_verified'] and sum(e['kind']=='EXECUTED' for e in audit['events'])==1
  status,health,_=c.call('health');assert status==200

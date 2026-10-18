@@ -1,6 +1,10 @@
-# Active finalization request — 18 October 2026
+# Current finalization status — 18 October 2026
 
-The user authorized additional product work after the prior completed release. Read FINALIZATION_CHECKPOINT.md and evidence/finalization/verification.json. Phase one adds zero-start personal workspaces, separate optional demos, manual input, 8-character exact passwords/strength estimate and lightweight futuristic UI. Locally verified; new source is not yet published/deployed. Phase two Vercel backend preview follows phase one acceptance. Budget BDT0; preserve old accounts/signing identity/database.
+Phase one is published and publicly verified: zero-start personal accounts, separate optional demos, own cash/invoice/JSON input, explicit payee permission,8-character passwords/strength meter, lightweight futuristic UI and easier assistant.312backend tests and34actual public acceptance checks passed; old accounts/ledger preserved and live AI answered from manual data. See FINALIZATION_CHECKPOINT.md and evidence/finalization/.
+
+Phase two native Vercel backend is prepared locally but blocked by403 for the connected challanger2 scope and absent CLI authentication. Render remains the working backend. No paid resource or billing enabled. Do not claim backend migration or real-finance production certification.
+
+## Prior release history (superseded by the current checkpoint)
 
 # Requested website release is complete
 

@@ -1,10 +1,10 @@
 {
   "phase": "one",
-  "status": "locally_verified_pending_publication",
+  "status": "phase_one_publicly_verified_phase_two_access_blocked",
   "backend_tests": 312,
   "additional_input_tests": 8,
-  "browser_scenarios": 14,
-  "accessibility_scans": 5,
+  "browser_scenarios": 16,
+  "accessibility_scans": 6,
   "viewports": [
     360,
     390,
@@ -22,15 +22,22 @@
     "api/app/services/storage.py": "c2f1beb55fd457d4e97f0e474a44eebf3bc1190fc542ffde32a8c1fa6b440a8f",
     "api/app/routes.py": "00bfe47e0b8d9e45f9bc28972f271b0e248c351df8a05c5d0d38056074d87984",
     "web/src/App.tsx": "da13b9c4e085a7d90d350dc796bbd547baacf29dc70f769e62802f55f4095e58",
-    "web/src/DataEntry.tsx": "ed54f2b7ba98b71a3d1b8c1c17c512249f23bbbb7aab957ef305e4498e7cf1d8",
+    "web/src/DataEntry.tsx": "2c9d2a00e989a86b0659fb712e3b9c59a6bc9560fd515d7c098dcee375418a6a",
     "web/src/PasswordStrength.tsx": "70fbf30dc573b342f75d3907e82e4afed19af37805d72e1c2c983becffe16810",
     "web/src/ImportEvidence.tsx": "bc5be75f46de18b7c4b8e33c5f2a21fc4379ce3e5736e314919f98c85346db95",
-    "web/src/style.css": "6ce4595146ed967c38f83c8156fcbbd1b55fef01d437b7e5de21388b412087c1"
+    "web/src/style.css": "6ce4595146ed967c38f83c8156fcbbd1b55fef01d437b7e5de21388b412087c1",
+    "api/app/main.py": "c53334789f4c32a8c49587ee24c1743866f6c3d377b5ab2533ac1e8e54145e50"
   },
   "limits": [
     "Synthetic sandbox, no bank connection or real transfers",
     "Append-only source entries; use a new workspace for corrected scenarios",
     "No account recovery or independent security certification",
     "Chromium emulation is not physical device qualification"
-  ]
+  ],
+  "public_checks": 34,
+  "qualified_public_application": "25a255e240465435a4e1616a6d900bf3fb671fbb",
+  "render_deploy": "dep-dba0gtqvcj2c739pf190",
+  "live_ai_grounded_manual_balance": true,
+  "focused_post_polish_tests": 20,
+  "vercel_backend_migrated": false
 }
