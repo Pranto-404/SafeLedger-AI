@@ -1,24 +1,22 @@
-# Submission and release gate sheet
-Deadline:2026-10-20 23:59 Beijing /21:59 Bangladesh /15:59 UTC. Authority:docs/REQUIREMENTS.md (official Appendix2 summarized once). No later update assumed. English materials.
+# Submission and release checklist — 18 October 2026
 
-| Item | Current evidence | Gate |
-| --- | --- | --- |
-| Registration/all5 students' eligibility | Owner says not registered,handling later | OPEN:owner must confirm official form/channel/receipt privately;no IDs inGit |
-| Working TopicE workflow | M5 actual API/browser finance/execution/audit results | Local verified |
-| Real bounded LLM | Adapter/schema/policy mock-tested;offline503 visible | OPEN:actual model/config/budget/task+attack evaluation |
-| Unauthorized/unapproved/altered/expired execution |225 tests +real adversarial browser denials | Local suites pass;independent review open |
-| Money/reconciliation/repeated requests | Baseline/forecast fixtures,one concurrent posting,restart replay | Local suites pass |
-| Cross-business access/prompt-policy bypass | Actual browser IDOR/role denials,inert memo,mock agent attack tests | Live-model/public-host evaluation open |
-| Critical failures/accessible mobile workflow |18 browser scenarios,4widths,10axe scans,retained fixes | Chromium Linux only;independent/device review open |
-| Fresh clone |7c7f03f remote clone,new venv/npm ci,226 tests/build/HTTP/18 browser scenarios pass;evidence/m6/reproducibility-verified/ | Verified local OS/browser scope;not pristine VM |
-| GitHub source/README/setup/API/architecture | Published repository/docs/evidence | FinalSHA needs freeze after all changes |
-| Public durable deployment | Vercel create403,backend host absent | OPEN:no working URL or automatic updates verified |
-| Technical report/security assessment | TECHNICAL_REPORT.md,docs/SECURITY_SELF_ASSESSMENT.md | Draft;final reviewer signoff pending |
-| Presentation≤10min | Editable English10-slide deck with notes,target8min30s | Actual spoken rehearsal pending;checkpoint limits visible |
-| Demo≤5min +sandbox logs | Actual English-captioned local capture +API logs,manifest with measured duration | Silent checkpoint demo;final review/hash inM6 evidence |
-| Original work/IP/dependency attribution | Source/dependency versions recorded | OPEN:owner selects project license,review dependencies/attribution |
-| Final submission/channel/receipt | Not sent | Owner authorization required for external sending;record redacted receipt only |
+Authority: `docs/REQUIREMENTS.md`, preserving the original uploaded organizer rules and playbook baseline. Recorded deadline:20 October 2026,21:59 Bangladesh /23:59 Beijing /15:59 UTC. Product delivery does not establish registration/submission.
 
-Release stops for any unauthorized/unapproved execution,incorrect money,duplicate posting,accepted forged/altered/expired approval,tenant leak,injection policy bypass,missing actual execution evidence or reproduced critical crash. Do not waive a gate to meet the deadline. Confirm whether organizer accepts a clearly labelled local prototype if public/live gates remain open rather than inventing compliance.
+| Item | Current status |
+| --- | --- |
+| Public Topic E application | Released at https://safeledger-ai.vercel.app/; Vercel frontend, Render Free API, persistent Turso |
+| Guest/self-service own-data workflow | Released; new personal accounts start0, optional isolated demos, manual cash/invoice and initial JSON import |
+| Financial/security verification |312 backend tests;20 focused polish tests;34 actual public acceptance checks, exactly one independent approved posting and verified audit |
+| Usability/accessibility |16 latest browser scenarios;6 axe scans;360/390/768/1366px; Chromium/Linux scope, not independent/device certification |
+| Real bounded AI | Public configured free-provider manual-balance smoke passed; historical eight-case report retains original source qualification; no statistical accuracy claim |
+| GitHub/source/setup | Published source and evidence; latest commit in Git history; production auto-deploy verified |
+| Data across redeployment | Existing account/ledger preserved; latest manual-workspace persistence proof stored separately when complete |
+| Native Vercel backend migration | NOT completed:403 project scope, no CLI authentication; prepared candidate/local fail-closed check only; working Render kept |
+| Technical report/security assessment | Updated to current own-data/auth/deployment/QA boundaries; owner/reviewer final review still required |
+| English presentation≤10minutes | Earlier editable10-slide draft exists; needs latest UI/flow refresh and measured spoken rehearsal |
+| Demo≤5minutes and sandbox logs | Earlier silent captioned local demo is historical; final current-flow recording/review remains open; public logs/evidence available |
+| Original work/license/dependencies | Source/dependency versions preserved; owner project-license/IP/attribution decision/review remains open |
+| Registration/all 5 students/ID eligibility | Completion/receipt NOT verified here; owner confirms privately, no IDs in Git |
+| Final channel/submission/receipt | NOT sent by this agent; owner must authorize exact external submission and retain receipt |
 
-Freeze procedure:record exact Git commit/tree,run only relevant final checks,hash approved materials,verify video≤300s and presentation≤600s,review all visible claims/limitations,verify final links in a fresh browser,then obtain owner approval for the actual external submission. Registration is separate from code delivery. No identification document transfer or organizer contact is authorized by this checklist.
+Do not describe the sandbox as certified real-money production. No paid resources, real transfers or outbound registration/submission messages are authorized by this checklist. Do not waive financial authority, amount, duplicate, tenant or evidence failures to meet a deadline. Keep final materials consistent with the actual live revision and disclose free quotas/cold starts, no recovery, self-reported inputs, append-only correction approach and finite testing.

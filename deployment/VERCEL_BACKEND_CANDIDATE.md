@@ -6,7 +6,7 @@ The first phase is published at application commit25a255e on the existing Vercel
 
 Run `python scripts/prepare_vercel_backend.py --output .private/vercel-candidate/source` with a new empty output directory. This copies only the runtime Python source and required fictional fixture data, pins existing runtime dependencies, exports `api.app.main:app` through `[tool.vercel]`, and creates a backend-only FastAPI function configuration with60-second maximum duration. It includes no .env, secret, auth state, SQLite, frontend dependencies, tests or evidence. Production root/web Vercel configs and Render remain intact.
 
-This is a local source candidate, not a Vercel build or performance qualification. Official references reviewed18 October2026:
+This is a local source candidate, not a Vercel build or performance qualification. Official references reviewed18 October 2026:
 - https://vercel.com/docs/frameworks/backend/fastapi
 - https://vercel.com/docs/functions/runtimes/python
 

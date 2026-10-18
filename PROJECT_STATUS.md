@@ -1,6 +1,6 @@
 # Current finalization status — 18 October 2026
 
-Phase one is published and publicly verified: zero-start personal accounts, separate optional demos, own cash/invoice/JSON input, explicit payee permission,8-character passwords/strength meter, lightweight futuristic UI and easier assistant.312backend tests and34actual public acceptance checks passed; old accounts/ledger preserved and live AI answered from manual data. See FINALIZATION_CHECKPOINT.md and evidence/finalization/.
+Phase one is published and publicly verified: zero-start personal accounts, separate optional demos, own cash/invoice/JSON input, explicit payee permission,8-character passwords/strength meter, lightweight futuristic UI and easier assistant.312backend tests and34actual public acceptance checks passed; old accounts/ledger preserved and live AI answered from manual data. Final app4a4bbd7 is live on both hosts; same manual account/balance/one posting/audit survived actual redeployment.16 browser scenarios/6 axe scans passed. See FINALIZATION_CHECKPOINT.md and evidence/finalization/.
 
 Phase two native Vercel backend is prepared locally but blocked by403 for the connected challanger2 scope and absent CLI authentication. Render remains the working backend. No paid resource or billing enabled. Do not claim backend migration or real-finance production certification.
 
