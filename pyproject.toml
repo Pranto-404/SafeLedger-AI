@@ -3,4 +3,9 @@ testpaths = ["api/tests"]
 addopts = "-ra"
 
 [tool.vercel]
-entrypoint = "api.app.main:app"
+entrypoint = "api.vercel:app"
+
+[tool.vercel.fastapi.static]
+# Only the public Vite build is mounted; API routes keep their own middleware.
+cdn = true
+exclude = true
