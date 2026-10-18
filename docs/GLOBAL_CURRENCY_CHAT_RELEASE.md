@@ -13,7 +13,11 @@ Validation:
 - 335 backend tests passed, including foreign-currency signed payments/replay, currency locking, CSRF, tenant isolation and existing BDT history.
 - Node currency parser/formatter precision and bounds checks passed.
 - TypeScript and production Vite build passed; separate Assistant chunk is about 3.6 kB gzip.
-- Live browser verification is pending deployment.
+- Live Edge browser verification passed on production: landing box absent, 165 currency choices, private chat reply, Escape closes, conversation retained across Data and Assistant, provider status resolves to Google Gemini without inference. Existing session restored successfully. Browser console contained only Grammarly extension errors.
+- Small-screen emulation could not be confirmed: the browser viewport capability returned success but DOM dimensions stayed desktop-sized. Override was reset. Do not claim a mobile acceptance pass for this release.
+- Authentication-only timing samples: 42.97 seconds before release and 11.22 seconds after; different cold/warm conditions, not a controlled performance comparison. Login latency remains an open issue.
+- Vercel production CHu7DrvPyAcVKVgs4sfih4fYeRP6 is Ready at https://safeledger-ai.vercel.app/; Render dep-dbak3gdg1s2s73bem2gg is live. Both use application commit f4b0193a6336b5e758c01b75c4c8f12e2373165d.
+- Existing automated browser acceptance script was updated for the new UI but not executed this turn; user explicitly requested their local browser.
 
 Boundaries:
 - External AI live inference is not verified: automatic approval review blocked a live financial query with external-AI consent. No retry of that transmission was made. Synthetic-only provider testing needs specific permission for Google Gemini.
