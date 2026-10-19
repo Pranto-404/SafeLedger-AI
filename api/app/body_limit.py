@@ -3,8 +3,8 @@ import json
 from starlette.responses import JSONResponse
 
 class BodyLimitMiddleware:
-    def __init__(self,app,limit=1024*1024):
-        self.app,self.limit=app,limit
+    def __init__(self,app,limit=1024*1024,large=2*1024*1024):
+        self.app,self.limit,self.large=app,limit,large
 
     async def __call__(self,scope,receive,send):
         if scope['type']!='http' or scope['method'] not in {'POST','PUT','PATCH'}:
@@ -12,12 +12,13 @@ class BodyLimitMiddleware:
         headers=dict(scope.get('headers',[]))
         if headers.get(b'content-type',b'').split(b';',1)[0].strip().lower()!=b'application/json':
             return await JSONResponse({'error':{'code':'JSON_CONTENT_TYPE_REQUIRED'}},status_code=415)(scope,receive,send)
+        limit=self.large if scope.get('path')=='/api/assist/scan' else self.limit
         chunks=[];size=0
         while True:
             event=await receive()
             if event['type']=='http.disconnect':return
             chunk=event.get('body',b'');size+=len(chunk)
-            if size>self.limit:
+            if size>limit:
                 return await JSONResponse({'error':{'code':'REQUEST_BODY_TOO_LARGE'}},status_code=413)(scope,receive,send)
             chunks.append(chunk)
             if not event.get('more_body',False):break

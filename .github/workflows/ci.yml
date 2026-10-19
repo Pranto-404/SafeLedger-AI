@@ -49,6 +49,7 @@ jobs:
           node scripts/check_local_assistant.cjs > /dev/null
           node scripts/check_currency_ui.cjs
           node scripts/check_currency_view.cjs
+          node scripts/check_record_parser.cjs
           for set in heldout_eval heldout_eval_v2 heldout_eval_v3; do node scripts/evaluate_local_assistant.cjs $set --check > /dev/null; done
 
   dependency-audit:

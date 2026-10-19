@@ -41,9 +41,11 @@ def principal(request: Request, db=Depends(db_connection)):
         raise
     sec.budget(db,'session:'+actor.token_hash,240 if request.method=='GET' else 60)
     from api.app.accounts import PUBLIC_TEMPLATES
-    meta=db.execute('SELECT kind FROM workspace_meta WHERE business_id=?',(actor.business_id,)).fetchone()
+    meta=db.execute('SELECT kind,archived_at FROM workspace_meta WHERE business_id=?',(actor.business_id,)).fetchone()
     if actor.business_id in PUBLIC_TEMPLATES or (meta and meta[0]=='demo'):
         sec.fail(403,'ARCHIVED_EXAMPLE_WORKSPACE')
+    if meta and meta[1]:
+        sec.fail(403,'WORKSPACE_CLEARED')
     return actor
 
 

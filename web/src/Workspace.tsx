@@ -4,131 +4,193 @@ import {ThemeButton} from './Theme';
 import {Icon} from './Icon';
 import {Dashboard} from './Dashboard';
 import {CashChart} from './Charts';
-import {CurrencyProvider,CurrencyControls,CurrencySelect,useCurrency} from './Currency';
-import {lazy,Suspense,useEffect,useRef,useState,useCallback,type FormEvent,type ReactNode,type KeyboardEvent} from 'react';
-import {ApiError,client,accountRequest,currencyDigits} from './api';
-import type {Audit,Forecast,Invoice,Proposal,Session,Snapshot,CashEvent} from './types';
+import {CurrencyProvider,CurrencyControls,useCurrency} from './Currency';
+import {lazy,Suspense,useEffect,useRef,useState,useCallback,type ReactNode,type KeyboardEvent} from 'react';
+import {ApiError,client,accountRequest,currencyDigits,fxRate} from './api';
+import type {Audit,Forecast,Invoice,Profile,Proposal,Session,Snapshot,CashEvent,WorkspaceItem} from './types';
 import {ImportEvidence} from './ImportEvidence';
 import {DataEntry} from './DataEntry';
 import {Financing} from './Financing';
-function Evidence({ ids, label = 'Source evidence' }: { ids: string[]; label?: string }) {
-  return <details className="evidence"><summary>{label} · {ids.length} records</summary><ul>{ids.map(id => <li key={id}><code>{id}</code></li>)}</ul></details>;
-}
-function Notes({ values }: { values: string[] }) { return <ul className="notes">{values.map((v, i) => <li key={i}>{v}</li>)}</ul>; }
-function Metric({ label, value, hint }: { label: string; value: number; hint?: string }) { const {money}=useCurrency();return <article className="metric"><p>{label}</p><strong className={value < 0 ? 'negative' : ''}>{money(value)}</strong>{hint && <small>{hint}</small>}</article>; }
-function Panel({ title, children }: { title: string; children: ReactNode }) { return <section className="panel"><h2>{title}</h2>{children}</section>; }
-const tabs = ['Overview', 'Data', 'Invoices', 'Cash flow', 'Financing', 'Assistant', 'Approvals', 'Audit'] as const;
-type Tab = typeof tabs[number];
-const Assistant = lazy(()=>import('./Assistant'));
+import {QuickAdd} from './QuickAdd';
+import {Avatar} from './Avatar';
+import {formatDate,formatTime,prettyVendor} from './format';
 
+const Settings=lazy(()=>import('./Settings'));
+const Assistant=lazy(()=>import('./Assistant'));
+const tabs=['Overview','Data','Invoices','Cash flow','Financing','Assistant','Approvals','Audit','Settings'] as const;
+type Tab=typeof tabs[number];
+const tabLabel:Record<Tab,string>={Overview:'Overview',Data:'Add records',Invoices:'Invoices','Cash flow':'Cash flow',Financing:'Loans',Assistant:'Assistant',Approvals:'Approvals',Audit:'Activity',Settings:'Settings'};
+const pageTitle:Record<Tab,string>={Overview:'Financial overview',Data:'Add your records',Invoices:'Invoices','Cash flow':'Cash flow',Financing:'Loan offers',Assistant:'Assistant',Approvals:'Payment approvals',Audit:'Activity',Settings:'Settings'};
 
+function Basis({count}:{count:number}){return <p className="small muted">Based on {count} of your records.</p>;}
+function Notes({values}:{values:string[]}){return <ul className="notes">{values.map((v,i)=><li key={i}>{v}</li>)}</ul>;}
+function Metric({label,value,hint}:{label:string;value:number;hint?:string}){const {money}=useCurrency();return <article className="metric"><p>{label}</p><strong className={value<0?'negative':''}>{money(value)}</strong>{hint&&<small>{hint}</small>}</article>;}
+function Panel({title,children}:{title:string;children:ReactNode}){return <section className="panel"><h2>{title}</h2>{children}</section>;}
 
 type WorkspaceProps={token:string;session:Session;logout:()=>void;expired:()=>void;changeSession:(session:Session)=>void};
-export default function Workspace(props:WorkspaceProps){const [currency,setCurrency]=useState('BDT');return <CurrencyProvider currency={currency} storageKey={`safeledger-currency-view-v1:${props.session.user_id}:${props.session.business_id}`}><WorkspaceContent {...props} setCurrency={setCurrency}/></CurrencyProvider>;}
-function WorkspaceContent({ token, session, logout, expired, changeSession,setCurrency }: WorkspaceProps & {setCurrency:(currency:string)=>void}) {
+export default function Workspace(props:WorkspaceProps){
+  const [currency,setCurrency]=useState('BDT');
+  return <CurrencyProvider currency={currency} fetchRate={(from,to)=>fxRate(from,to)} storageKey={`safeledger-currency-view-v2:${props.session.user_id}:${props.session.business_id}`}><WorkspaceContent {...props} setCurrency={setCurrency}/></CurrencyProvider>;
+}
+
+const AUDIT_TEXT:Record<string,string>={IMPORTED:'Records imported',RECORD_ADDED:'Record added',PROPOSED:'Payment prepared for approval',APPROVED:'Payment approved',REJECTED:'Payment rejected',EXECUTED:'Payment recorded',EXPIRED:'A payment proposal expired',DENIED:'An action was blocked',IDEMPOTENT_REPLAY:'A repeated approval was ignored',FINANCING_ANALYZED:'Loan offers compared',INVITATION_CREATED:'Invitation created',WORKSPACE_JOINED:'Someone joined this workspace',WORKSPACE_CREATED:'Workspace created',CURRENCY_CHANGED:'Currency changed',PAYEE_PERMISSION_CHANGED:'Supplier permission changed',ACCOUNT_RECOVERED:'Account recovered',MEMBER_REMOVED:'Someone was removed',MEMBER_ROLE_CHANGED:'A role was changed',MEMBER_LEFT:'Someone left this workspace'};
+
+function WorkspaceContent({token,session,logout,expired,changeSession,setCurrency}:WorkspaceProps&{setCurrency:(currency:string)=>void}){
   const {currency,money,nativeMoney,parseMinor}=useCurrency();
   const [chatOpen,setChatOpen]=useState(false);const [chatLoaded,setChatLoaded]=useState(false);
   const chatButton=useRef<HTMLButtonElement>(null);
   function closeChat(){setChatOpen(false);chatButton.current?.focus();}
-  const [tab, setTab] = useState<Tab>('Overview');
+  const [tab,setTab]=useState<Tab>('Overview');
   const tourNavigate=useCallback((page:string)=>{setTab(page as Tab);setSelected(null);setChatOpen(false);},[]);
-  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [snapshot,setSnapshot]=useState<Snapshot|null>(null);
+  const [invoices,setInvoices]=useState<Invoice[]>([]);
   const [events,setEvents]=useState<CashEvent[]>([]);
-  const [proposals, setProposals] = useState<Proposal[]>([]);
-  const [audit, setAudit] = useState<Audit | null>(null);
-  const [week, setWeek] = useState<Forecast | null>(null);
-  const [forecast, setForecast] = useState<Forecast | null>(null);
-  const [baselineMonth, setBaselineMonth] = useState<Forecast | null>(null);
-  const [error, setError] = useState(''); const [message, setMessage] = useState('');
-  const [busy, setBusy] = useState(true); const [missing, setMissing] = useState(false);
-  const [reserve, setReserve] = useState('0'); const [delay, setDelay] = useState('0');
-  const [query, setQuery] = useState(''); const [selected, setSelected] = useState<Proposal | null>(null);
+  const [proposals,setProposals]=useState<Proposal[]>([]);
+  const [audit,setAudit]=useState<Audit|null>(null);
+  const [week,setWeek]=useState<Forecast|null>(null);
+  const [forecast,setForecast]=useState<Forecast|null>(null);
+  const [baselineMonth,setBaselineMonth]=useState<Forecast|null>(null);
+  const [error,setError]=useState('');const [message,setMessage]=useState('');
+  const [busy,setBusy]=useState(true);const [missing,setMissing]=useState(false);const [exporting,setExporting]=useState(false);
+  const [reserve,setReserve]=useState('0');const [delay,setDelay]=useState('0');
+  const [query,setQuery]=useState('');const [selected,setSelected]=useState<Proposal|null>(null);
   const [revision,setRevision]=useState('');
-  const scope = useRef(new AbortController());
-  const request = <T,>(path: string, body?: unknown) => client(token, scope.current.signal, expired)<T>(path, body);
-  const actionLock = useRef(false);
-  function report(e: unknown) { if (!scope.current.signal.aborted) setError(e instanceof Error ? e.message : 'Request failed'); }
-  async function refresh() {
-    try {
+  const [profile,setProfile]=useState<Profile|null>(null);
+  const [lists,setLists]=useState<{workspaces:WorkspaceItem[];cleared:WorkspaceItem[]}>({workspaces:[],cleared:[]});
+  const [cloudAvailable,setCloudAvailable]=useState(false);
+  const scope=useRef(new AbortController());
+  const request=<T,>(path:string,body?:unknown)=>client(token,scope.current.signal,expired)<T>(path,body);
+  const actionLock=useRef(false);
+  function report(e:unknown){if(!scope.current.signal.aborted)setError(e instanceof Error?e.message:'Request failed');}
+  async function reloadProfile(){try{const p=await request<Profile>('/account/profile');if(!scope.current.signal.aborted)setProfile(p);}catch{/* The profile is optional for viewing records. */}}
+  async function reloadLists(){try{const l=await request<{workspaces:WorkspaceItem[];cleared:WorkspaceItem[]}>('/account/workspaces');if(!scope.current.signal.aborted)setLists(l);}catch{/* The workspace menu falls back to the current workspace. */}}
+  async function refresh(){
+    try{
       const data=await request<{dataset_revision:string;snapshot:Snapshot;invoices:Invoice[];events:CashEvent[];proposals:Proposal[];audit:Audit;week:Forecast;month:Forecast;policy:{reserve_minor:number;payment_limit_minor:number}}>('/workspace');
       if(scope.current.signal.aborted)return;
       setRevision(data.dataset_revision);setSnapshot(data.snapshot);setCurrency(data.snapshot.currency);setInvoices(data.invoices);setEvents(data.events);setProposals(data.proposals);setAudit(data.audit);
       setWeek(data.week);setForecast(data.month);setBaselineMonth(data.month);
       setReserve(String(data.policy.reserve_minor/10**currencyDigits(data.snapshot.currency)));setDelay('0');setMissing(false);
-    } catch(e) {
+    }catch(e){
       if(scope.current.signal.aborted)return;
       setSnapshot(null);setInvoices([]);setEvents([]);setProposals([]);setAudit(null);setWeek(null);setForecast(null);setBaselineMonth(null);
       const noData=e instanceof ApiError&&e.code==='DATASET_NOT_FOUND';setMissing(noData);if(!noData)report(e);
     }
   }
-  async function run(action: () => Promise<void>) {
-    if (actionLock.current) return; actionLock.current = true; setBusy(true); setError(''); setMessage('');
-    try { await action(); } catch (e) { report(e); } finally { actionLock.current = false; if (!scope.current.signal.aborted) setBusy(false); }
+  async function run(action:()=>Promise<void>){
+    if(actionLock.current)return;actionLock.current=true;setBusy(true);setError('');setMessage('');
+    try{await action();}catch(e){report(e);}finally{actionLock.current=false;if(!scope.current.signal.aborted)setBusy(false);}
   }
-  useEffect(() => {
+  useEffect(()=>{
     // StrictMode remounts effects in development; each mount gets its own cancellation scope.
-    const controller = new AbortController(); scope.current = controller;
-    void run(refresh);
-    return () => controller.abort();
-    // The workspace is keyed by token. It cannot reuse another session's financial state.
+    const controller=new AbortController();scope.current=controller;
+    void run(refresh);void reloadProfile();void reloadLists();
+    void accountRequest<{cloud_assist:boolean}>('/auth/capabilities',undefined,controller.signal).then(c=>setCloudAvailable(c.cloud_assist)).catch(()=>{});
+    return()=>controller.abort();
+    // The workspace is keyed by session. It cannot reuse another session's financial state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  async function propose(invoiceId: string) {
-    const proposal = await request<Proposal>('/proposals', { invoice_id: invoiceId });
-    setSelected(proposal); await refresh(); setTab('Approvals'); setMessage('Proposal created. No payment recorded. An independent approver must review it.');
+  },[]);
+  async function propose(invoiceId:string){
+    const proposal=await request<Proposal>('/proposals',{invoice_id:invoiceId});
+    setSelected(proposal);await refresh();setTab('Approvals');setMessage('Payment prepared. Nothing is paid yet: a second person must approve it.');
   }
-  async function decide(proposal: Proposal, decision: 'approve' | 'reject') {
-    const result = await request<{ state: string; posting_id?: string }>(`/proposals/${proposal.proposal_id}/approve`, { proposal_hash: proposal.action_hash, decision });
-    setSelected(null); await refresh();
-    setMessage(result.state === 'EXECUTED' ? `Payment recorded. Posting ${result.posting_id}. Refreshed balances and audit evidence are below.` : 'Proposal rejected. No payment recorded.');
+  async function decide(proposal:Proposal,decision:'approve'|'reject'){
+    const result=await request<{state:string}>(`/proposals/${proposal.proposal_id}/approve`,{proposal_hash:proposal.action_hash,decision});
+    setSelected(null);await refresh();
+    setMessage(result.state==='EXECUTED'?'Payment recorded in your books. Your balance and activity are updated.':'Payment rejected. Nothing was recorded.');
   }
-  function exportAudit() {
-    if (!audit) return;
-    const url = URL.createObjectURL(new Blob([JSON.stringify(audit, null, 2)], { type: 'application/json' }));
-    const a = document.createElement('a'); a.href = url; a.download = 'safeledger-audit.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  function save(blob:Blob,name:string){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+  async function exportJson(){await run(async()=>{const data=await request('/workspace/export');save(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'safeledger-backup.json');setMessage('Backup file downloaded. It contains your financial records, so keep it private.');});}
+  async function exportPdf(){
+    if(!snapshot||exporting)return;setExporting(true);setError('');
+    try{
+      const {downloadPdf}=await import('./exportPdf');
+      await downloadPdf({workspace:session.workspace_name||lists.workspaces.find(w=>w.business_id===session.business_id)?.name||'My workspace',owner:profile?.display_name||session.username||'',currency,snapshot,week,month:baselineMonth,invoices,events,proposals},`safeledger-report-${snapshot.as_of}.pdf`);
+      setMessage('Your PDF report was downloaded.');
+    }catch(e){report(e);}finally{setExporting(false);}
   }
-  const canPropose = session.role === 'owner';
-  const visible = invoices.filter(i => `${i.invoice_id} ${i.vendor_id} ${i.invoice_number}`.toLowerCase().includes(query.toLowerCase()));
-  return <div className="shell"><aside><div className="brand"><span className="mark" aria-hidden="true">S</span> SafeLedger <span className="ai">AI</span></div><p className="eyebrow">FINANCIAL WORKSPACE</p><nav aria-label="Workspace">{tabs.map(name => <button key={name} data-tour={name} aria-current={tab === name ? 'page' : undefined} onClick={() => { setTab(name); setSelected(null);if(name==='Assistant'){setChatLoaded(true);setChatOpen(false);} }}><Icon name={name}/>{name}</button>)}</nav><div className="identity"><strong>{session.role}</strong><small>{session.workspace_name || session.username || 'My workspace'}</small><small>{'Private financial records'}</small><button className="secondary" onClick={logout}>Sign out</button></div></aside><main id="workspace"><header><div><p className="eyebrow">SAFELEDGER / {tab.toUpperCase()}</p><h1>{tab === 'Overview' ? 'Financial overview' : tab}</h1><p className="muted">{snapshot ? `Snapshot ${snapshot.as_of} · Ledger ${currency} · evidence linked` : 'Your evidence-backed financial workspace'}</p></div><div className="header-actions"><QuickTour ready={!!snapshot&&!busy} userId={session.user_id} currentPage={tab} navigate={tourNavigate}/><ThemeButton/><button className="secondary" disabled={busy||!snapshot} onClick={()=>void run(async()=>{const data=await request('/workspace/export');const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='safeledger-workspace-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);setMessage('Workspace exported. Store the file privately; it contains your financial records.');})}>Export records</button><button className="secondary" disabled={busy} onClick={() => void run(refresh)}>Refresh data</button></div></header><CurrencyControls key={currency} ready={!!snapshot}/><div aria-live="polite" role="status">{busy && <p className="notice">Working with verified server data…</p>}{message && <p className="success">{message}</p>}</div>{error && <p className="error" role="alert">{error}</p>}{!session.guest && session.username && <WorkspaceAccess session={session} changeSession={changeSession}/>} {missing && <p className="notice">No dataset has been imported. {session.role === 'owner' ? <button className="link" onClick={() => setTab('Data')}>Import records JSON</button> : 'Ask the owner to import their records.'}</p>}
-      {tab==='Overview'&&<Dashboard snapshot={snapshot} week={week} month={baselineMonth} invoices={invoices} events={events} proposals={proposals} audit={audit} navigate={setTab} openAssistant={()=>{setChatLoaded(true);setChatOpen(true);}}/>}
-      {tab === 'Invoices' && <Panel title="Invoice register"><label htmlFor="invoice-search">Find invoice, vendor or reference</label><input id="invoice-search" type="search" value={query} onChange={e => setQuery(e.target.value)} /><p className="muted">{visible.length} invoices · Memo text is untrusted source data. Backend policy checks duplicate risk before creating any proposal.</p><div className="table-wrap"><table><caption className="sr-only">Invoices and source evidence</caption><thead><tr><th>Invoice / source</th><th>Vendor / reference</th><th>Due</th><th>Amount</th><th>Status / action</th></tr></thead><tbody>{visible.map(i => <tr key={i.invoice_id}><td><strong>{i.invoice_number}</strong><small>{i.invoice_id}</small><small><code>{i.source_record_id}</code></small>{i.memo && <details><summary>Untrusted memo</summary><p>{i.memo}</p></details>}</td><td>{i.vendor_id}<small>{i.invoice_number}</small></td><td>{i.due_on}</td><td className="amount">{money(i.amount_minor)}</td><td><span className="badge">{i.status}</span>{i.status==='open'&&session.role==='owner'&&<details><summary>Payee permission</summary><button className="secondary small" disabled={busy} onClick={()=>void run(async()=>{await request('/workspace/vendor-permission',{vendor_id:i.vendor_id,enabled:true});setMessage('Vendor allowed for proposals. Independent approval is still required.');})}>Allow this vendor</button><button className="secondary small" disabled={busy} onClick={()=>void run(async()=>{await request('/workspace/vendor-permission',{vendor_id:i.vendor_id,enabled:false});setMessage('Vendor blocked from payment recording.');})}>Block this vendor</button></details>}{i.status === 'open' && session.role === 'approver' && <small className="muted">Approvers review payments the owner prepares; you cannot approve one you created.</small>}{i.status === 'open' && canPropose && <button className="small" disabled={busy} onClick={() => void run(() => propose(i.invoice_id))} aria-label={`Review payment for ${i.invoice_id}`}>Review payment</button>}</td></tr>)}</tbody></table></div>{!visible.length && <p>No invoices match. Clear the filter or import a dataset.</p>}</Panel>}
-      {tab === 'Cash flow' && <><Panel title="Deterministic outlook"><form className="form-row" onSubmit={e => { e.preventDefault(); void run(async () => { if (!snapshot) throw new Error('Import a dataset first.'); const result = await request<Forecast>('/cashflow/scenarios', { as_of: snapshot.as_of, horizon_days: 30, reserve_minor: parseMinor(reserve), delay_inflows_days: Number(delay) }); setForecast(result); }); }}><label>Scenario reserve ({currency})<input value={reserve} onChange={e => setReserve(e.target.value)} inputMode="decimal" required /></label><label>Delay scheduled receipts<select value={delay} onChange={e => setDelay(e.target.value)}>{[0, 7, 14, 30].map(n => <option key={n} value={n}>{n} days</option>)}</select></label><button disabled={busy || !snapshot}>Calculate scenario</button></form><p className="muted">What-if inputs affect this forecast only. Backend execution policy remains authoritative. Seven-day overview uses the baseline scenario.</p>{forecast && <><div className="metrics"><Metric label="30-day closing" value={forecast.closing_balance_minor} /><Metric label="Lowest projected balance" value={forecast.minimum_balance_minor} /><article className="metric"><p>First reserve breach</p><strong>{forecast.first_shortfall_on || 'None'}</strong></article></div><CashChart forecast={forecast} /><Evidence ids={forecast.source_ids} /><Notes values={forecast.assumptions} /></>}</Panel>{forecast && <Panel title="Risk and daily evidence">{forecast.risk_flags.map((risk, n) => <div className="notice" key={n}><strong>{risk.risk.replaceAll('_', ' ')}</strong><p>{risk.invoice_ids.join(', ')} · Execution {risk.execution_blocked ? 'blocked' : 'subject to policy'}</p><Evidence ids={risk.source_ids} /></div>)}<div className="table-wrap"><table><caption>30-day projected activity</caption><thead><tr><th>Date</th><th>Inflow</th><th>Outflow</th><th>Balance</th><th>Evidence</th></tr></thead><tbody>{forecast.days.map(d => <tr key={d.date}><td>{d.date}</td><td>{money(d.inflow_minor)}</td><td>{money(d.outflow_minor)}</td><td className={d.projected_balance_minor < 0 ? 'negative' : ''}>{money(d.projected_balance_minor)}</td><td><Evidence ids={d.source_ids} /></td></tr>)}</tbody></table></div></Panel>}</>}
-
+  async function switchTo(id:string){
+    if(id===session.business_id)return;
+    await run(async()=>{changeSession(await request<Session>('/account/switch',{business_id:id}));});
+  }
+  const canPropose=session.role==='owner';
+  const name=profile?.display_name||session.display_name||session.username||'You';
+  const number=(id:string)=>invoices.find(i=>i.invoice_id===id)?.invoice_number||'';
+  const visible=invoices.filter(i=>`${i.vendor_id} ${i.invoice_number}`.toLowerCase().includes(query.toLowerCase()));
+  return <div className="shell"><aside>
+    <div className="brand"><span className="mark" aria-hidden="true">S</span> SafeLedger <span className="ai">AI</span></div>
+    <nav aria-label="Workspace">{tabs.map(t=><button key={t} data-tour={t} aria-current={tab===t?'page':undefined} onClick={()=>{setTab(t);setSelected(null);if(t==='Assistant'){setChatLoaded(true);setChatOpen(false);}}}><Icon name={t}/>{tabLabel[t]}</button>)}</nav>
+    <div className="identity">
+      <button className="identity-user" onClick={()=>setTab('Settings')} aria-label="Open your profile and settings"><Avatar profile={profile} name={name}/><span><strong>{name}</strong><small>{session.role==='owner'?'Owner':session.role==='approver'?'Approver':'Viewer'}</small></span></button>
+      {lists.workspaces.length>1&&<><label htmlFor="workspace-switch" className="sr-only">Switch workspace</label><select id="workspace-switch" value={session.business_id} disabled={busy} onChange={e=>void switchTo(e.target.value)}>{lists.workspaces.map(w=><option key={w.business_id} value={w.business_id}>{w.name}{w.currency?` · ${w.currency}`:''}{w.role!=='owner'?' · shared':''}</option>)}</select></>}
+      <button className="secondary" onClick={logout}>Sign out</button></div></aside>
+    <main id="workspace"><header><div><p className="eyebrow">{session.workspace_name||'My workspace'}</p><h1>{pageTitle[tab]}</h1><p className="muted">{snapshot?`Up to date as of ${formatDate(snapshot.as_of)} · ${currency}`:'Your business finances in one place'}</p></div>
+      <div className="header-actions"><QuickTour ready={!!snapshot&&!busy} userId={session.user_id} currentPage={tab} navigate={tourNavigate}/><ThemeButton/><button className="secondary" disabled={busy||!snapshot||exporting} onClick={()=>void exportPdf()}>{exporting?'Preparing PDF…':'Download PDF'}</button><button className="secondary" disabled={busy} onClick={()=>void run(refresh)}>Refresh</button></div></header>
+      <CurrencyControls key={currency} ready={!!snapshot}/>
+      <div aria-live="polite" role="status">{busy&&<p className="notice">Loading your latest data…</p>}{message&&<p className="success">{message}</p>}</div>
+      {error&&<p className="error" role="alert">{error}</p>}
+      {profile&&profile.email&&!profile.email_verified&&profile.email_service&&tab!=='Settings'&&<p className="notice">Verify your email so you can reset your password with a code. <button className="link" onClick={()=>setTab('Settings')}>Verify now</button></p>}
+      {profile&&!profile.email&&tab==='Overview'&&<p className="notice">Add an email address to reset your password with a code if you ever forget it. <button className="link" onClick={()=>setTab('Settings')}>Add email</button></p>}
+      {missing&&<p className="notice">Nothing here yet. {session.role==='owner'?<button className="link" onClick={()=>setTab('Data')}>Add your first record</button>:'Ask the owner to add records.'}</p>}
+      {tab==='Overview'&&<Dashboard snapshot={snapshot} week={week} month={baselineMonth} invoices={invoices} events={events} proposals={proposals} audit={audit} navigate={t=>setTab(t as Tab)} openAssistant={()=>{setChatLoaded(true);setChatOpen(true);}}/>}
+      {tab==='Invoices'&&<Panel title="Invoices">
+        <label htmlFor="invoice-search">Search by supplier or invoice number</label><input id="invoice-search" type="search" value={query} onChange={e=>setQuery(e.target.value)}/>
+        <p className="muted">{visible.length} {visible.length===1?'invoice':'invoices'}. A possible duplicate pauses payment until you review it.</p>
+        <div className="table-wrap"><table><caption className="sr-only">Your supplier invoices</caption><thead><tr><th>Supplier</th><th>Invoice</th><th>Due</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+          {visible.map(i=><tr key={i.invoice_id}><td><strong>{prettyVendor(i.vendor_id)}</strong></td><td>{i.invoice_number}{i.memo&&<details><summary>Note</summary><p>{i.memo}</p></details>}</td><td>{formatDate(i.due_on)}{i.status==='open'&&snapshot&&i.due_on<snapshot.as_of&&<small className="negative">Overdue</small>}</td><td className="amount">{money(i.amount_minor)}</td>
+            <td><span className="badge">{i.status==='open'?'To pay':'Paid'}</span>
+              {i.status==='open'&&session.role==='owner'&&<details><summary>Supplier permission</summary><button className="secondary small" disabled={busy} onClick={()=>void run(async()=>{await request('/workspace/vendor-permission',{vendor_id:i.vendor_id,enabled:true});setMessage('This supplier can now be paid through approvals.');})}>Allow payments to this supplier</button><button className="secondary small" disabled={busy} onClick={()=>void run(async()=>{await request('/workspace/vendor-permission',{vendor_id:i.vendor_id,enabled:false});setMessage('Payments to this supplier are blocked.');})}>Block this supplier</button></details>}
+              {i.status==='open'&&session.role==='approver'&&<small className="muted">Approvers review payments the owner prepares.</small>}
+              {i.status==='open'&&canPropose&&<button className="small" disabled={busy} onClick={()=>void run(()=>propose(i.invoice_id))} aria-label={`Prepare payment for ${i.invoice_number}`}>Prepare payment</button>}</td></tr>)}</tbody></table></div>
+        {!visible.length&&<p>No invoices match. Add a bill on the <button className="link" onClick={()=>setTab('Data')}>Add records</button> page, or photograph one.</p>}</Panel>}
+      {tab==='Cash flow'&&<><Panel title="Where your cash is heading">
+        <form className="form-row" onSubmit={e=>{e.preventDefault();void run(async()=>{if(!snapshot)throw new Error('Add a record first.');const result=await request<Forecast>('/cashflow/scenarios',{as_of:snapshot.as_of,horizon_days:30,reserve_minor:parseMinor(reserve),delay_inflows_days:Number(delay)});setForecast(result);});}}>
+          <label>Cash you want to keep as a safety reserve ({currency})<input value={reserve} onChange={e=>setReserve(e.target.value)} inputMode="decimal" required/></label>
+          <label>What if customers pay late?<select value={delay} onChange={e=>setDelay(e.target.value)}>{[0,7,14,30].map(n=><option key={n} value={n}>{n===0?'On time':`${n} days late`}</option>)}</select></label>
+          <button disabled={busy||!snapshot}>Update forecast</button></form>
+        <p className="muted">Try “what if” changes here. They never change your records.</p>
+        {forecast&&<><div className="metrics"><Metric label="Balance in 30 days" value={forecast.closing_balance_minor}/><Metric label="Lowest balance" value={forecast.minimum_balance_minor}/><article className="metric"><p>First time below your reserve</p><strong>{forecast.first_shortfall_on?formatDate(forecast.first_shortfall_on):'Never'}</strong></article></div><CashChart forecast={forecast}/><Basis count={forecast.source_ids.length}/><Notes values={forecast.assumptions}/></>}</Panel>
+        {forecast&&<Panel title="Warnings and daily detail">
+          {forecast.risk_flags.map((risk,n)=><div className="notice" key={n}><strong>{risk.risk==='DUPLICATE_POSSIBLE'?'Possible duplicate bill':risk.risk==='DUPLICATE_EXACT'?'Duplicate bill':risk.risk.replaceAll('_',' ').toLowerCase()}</strong><p>{risk.invoice_ids.map(number).filter(Boolean).join(', ')} · {risk.execution_blocked?'Payment is paused until you review it.':'Review before paying.'}</p></div>)}
+          <div className="table-wrap"><table><caption>Next 30 days</caption><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Balance</th></tr></thead><tbody>{forecast.days.map(d=><tr key={d.date}><td>{formatDate(d.date)}</td><td>{money(d.inflow_minor)}</td><td>{money(d.outflow_minor)}</td><td className={d.projected_balance_minor<0?'negative':''}>{money(d.projected_balance_minor)}</td></tr>)}</tbody></table></div></Panel>}</>}
       {tab==='Financing'&&<Financing snapshot={snapshot} forecast={baselineMonth} session={session} request={request}/>}
-      {tab === 'Approvals' && <Panel title="Payment review & recording"><p>Only an independent authenticated approver can approve. Confirming approval records this payment in your ledger. It does not initiate a bank transfer. Proposals expire after 15 minutes; repeated approvals cannot create a second posting.</p>{selected && <ProposalDetails proposal={selected} />}{!proposals.length && <p>No proposals yet. Review an open invoice to begin.</p>}<div className="proposal-list">{proposals.map(p => <article key={p.proposal_id} className="proposal"><div><span className="badge">{p.state}</span><h3>{p.details.invoice_id} · {nativeMoney(p.details.amount_minor)}</h3><p>{p.details.vendor_id} · Proposed by {p.details.proposer_id}</p><small>Expires {new Date(p.details.expires_at * 1000).toLocaleString()}</small></div><button className="secondary" onClick={() => setSelected(p)}>Show evidence</button>{p.state === 'AWAITING_APPROVAL' && session.role === 'approver' && <button disabled={busy} onClick={() => setSelected(p)}>Review decision</button>}</article>)}</div>{selected && selected.state === 'AWAITING_APPROVAL' && session.role === 'approver' && <ApprovalDialog proposal={selected} error={error} balance={snapshot?.balance_minor} busy={busy} onClose={() => setSelected(null)} onDecision={decision => void run(() => decide(selected, decision))} />}</Panel>}
-      {tab === 'Audit' && <Panel title="Verifiable audit trail">{audit ? <><p className={audit.chain_verified ? 'success' : 'error'}>{audit.chain_verified ? 'Tenant audit chain verified by backend' : 'Chain verification failed'}</p><p className="muted">Signed HMAC chain detects modification without the server key. This is not a claim of protection from an administrator controlling the database and key.</p><button className="secondary" onClick={exportAudit}>Export audit JSON</button><details><summary>Tenant chain head</summary><code>{audit.tenant_chain_head}</code></details>{!audit.events.length && <p>No audit events yet.</p>}<ol className="audit-list">{audit.events.slice().reverse().map(event => <li key={event.event_id}><strong>{event.kind}</strong><small>{new Date(event.created_at * 1000).toLocaleString()} · {event.actor_id}</small><details><summary>Trace and payload</summary><code>{event.trace_id}</code><pre>{JSON.stringify(event.payload, null, 2)}</pre><code>{event.event_hash}</code></details></li>)}</ol></> : <p>Audit evidence unavailable. Refresh to retry.</p>}</Panel>}
-      {tab === 'Data' && <><section className="panel"><h2>Currency &amp; original records</h2><p>Use <strong>View currency</strong> above to switch currencies at any time, including after adding records. Supply your own exchange rate for a converted view.</p><p>Original records and payment approvals use <strong>{currency}</strong>. Converted figures are estimates for reference; your saved amounts are preserved.</p>{snapshot&&session.role==='owner'&&events.length===0&&invoices.length===0&&proposals.length===0&&snapshot.opening_balance_minor===0&&<><label htmlFor="active-currency">Record currency for this empty workspace</label><CurrencySelect id="active-currency" value={currency} disabled={busy} onChange={code=>void run(async()=>{await request('/workspace/currency',{currency:code,expected_revision:revision});await refresh();setMessage('Record currency updated.');})}/><p className="small muted">This changes the currency used for future entries. The empty workspace reserve becomes zero and its payment-record limit becomes 100,000 in the selected currency.</p></>}</section><DataEntry events={events} session={session} revision={revision} snapshot={snapshot} busy={busy} submit={async body=>{let saved=false;await run(async()=>{await request('/workspace/records',body);saved=true;await refresh();setMessage('Record saved. Your balance, forecast and audit have been updated.');});if(!saved)throw new Error('Record was not confirmed. Check the message above; retry with the same input if needed.');}}/>{session.role==='owner'&&<ImportEvidence busy={busy} enabled={!!snapshot&&snapshot.opening_balance_minor===0&&snapshot.income_minor===0&&snapshot.expenses_minor===0&&invoices.length===0&&proposals.length===0} upload={async raw=>{let saved=false;await run(async()=>{const r=await fetch('/api/workspace/import',{method:'POST',credentials:'same-origin',headers:{...(token?{Authorization:`Bearer ${token}`} : {}),'Content-Type':'application/json','X-SafeLedger-Client':'web'},body:raw,signal:AbortSignal.any([scope.current.signal,AbortSignal.timeout(90000)])});const data=await r.json();if(r.status===401)expired();if(!r.ok)throw new Error(data?.error?.fields?.map((x:{field:string;message:string})=>`${x.field}: ${x.message}`).join('; ')||data?.error?.code||'Import failed.');if(data.simulation_only!==true)throw new Error('Invalid server response.');saved=true;await refresh();setMessage('Dataset imported. Allow each vendor before preparing payment proposals.');});if(!saved)throw new Error('Import was not confirmed. See the message above.');}}/>}</>}
-      {chatLoaded&&<div id="workspace-assistant" hidden={tab!=='Assistant'&&!chatOpen} className={tab==='Assistant'?'assistant-page':'chat-float'} onKeyDown={e=>{if(e.key==='Escape'&&tab!=='Assistant')closeChat();}}><LazyBoundary><Suspense fallback={<section className="panel" role="status">Opening assistant…</section>}><Assistant visible={tab==='Assistant'||chatOpen} snapshot={snapshot} forecast={baselineMonth} week={week} events={events} invoices={invoices} session={session} request={request} onNavigate={action=>{setTab(action);closeChat();}} onProposal={async()=>{await refresh();setTab('Approvals');closeChat();}} onClose={tab==='Assistant'?undefined:closeChat}/></Suspense></LazyBoundary></div>}
+      {tab==='Approvals'&&<Panel title="Approve payments">
+        <p>A second person approves each payment you prepare. Approving records the payment in your books; no money moves from a bank. Proposals expire after 15 minutes.</p>
+        {selected&&<ProposalDetails proposal={selected} number={number(selected.details.invoice_id)}/>}
+        {!proposals.length&&<p>Nothing to approve yet. Open <button className="link" onClick={()=>setTab('Invoices')}>Invoices</button> and choose Prepare payment.</p>}
+        <div className="proposal-list">{proposals.map(p=><article key={p.proposal_id} className="proposal"><div><span className="badge">{p.state==='AWAITING_APPROVAL'?'Waiting':p.state==='EXECUTED'?'Paid':p.state==='REJECTED'?'Rejected':p.state==='EXPIRED'?'Expired':p.state}</span><h3>{prettyVendor(p.details.vendor_id)} · {nativeMoney(p.details.amount_minor)}</h3><p>{number(p.details.invoice_id)&&`Invoice ${number(p.details.invoice_id)} · `}Prepared by {p.details.proposer_id===session.user_id?'you':'a teammate'}</p>{p.state==='AWAITING_APPROVAL'&&<small>Expires {formatTime(p.details.expires_at)}</small>}</div>
+          <button className="secondary" onClick={()=>setSelected(p)}>Details</button>{p.state==='AWAITING_APPROVAL'&&session.role==='approver'&&<button disabled={busy} onClick={()=>setSelected(p)}>Review and decide</button>}</article>)}</div>
+        {selected&&selected.state==='AWAITING_APPROVAL'&&session.role==='approver'&&<ApprovalDialog proposal={selected} number={number(selected.details.invoice_id)} error={error} balance={snapshot?.balance_minor} busy={busy} onClose={()=>setSelected(null)} onDecision={d=>void run(()=>decide(selected,d))}/>}</Panel>}
+      {tab==='Audit'&&<Panel title="Everything that happened">
+        {audit?<><p className={audit.chain_verified?'success':'error'}>{audit.chain_verified?'✓ History verified: nothing has been changed or removed.':'History could not be verified. Contact support.'}</p>
+          {!audit.events.length&&<p>No activity yet.</p>}
+          <ol className="audit-list">{audit.events.slice().reverse().map(event=>{const p=(event.payload||{}) as Record<string,unknown>;const who=event.actor_id===session.user_id?'You':'A teammate';return <li key={event.event_id}><strong>{AUDIT_TEXT[event.kind]||event.kind.replaceAll('_',' ').toLowerCase()}</strong><small>{formatTime(event.created_at)} · {who}{typeof p.note==='string'&&p.note?` · ${p.note}`:''}{event.kind==='EXECUTED'&&typeof p.cash_delta_minor==='number'?` · ${nativeMoney(Math.abs(p.cash_delta_minor))}`:''}{event.kind==='DENIED'?' · blocked by a safety rule':''}</small></li>;})}</ol>
+          <details className="advanced"><summary>For auditors</summary><p className="muted small">Each entry is linked to the one before it and signed by the server, so any later change is detectable. This is not a claim of protection from the system administrator.</p><button className="secondary" onClick={()=>save(new Blob([JSON.stringify(audit,null,2)],{type:'application/json'}),'safeledger-activity-log.json')}>Download the full signed log</button></details></>:<p>Activity is unavailable. Refresh to try again.</p>}</Panel>}
+      {tab==='Data'&&<>
+        <QuickAdd request={request} revision={revision} profile={profile} cloudAvailable={cloudAvailable} onSaved={async()=>{await refresh();}}/>
+        <DataEntry events={events} session={session} revision={revision} snapshot={snapshot} busy={busy} submit={async body=>{let saved=false;await run(async()=>{await request('/workspace/records',body);saved=true;await refresh();setMessage('Record saved. Your balance, forecast and activity are updated.');});if(!saved)throw new Error('The record was not saved. Check the message above and try again.');}}/>
+        {session.role==='owner'&&<ImportEvidence busy={busy} enabled={!!snapshot&&snapshot.opening_balance_minor===0&&snapshot.income_minor===0&&snapshot.expenses_minor===0&&invoices.length===0&&proposals.length===0} upload={async raw=>{let saved=false;await run(async()=>{const r=await fetch('/api/workspace/import',{method:'POST',credentials:'same-origin',headers:{...(token?{Authorization:`Bearer ${token}`}:{}),'Content-Type':'application/json','X-SafeLedger-Client':'web'},body:raw,signal:AbortSignal.any([scope.current.signal,AbortSignal.timeout(90000)])});const data=await r.json();if(r.status===401)expired();if(!r.ok)throw new Error(data?.error?.fields?.map((x:{field:string;message:string})=>`${x.field}: ${x.message}`).join('; ')||data?.error?.code||'Import failed.');if(data.simulation_only!==true)throw new Error('Invalid server response.');saved=true;await refresh();setMessage('Records imported. Allow each supplier before preparing payments.');});if(!saved)throw new Error('The import was not completed. See the message above.');}}/>}</>}
+      {tab==='Settings'&&<LazyBoundary><Suspense fallback={<section className="panel" role="status">Opening settings…</section>}><Settings session={session} profile={profile} request={request} reloadProfile={reloadProfile} changeSession={changeSession} lists={lists} reloadLists={reloadLists} onExportPdf={exportPdf} onExportJson={exportJson} exporting={exporting} cloudAvailable={cloudAvailable}/></Suspense></LazyBoundary>}
+      {chatLoaded&&<div id="workspace-assistant" hidden={tab!=='Assistant'&&!chatOpen} className={tab==='Assistant'?'assistant-page':'chat-float'} onKeyDown={(e:KeyboardEvent)=>{if(e.key==='Escape'&&tab!=='Assistant')closeChat();}}><LazyBoundary><Suspense fallback={<section className="panel" role="status">Opening assistant…</section>}><Assistant visible={tab==='Assistant'||chatOpen} snapshot={snapshot} forecast={baselineMonth} week={week} events={events} invoices={invoices} session={session} profile={profile} cloudAvailable={cloudAvailable} revision={revision} request={request} onSaved={refresh} onNavigate={action=>{setTab(action);closeChat();}} onProposal={async()=>{await refresh();setTab('Approvals');closeChat();}} onClose={tab==='Assistant'?undefined:closeChat}/></Suspense></LazyBoundary></div>}
       {tab!=='Assistant'&&<button ref={chatButton} className="chat-launcher" aria-label={chatOpen?'Close assistant':'Open assistant'} aria-expanded={chatOpen} aria-controls="workspace-assistant" onClick={()=>{setChatLoaded(true);setChatOpen(!chatOpen);}}>✦ <span>{chatOpen?'Close':'Assistant'}</span></button>}
-      <footer>SafeLedger AI · Financial records · Source evidence → policy → human approval → ledger recording → audit</footer></main></div>;
+      <footer>SafeLedger AI · Your records · A second person approves every payment · Nothing leaves your control</footer></main></div>;
 }
 
-function ProposalDetails({ proposal: p }: { proposal: Proposal }) {
+function ProposalDetails({proposal:p,number}:{proposal:Proposal;number:string}){
   const {nativeMoney:money}=useCurrency();
-  return <article className="proposal-detail"><h3>Verified payment details</h3><dl><div><dt>Invoice</dt><dd>{p.details.invoice_id}</dd></div><div><dt>Payee</dt><dd>{p.details.vendor_id}</dd></div><div><dt>Amount</dt><dd>{money(p.details.amount_minor)}</dd></div></dl>{p.preview && <p>Available {money(p.preview.available_minor)} → after payment {money(p.preview.after_payment_minor)}. Policy reserve {money(p.preview.reserve_minor)}; payment limit {money(p.preview.payment_limit_minor)}.</p>}<Evidence ids={[p.details.source_id]} /><details><summary>Action hash and dataset fingerprint</summary><code>{p.action_hash}</code><code>{p.details.dataset_sha256}</code></details><p className="muted">The server rechecks the current balance, policy, source and approval hash at execution.</p></article>;
+  return <article className="proposal-detail"><h3>Payment details</h3><dl><div><dt>Supplier</dt><dd>{prettyVendor(p.details.vendor_id)}</dd></div>{number&&<div><dt>Invoice</dt><dd>{number}</dd></div>}<div><dt>Amount</dt><dd>{money(p.details.amount_minor)}</dd></div></dl>{p.preview&&<p>You have {money(p.preview.available_minor)} now; after this payment {money(p.preview.after_payment_minor)}. Safety reserve: {money(p.preview.reserve_minor)}. Payment limit: {money(p.preview.payment_limit_minor)}.</p>}<p className="muted">The amount, supplier and your balance are checked again when this is approved.</p></article>;
 }
-function ApprovalDialog({ proposal, error, balance, busy, onClose, onDecision }: { proposal: Proposal; error: string; balance?: number; busy: boolean; onClose: () => void; onDecision: (decision: 'approve' | 'reject') => void }) {
+function ApprovalDialog({proposal,number,error,balance,busy,onClose,onDecision}:{proposal:Proposal;number:string;error:string;balance?:number;busy:boolean;onClose:()=>void;onDecision:(decision:'approve'|'reject')=>void}){
   const {nativeMoney:money}=useCurrency();
-  const dialog = useRef<HTMLDialogElement>(null); const [confirmed, setConfirmed] = useState(false);
-  useEffect(() => { const current = dialog.current; const opener = document.activeElement as HTMLElement | null; current?.showModal(); return () => { current?.close(); opener?.focus(); }; }, []);
-  function containFocus(event: KeyboardEvent<HTMLDialogElement>) {
-    if (event.key !== 'Tab') return;
-    const items = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href],summary,[tabindex]:not([tabindex="-1"])')).filter(el => el.getClientRects().length > 0);
-    const first = items[0], last = items.at(-1);
-    if (!first) { event.preventDefault(); event.currentTarget.focus(); return; }
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
-    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  const dialog=useRef<HTMLDialogElement>(null);const [confirmed,setConfirmed]=useState(false);
+  useEffect(()=>{const current=dialog.current;const opener=document.activeElement as HTMLElement|null;current?.showModal();return()=>{current?.close();opener?.focus();};},[]);
+  function containFocus(event:KeyboardEvent<HTMLDialogElement>){
+    if(event.key!=='Tab')return;
+    const items=Array.from(event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href],summary,[tabindex]:not([tabindex="-1"])')).filter(el=>el.getClientRects().length>0);
+    const first=items[0],last=items.at(-1);
+    if(!first){event.preventDefault();event.currentTarget.focus();return;}
+    if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
   }
-  return <dialog ref={dialog} onKeyDown={containFocus} aria-labelledby="approval-title" onCancel={e => { if (busy) e.preventDefault(); else onClose(); }}><h2 id="approval-title">Confirm payment record</h2><ProposalDetails proposal={proposal} />{balance !== undefined && <p>Current available balance: {money(balance)}. The server recalculates payment impact and enforces the configured reserve before posting.</p>}{error && <p className="error" role="alert">{error}</p>}<p>Approval records this exact payment against your cash and payable. Only confirm a payment you intend to record. No bank transfer is initiated.</p><label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} disabled={busy} />I reviewed the payee, amount, evidence and action hash.</label><div className="actions"><button disabled={busy || !confirmed} onClick={() => onDecision('approve')}>{busy ? 'Submitting…' : 'Approve & record payment'}</button><button className="danger" disabled={busy || !confirmed} onClick={() => onDecision('reject')}>Reject proposal</button><button className="secondary" disabled={busy} onClick={onClose}>Cancel</button></div></dialog>;
-}
-
-function WorkspaceAccess({session,changeSession}:{session:Session;changeSession:(s:Session)=>void}) {
-  const {currency}=useCurrency();const [newCurrency,setNewCurrency]=useState(currency);
-  const [spaces,setSpaces]=useState<{business_id:string;role:string;name?:string;kind?:string}[]>([]);
-  const [code,setCode]=useState('');const [invitation,setInvitation]=useState('');
-  const [error,setError]=useState('');const [busy,setBusy]=useState(false);const [copied,setCopied]=useState(false);
-  useEffect(()=>{const c=new AbortController();void accountRequest<{workspaces:{business_id:string;role:string;name?:string;kind?:string}[]}>('/account/workspaces',undefined,c.signal).then(x=>setSpaces(x.workspaces)).catch(()=>{});return()=>c.abort();},[]);
-  async function act(task:()=>Promise<void>){setBusy(true);setError('');try{await task();}catch(e){setError(e instanceof Error?e.message:'Please try again.');}finally{setBusy(false);}}
-  return <details className="workspace-access panel"><summary>Workspace &amp; teammates <span className="muted">· {session.role==='owner'?'Invite someone to review payment records':'Manage access to your workspaces'}</span></summary><div className="access-grid"><div><h3>Your workspace</h3><label htmlFor="workspace-choice">Active workspace</label><select id="workspace-choice" value={session.business_id} disabled={busy} onChange={e=>void act(async()=>{changeSession(await accountRequest<Session>('/account/switch',{business_id:e.target.value}));})}>{spaces.length?spaces.map((s,i)=><option value={s.business_id} key={s.business_id}>{s.name || (s.role==='owner'?'My workspace':`Shared workspace ${i+1}`)} · {s.role}</option>):<option value={session.business_id}>My workspace · {session.role}</option>}</select><div className="workspace-create"><label htmlFor="new-workspace-currency">New workspace currency</label><CurrencySelect id="new-workspace-currency" value={newCurrency} onChange={setNewCurrency} disabled={busy}/><button className="secondary" disabled={busy} onClick={()=>void act(async()=>changeSession(await accountRequest<Session>('/account/workspaces',{kind:'personal',name:newCurrency+' workspace',currency:newCurrency})))}>Create workspace</button></div><p className="small muted">Each workspace keeps its own currency and records. Amounts are never automatically converted.</p>{session.role==='owner'&&<><p className="muted">A separate person must approve your proposals. Share a one-time code with a teammate who has their own account.</p><button className="secondary" disabled={busy} onClick={()=>void act(async()=>{const x=await accountRequest<{code:string}>('/account/invitations',{role:'approver'});setInvitation(x.code);setCopied(false);})}>Create approver invitation</button>{invitation&&<div className="invite-code"><label htmlFor="invite-generated">One-time invitation · valid for 1 hour</label><input id="invite-generated" readOnly value={invitation}/><button className="secondary" onClick={()=>{void navigator.clipboard.writeText(invitation).then(()=>setCopied(true)).catch(()=>setError('Select the invitation code and copy it manually.'));}}>{copied?'Copied':'Copy invitation'}</button></div>}</>}</div><form onSubmit={e=>{e.preventDefault();void act(async()=>{changeSession(await accountRequest<Session>('/account/join',{code:code.trim()}));});}}><h3>Join a teammate</h3><label htmlFor="invite-join">Invitation code</label><input id="invite-join" autoComplete="off" placeholder="Paste the code from your teammate" value={code} onChange={e=>setCode(e.target.value)} required minLength={20} maxLength={100}/><p className="muted">Joining opens their workspace with the permissions in the invitation. Your own workspace remains saved.</p><button disabled={busy||!code.trim()}>Join workspace</button></form></div>{error&&<p className="error" role="alert">{error}</p>}</details>;
+  return <dialog ref={dialog} onKeyDown={containFocus} aria-labelledby="approval-title" onCancel={e=>{if(busy)e.preventDefault();else onClose();}}><h2 id="approval-title">Approve this payment?</h2><ProposalDetails proposal={proposal} number={number}/>{balance!==undefined&&<p>Your balance now: {money(balance)}.</p>}{error&&<p className="error" role="alert">{error}</p>}<p>Approving records this payment in your books. No bank transfer is made.</p><label className="check"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)} disabled={busy}/>I checked the supplier and the amount.</label><div className="actions"><button disabled={busy||!confirmed} onClick={()=>onDecision('approve')}>{busy?'Working…':'Approve and record'}</button><button className="danger" disabled={busy||!confirmed} onClick={()=>onDecision('reject')}>Reject</button><button className="secondary" disabled={busy} onClick={onClose}>Cancel</button></div></dialog>;
 }

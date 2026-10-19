@@ -1,58 +1,92 @@
-import {ApiError} from './api';
 import {useEffect,useRef,useState,type FormEvent} from 'react';
+import {ApiError} from './api';
 import {useCurrency} from './Currency';
+import {DraftCard} from './DraftCard';
+import {formatDate,prettyVendor} from './format';
 import {localAnswer,type AssistantAction} from './localAssistant';
-import type {Session,Snapshot,Forecast,Invoice,AgentResult,CashEvent} from './types';
-type Props={snapshot:Snapshot|null;forecast:Forecast|null;week:Forecast|null;events:CashEvent[];invoices:Invoice[];session:Session;request:<T>(path:string,body?:unknown)=>Promise<T>;onProposal:()=>Promise<void>;onNavigate:(action:AssistantAction)=>void;onClose?:()=>void;visible:boolean};
-type Message={id:number;role:'user'|'assistant';text:string;result?:AgentResult;source?:string;sourceIds?:string[];actions?:AssistantAction[];onlineQuestion?:string;consentQuestion?:string;offTopicQuestion?:string;forced?:boolean};
-type Provider={provider_name:string;configured:boolean;fallback_configured:boolean;free_only:boolean};
-export default function Assistant({snapshot,forecast,week,events,invoices,session,request,onProposal,onNavigate,onClose,visible}:Props){
- const {nativeMoney:money}=useCurrency();
- const [provider,setProvider]=useState<Provider|null>(null);const [statusError,setStatusError]=useState('');
- const [diagnostic,setDiagnostic]=useState('');const [testing,setTesting]=useState(false);
- async function testProvider(){if(testing)return;setTesting(true);setDiagnostic('');try{await request('/agent/diagnostic',{confirm_synthetic_test:true});if(mounted.current)setDiagnostic('Google Gemini passed the synthetic tool and structured-response checks. No workspace records were sent.');}catch(e){if(mounted.current)setDiagnostic((e instanceof Error?e.message:'The synthetic provider test failed.')+(e instanceof ApiError&&e.providerStatus?' (provider HTTP '+e.providerStatus+')':''));}finally{if(mounted.current)setTesting(false);}}
- const lastIntent=useRef('');const [fallbackConsent,setFallbackConsent]=useState(false);const [forceOnline,setForceOnline]=useState(false);
- const [messages,setMessages]=useState<Message[]>([]);
- const [task,setTask]=useState('');const [target,setTarget]=useState('');const [allow,setAllow]=useState(false);const [consent,setConsent]=useState(false);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
- const nextId=useRef(0);const mounted=useRef(true);const pending=useRef(false);const log=useRef<HTMLDivElement>(null);const input=useRef<HTMLTextAreaElement>(null);
- useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
- useEffect(()=>{if(visible)input.current?.focus();},[visible]);
- useEffect(()=>{if(log.current)log.current.scrollTop=log.current.scrollHeight;},[messages,busy]);
- async function checkProvider(){setStatusError('');try{const x=await request<Provider>('/agent/status');if(mounted.current)setProvider(x);}catch(e){if(mounted.current)setStatusError(e instanceof Error?e.message:'Could not check AI availability.');}}
- // No provider request until a question actually needs online analysis.
- const blocked=['security','approval','limit'];
- function say(pair:Message[]){setMessages(current=>[...current,...pair].slice(-40));}
- async function ask(e:FormEvent){e.preventDefault();await send(task.trim(),consent);}
- async function send(question:string,shared:boolean,force=false){if(!question||pending.current)return;
-   const local=localAnswer(question,{snapshot,forecast,week,events,invoices},lastIntent.current);
-   // Questions the device judged off-topic are never sent unless the user explicitly says it is about their finances.
-   const offTopic=local.intent==='out_of_domain';
-   const external=((!local.handled&&(local.intent==='unknown'||(offTopic&&force)))||((forceOnline||allow)&&(!offTopic||force)))&&!blocked.includes(local.intent);
-   if(external&&!shared){
-     // One timeline: ask before anything leaves the browser. Nothing is sent yet.
-     say([{id:nextId.current++,role:'user',text:question},{id:nextId.current++,role:'assistant',text:'I could not answer this reliably on this device. With your permission I can send only this question and the relevant verified figures to the online model. Nothing has been shared yet.',source:'Local assistant · on this device',consentQuestion:question,forced:force}]);
-     setTask('');if(!provider)void checkProvider();return;
-   }
-   pending.current=true;setBusy(true);setError('');
-   try{
-     let result:AgentResult|undefined;
-     if(external){
-       const status=provider||await request<Provider>('/agent/status');if(mounted.current&&!provider)setProvider(status);
-       if(!status.configured)throw new Error('Online analysis is not configured right now. Local answers, cash flow and financing tools still work.');
-       // Never send private conversation history or inferred consent to a provider.
-       result=await request<AgentResult>('/agent/tasks',{task:question,invoice_id:target||null,allow_proposal:allow,external_ai_consent:true,fallback_ai_consent:fallbackConsent});
-     }
-     if(!mounted.current)return;
-     const text=result?result.explanation.join('\n\n'):local.text;
-     if(local.handled)lastIntent.current=local.intent;
-     const pair:Message[]=[{id:nextId.current++,role:'user',text:question},{id:nextId.current++,role:'assistant',text,result,source:result?`${result.provider_name||'External AI'} · verified facts`:`Local assistant${local.sourceIds.length?' · snapshot '+snapshot?.as_of:' · on this device'}`,sourceIds:result?[]:local.sourceIds,actions:result?[]:local.actions,onlineQuestion:!result&&!local.handled&&local.intent==='unknown'?question:undefined,offTopicQuestion:!result&&local.intent==='out_of_domain'?question:undefined}];
-     say(pair);setTask('');setAllow(false);setForceOnline(false);input.current?.focus();
-   }catch(e){if(mounted.current){setTask(question);setError(e instanceof Error?e.message:'The assistant is unavailable. Your question is saved below—retry when ready.');}}
-   finally{pending.current=false;if(mounted.current)setBusy(false);}
- }
- return <section className="panel chat-panel" aria-label="Workspace assistant"><div className="chat-heading"><div className="assistant-orb" aria-hidden="true">✦</div><div><h2>Assistant</h2><p>On-device first · online only with your permission</p></div>{onClose&&<button className="secondary chat-close" onClick={onClose} aria-label="Minimize assistant">×</button>}</div>
-  <div className="chat-log" ref={log} role="log" aria-label="Conversation" aria-live="polite">{!messages.length&&<div className="chat-welcome"><span aria-hidden="true">✦</span><h3>How can I help?</h3><p>Say hello, ask in বাংলা / English, or explore your balance, invoices and cash outlook.</p><div className="chat-suggestions">{['What is my available balance?','Explain my cash outlook.','Which loan fits my cash flow?'].map(q=><button key={q} className="secondary" onClick={()=>{setTask(q);input.current?.focus();}}>{q}</button>)}</div></div>}{messages.map(m=><article className={'chat-message '+m.role} key={m.id}><small>{m.role==='user'?'You':m.source}</small><p>{m.text}</p>{!!m.sourceIds?.length&&<details><summary>Source evidence · {m.sourceIds.length} records</summary>{m.sourceIds.map(id=><code className="source-code" key={id}>{id}</code>)}</details>}{!!m.actions?.length&&<div className="chat-actions">{m.actions.map(action=><button className="secondary" key={action} onClick={()=>onNavigate(action)}>Open {action}</button>)}</div>}{m.onlineQuestion&&<button className="secondary" disabled={busy} onClick={()=>void send(m.onlineQuestion!,consent)}>Ask the online model</button>}{m.offTopicQuestion&&<div className="chat-actions"><button className="secondary" disabled={busy} onClick={()=>void send(m.offTopicQuestion!,consent,true)}>It is about my business finances: ask online</button></div>}{m.consentQuestion&&<div className="chat-actions"><button disabled={busy} onClick={()=>{const q=m.consentQuestion!;setConsent(true);setMessages(current=>current.map(x=>x.id===m.id?{...x,consentQuestion:undefined,text:x.text+' You allowed sharing for this session.'}:x));void send(q,true,m.forced);}}>Share and ask online</button><button className="secondary" disabled={busy} onClick={()=>setMessages(current=>current.map(x=>x.id===m.id?{...x,consentQuestion:undefined,text:'Kept on this device. Try a more specific question about balance, invoices, cash flow or financing.'}:x))}>Keep it local</button></div>}{m.result&&<><div className="chat-facts">{m.result.facts.map(f=><details key={f.fact_id}><summary>{f.fact_id.replaceAll('_',' ')} · {money(f.value_minor)}</summary>{f.source_ids.map(id=><code className="source-code" key={id}>{id}</code>)}</details>)}</div>{m.result.proposal&&<button onClick={()=>void onProposal()}>Open payment review</button>}<details><summary>Response limits</summary>{m.result.limitations.map((v,i)=><p key={i}>{v}</p>)}</details></>}</article>)}{busy&&<p role="status" className="chat-thinking">Reviewing your question<span aria-hidden="true">…</span></p>}</div>
- <details className="chat-permission" onToggle={e=>{if((e.currentTarget as HTMLDetailsElement).open&&!provider)void checkProvider();}}><summary>Online analysis settings{provider?' · '+provider.provider_name:''}{consent?' · sharing allowed':''}</summary>{statusError?<p className="error" role="alert">{statusError} <button className="link" onClick={()=>void checkProvider()}>Retry connection</button></p>:!provider?<p role="status">Checking provider configuration…</p>:!provider.configured?<p className="notice">External AI is not configured. Local answers are available.</p>:null}<p className="small muted">Only your current question, selected invoice and relevant financial facts go to {provider?.provider_name||'the configured provider'}. Its free service may use submissions to improve models. Share only non-confidential information.</p>{session.role==='owner'&&<><button className="secondary small" type="button" disabled={testing||!provider?.configured} onClick={()=>void testProvider()}>{testing?'Testing synthetic data…':'Test Gemini with synthetic data'}</button>{diagnostic&&<p role="status" className="small">{diagnostic}</p>}</>}<label className="check"><input type="checkbox" checked={consent} disabled={busy} onChange={e=>setConsent(e.target.checked)}/>Allow online analysis for this session without asking each time.</label>{provider?.fallback_configured&&<label className="check"><input type="checkbox" checked={fallbackConsent} disabled={busy} onChange={e=>setFallbackConsent(e.target.checked)}/>If the primary provider is unavailable, I also choose to share these details with OpenAI.</label>}<label className="check"><input type="checkbox" checked={forceOnline} disabled={busy} onChange={e=>setForceOnline(e.target.checked)}/>Request online analysis even if a local answer is available.</label><label htmlFor="agent-target">Invoice (optional)</label><select id="agent-target" value={target} disabled={busy} onChange={e=>{setTarget(e.target.value);setAllow(false);}}><option value="">Cash-flow questions</option>{invoices.filter(i=>i.status==='open').map(i=><option key={i.invoice_id} value={i.invoice_id}>{i.invoice_number} · {money(i.amount_minor)}</option>)}</select><label className="check"><input type="checkbox" checked={allow} disabled={!target||session.role!=='owner'||busy} onChange={e=>setAllow(e.target.checked)}/>Allow a proposal for this invoice; another person must approve.</label></details>
- {error&&<p className="error chat-error" role="alert">{error} Your question is preserved for retry. Local answers remain available.</p>}
- <form className="chat-compose" onSubmit={e=>void ask(e)}><label htmlFor="agent-task" className="sr-only">Message assistant</label><textarea ref={input} id="agent-task" rows={2} placeholder="Ask about your workspace…" maxLength={1400} value={task} disabled={busy} onChange={e=>setTask(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();e.currentTarget.form?.requestSubmit();}}}/><button disabled={busy||!task.trim()} aria-label="Send message">{busy?'…':'↑'}</button></form><p className="chat-footnote">{consent?'Online analysis allowed for this session':'On-device answers · nothing leaves your browser without permission'} · Enter to send</p></section>;
+import {looksLikeTransaction,parseRecordSentence} from './recordParser';
+import type {AgentResult,CashEvent,Draft,Forecast,Invoice,Profile,Session,Snapshot} from './types';
+
+type Props={snapshot:Snapshot|null;forecast:Forecast|null;week:Forecast|null;events:CashEvent[];invoices:Invoice[];session:Session;profile:Profile|null;cloudAvailable:boolean;revision:string;request:<T>(path:string,body?:unknown)=>Promise<T>;onSaved:()=>Promise<void>;onProposal:()=>Promise<void>;onNavigate:(action:AssistantAction)=>void;onClose?:()=>void;visible:boolean};
+type Message={id:number;role:'user'|'assistant';text:string;kind?:'device'|'smart';actions?:AssistantAction[];draft?:Draft;agent?:AgentResult;offTopic?:string;retry?:string};
+const hints=['What is my balance?','I paid Rahman 5000 for freight yesterday','Which loan fits my cash flow?','Which bills are overdue?'];
+
+export default function Assistant({snapshot,forecast,week,events,invoices,session,profile,cloudAvailable,revision,request,onSaved,onProposal,onNavigate,onClose,visible}:Props){
+  const {currency,digits,nativeMoney:money}=useCurrency();
+  const [messages,setMessages]=useState<Message[]>([]);const [task,setTask]=useState('');const [busy,setBusy]=useState(false);
+  const [picking,setPicking]=useState(false);const [target,setTarget]=useState('');
+  const lastIntent=useRef('');const nextId=useRef(0);const mounted=useRef(true);const pending=useRef(false);
+  const log=useRef<HTMLDivElement>(null);const input=useRef<HTMLTextAreaElement>(null);
+  const owner=session.role==='owner';const smart=!!profile?.smart_assist&&cloudAvailable;
+  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
+  useEffect(()=>{if(visible)input.current?.focus();},[visible]);
+  useEffect(()=>{if(log.current)log.current.scrollTop=log.current.scrollHeight;},[messages,busy]);
+  const add=(...m:Omit<Message,'id'>[])=>setMessages(cur=>[...cur,...m.map(x=>({...x,id:nextId.current++}))].slice(-40));
+  const openBills=invoices.filter(i=>i.status==='open');
+
+  async function ask(question:string,force=false){
+    const q=question.trim();if(!q||pending.current)return;
+    pending.current=true;setBusy(true);setTask('');
+    add({role:'user',text:q});
+    try{
+      // 1. A sentence that describes a payment or a bill becomes a draft record to confirm.
+      if(owner){
+        const draft=parseRecordSentence(q,{currency,digits});
+        if(draft){add({role:'assistant',kind:'device',text:draft.kind==='invoice'?'I read this as a bill you still have to pay. Check it, then add it to your records.':draft.direction==='inflow'?'I read this as money you received. Check it, then add it to your records.':'I read this as a payment you made. Check it, then add it to your records.',draft});return;}
+      }
+      // 2. Answers that need no cloud: balances, forecasts, invoices, how-to, definitions.
+      const local=localAnswer(q,{snapshot,forecast,week,events,invoices},lastIntent.current);
+      if(local.handled){lastIntent.current=local.intent;add({role:'assistant',kind:'device',text:local.text,actions:local.actions});return;}
+      const blocked=['security','approval','limit'].includes(local.intent);
+      if(blocked){add({role:'assistant',kind:'device',text:local.text});return;}
+      // 3. Everything else goes to smart assist, if it is on.
+      const offTopic=local.intent==='out_of_domain';
+      if(offTopic&&!force){add({role:'assistant',kind:'device',text:local.text,offTopic:q});return;}
+      if(!smart){add({role:'assistant',kind:'device',text:profile&&!profile.smart_assist?'I can only answer that with smart assist. You can turn it on in Settings.':'Smart assist is not available right now. I can still help with your balance, invoices, cash flow, loans and adding records.'});return;}
+      if(owner&&looksLikeTransaction(q)){
+        const r=await request<{draft:Draft}>('/assist/extract',{text:q});
+        if(!mounted.current)return;
+        if(r.draft.ok){add({role:'assistant',kind:'smart',text:'I read this from your message. Check it, then add it to your records.',draft:r.draft});return;}
+      }
+      const history=messages.filter(m=>!m.draft&&!m.agent).slice(-4).map(m=>({role:m.role,text:m.text.slice(0,500)}));
+      const r=await request<{answer:string}>('/assist/ask',{question:q,history});
+      if(mounted.current)add({role:'assistant',kind:'smart',text:r.answer});
+    }catch(e){
+      if(!mounted.current)return;
+      const text=e instanceof ApiError&&(e.code==='AI_QUOTA_EXHAUSTED'||e.status===503)?'Smart assist is busy right now. Please try again in a minute. Your balance, invoices and cash-flow questions still work.':e instanceof Error?e.message:'Something went wrong. Please try again.';
+      add({role:'assistant',kind:'device',text,retry:q});
+    }finally{pending.current=false;if(mounted.current){setBusy(false);input.current?.focus();}}
+  }
+  async function prepare(){
+    if(!target||pending.current)return;pending.current=true;setBusy(true);setPicking(false);
+    const bill=openBills.find(i=>i.invoice_id===target);
+    add({role:'user',text:`Prepare a payment for ${bill?bill.invoice_number+' · '+prettyVendor(bill.vendor_id):'this bill'}`});
+    try{
+      const r=await request<AgentResult>('/agent/tasks',{task:'Review this invoice and prepare it for approval if it is safe to pay.',invoice_id:target,allow_proposal:true,external_ai_consent:true,fallback_ai_consent:false});
+      if(mounted.current)add({role:'assistant',kind:'smart',text:r.explanation.join('\n\n'),agent:r});
+    }catch(e){if(mounted.current)add({role:'assistant',kind:'device',text:e instanceof Error?e.message:'I could not prepare that payment.'});}
+    finally{pending.current=false;if(mounted.current)setBusy(false);}
+  }
+  return <section className="panel chat-panel" aria-label="Assistant">
+    <div className="chat-heading"><div className="assistant-orb" aria-hidden="true">✦</div><div><h2>Assistant</h2><p>Ask a question, or tell me what you paid or received</p></div>{onClose&&<button className="secondary chat-close" onClick={onClose} aria-label="Minimize assistant">×</button>}</div>
+    <div className="chat-log" ref={log} role="log" aria-label="Conversation" aria-live="polite">
+      {!messages.length&&<div className="chat-welcome"><span aria-hidden="true">✦</span><h3>How can I help?</h3><p>Speak or type in English, বাংলা or Banglish. I can add records for you, explain your numbers and compare loan offers.</p><div className="chat-suggestions">{hints.filter(h=>owner||!/^I paid/.test(h)).map(h=><button key={h} className="secondary" onClick={()=>void ask(h)}>{h}</button>)}</div></div>}
+      {messages.map(m=><article className={'chat-message '+m.role} key={m.id}>
+        {m.role==='assistant'&&<small>{m.kind==='smart'?'Smart answer':'Assistant'}</small>}
+        {m.text.split('\n\n').map((para,i)=><p key={i}>{para}</p>)}
+        {m.draft&&owner&&<DraftCard compact draft={m.draft} revision={revision} request={request} onSaved={onSaved} onDiscard={()=>setMessages(cur=>cur.map(x=>x.id===m.id?{...x,draft:undefined,text:'Discarded. Nothing was added.'}:x))}/>}
+        {!!m.actions?.length&&<div className="chat-actions">{m.actions.map(a=><button className="secondary" key={a} onClick={()=>onNavigate(a)}>{a==='Financing'?'Open Loans':`Open ${a}`}</button>)}</div>}
+        {m.offTopic&&smart&&<div className="chat-actions"><button className="secondary" disabled={busy} onClick={()=>void ask(m.offTopic!,true)}>It is about my business: try anyway</button></div>}
+        {m.retry&&<div className="chat-actions"><button className="secondary" disabled={busy} onClick={()=>void ask(m.retry!)}>Try again</button></div>}
+        {m.agent?.proposal&&<button onClick={()=>void onProposal()}>Open payment approval</button>}
+        {m.agent&&!!m.agent.limitations.length&&<details><summary>Good to know</summary>{m.agent.limitations.map((v,i)=><p key={i}>{v}</p>)}</details>}
+        {m.kind==='smart'&&!m.draft&&!m.agent&&<small className="muted">AI-written. Please double-check important decisions.</small>}
+      </article>)}
+      {busy&&<p role="status" className="chat-thinking">Thinking<span aria-hidden="true">…</span></p>}
+    </div>
+    {picking&&<div className="chat-pick"><label htmlFor="agent-bill">Which bill?</label><select id="agent-bill" value={target} onChange={e=>setTarget(e.target.value)}><option value="">Choose a bill</option>{openBills.map(i=><option key={i.invoice_id} value={i.invoice_id}>{prettyVendor(i.vendor_id)} · {i.invoice_number} · {money(i.amount_minor)} · due {formatDate(i.due_on)}</option>)}</select><div className="actions"><button disabled={!target||busy} onClick={()=>void prepare()}>Prepare for approval</button><button className="secondary" onClick={()=>setPicking(false)}>Cancel</button></div></div>}
+    {owner&&!!openBills.length&&smart&&!picking&&<div className="chat-chips"><button className="secondary small" disabled={busy} onClick={()=>setPicking(true)}>Prepare a payment…</button></div>}
+    <form className="chat-compose" onSubmit={(e:FormEvent)=>{e.preventDefault();void ask(task);}}><label htmlFor="agent-task" className="sr-only">Message the assistant</label><textarea ref={input} id="agent-task" rows={2} placeholder="Ask, or say what you paid…" maxLength={800} value={task} disabled={busy} onChange={e=>setTask(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();e.currentTarget.form?.requestSubmit();}}}/><button disabled={busy||!task.trim()} aria-label="Send message">{busy?'…':'↑'}</button></form>
+    <p className="chat-footnote">{smart?'Smart assist is on · simple questions are answered on your device':'Answers on your device · turn on smart assist in Settings for more'}</p>
+  </section>;
 }

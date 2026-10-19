@@ -14,7 +14,7 @@ from api.app.routes import router
 from api.app.agents.schema import create_schema as agent_schema
 from api.app.agents.errors import ProviderError
 from api.app.database import connect
-from api.app import accounts, inputs, financing
+from api.app import accounts, inputs, financing, profile, workspaces, fx, assist
 
 def _cors_origins() -> list[str]:
     """Read allowed origins from env; default to localhost dev ports only."""
@@ -37,10 +37,11 @@ async def lifespan(app: FastAPI):
         security.create_schema(db)
         agent_schema(db)
         accounts.schema(db)
+        profile.schema(db)
         accounts.archive_legacy_examples(db)
     yield
 
-app = FastAPI(title="SafeLedger AI", version="0.4.1", lifespan=lifespan)
+app = FastAPI(title="SafeLedger AI", version="0.5.0", lifespan=lifespan)
 app.add_middleware(BodyLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -53,6 +54,10 @@ app.include_router(router)
 app.include_router(accounts.router)
 app.include_router(inputs.router)
 app.include_router(financing.router)
+app.include_router(profile.router)
+app.include_router(workspaces.router)
+app.include_router(fx.router)
+app.include_router(assist.router)
 
 @app.exception_handler(ProviderError)
 async def ai_error(request,exc):
@@ -93,7 +98,7 @@ async def headers(request, call_next):
 @app.get("/api/health")
 def health():
     configured=all(os.environ.get(key) for key in ("SAFELEDGER_LLM_BASE_URL","SAFELEDGER_LLM_MODEL","SAFELEDGER_LLM_API_KEY"))
-    return {"status": "ok", "version": "0.4.1", "build_commit": (os.environ.get("RENDER_GIT_COMMIT") or os.environ.get("VERCEL_GIT_COMMIT_SHA") or os.environ.get("SAFELEDGER_BUILD_COMMIT", "development")), "simulation_only": True, "release": "security-hardening", "ai_status": "configured_not_verified" if configured else "not_configured"}
+    return {"status": "ok", "version": "0.5.0", "build_commit": (os.environ.get("RENDER_GIT_COMMIT") or os.environ.get("VERCEL_GIT_COMMIT_SHA") or os.environ.get("SAFELEDGER_BUILD_COMMIT", "development")), "simulation_only": True, "release": "accounts-and-assistant", "ai_status": "configured_not_verified" if configured else "not_configured"}
 
 @app.get("/api/ready")
 def ready():

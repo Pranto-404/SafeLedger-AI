@@ -20,7 +20,7 @@ const messages:Record<string,string> = {
   SNAPSHOT_DATE_CHANGED_REFRESH_REQUIRED:'Your records changed. Refresh data and try again.',
 };
 export class ApiError extends Error {
-  constructor(public code: string, public status: number, message = messages[code] || code.replaceAll('_', ' '), public providerStatus?:number) { super(message); }
+  constructor(public code: string, public status: number, message = messages[code] || friendly[code] || code.replaceAll('_', ' ').toLowerCase().replace(/^./, c => c.toUpperCase()) + '.', public providerStatus?:number) { super(message); }
 }
 export function client(token: string, signal: AbortSignal, onUnauthorized: () => void) {
   return async function request<T>(path: string, body?: unknown): Promise<T> {
@@ -37,7 +37,7 @@ export function client(token: string, signal: AbortSignal, onUnauthorized: () =>
     if (!response.ok) {
       if (response.status === 401) onUnauthorized();
       const fields = data?.error?.fields as {field: string; message: string}[] | undefined;
-      throw new ApiError(data?.error?.code || 'SERVER_ERROR', response.status, fields ? fields.map(x => `${x.field}: ${x.message}`).join('; ') : undefined,typeof data?.provider_http_status==='number'?data.provider_http_status:undefined);
+      throw new ApiError(data?.error?.code || 'SERVER_ERROR', response.status, fields ? fields.map(x => `${String(x.field).split('.').pop()?.replaceAll('_', ' ')}: ${x.message}`).join('; ') : undefined,typeof data?.provider_http_status==='number'?data.provider_http_status:undefined);
     }
     if (!data || data.simulation_only !== true) throw new ApiError('INVALID_SERVER_RESPONSE', 502);
     return data as T;
@@ -62,6 +62,33 @@ const friendly: Record<string,string> = {
   INVITATION_INVALID_OR_EXPIRED: 'This invitation has expired or was already used. Ask the workspace owner for a new one.',
   INVALID_RECOVERY_DETAILS:'The username and recovery code do not match. Check your saved code.',
   ALREADY_A_WORKSPACE_MEMBER: 'You already belong to that workspace. Select it from the workspace list.',
+  CURRENT_PASSWORD_INCORRECT: 'Your current password is not correct.',
+  PASSWORD_TOO_WEAK: 'That password is too easy to guess. Choose a longer, less predictable one that is not your username.',
+  PASSWORD_UNCHANGED: 'Choose a new password that is different from the current one.',
+  INVALID_CODE: 'That code is not correct or has expired. Check it and try again.',
+  INVALID_RESET_CODE: 'That code is not correct or has expired. Request a new one.',
+  CHALLENGE_EXPIRED: 'This sign-in step expired. Enter your password again.',
+  SECOND_FACTOR_REQUIRED: 'This account uses two-factor sign-in. Also enter a code from your authenticator app.',
+  EMAIL_NOT_CONFIGURED: 'Email codes are not switched on for this site yet. Use your recovery key instead.',
+  INVALID_EMAIL: 'Enter a valid email address.',
+  EMAIL_ALREADY_USED: 'That email address already belongs to another account.',
+  EMAIL_NOT_SET: 'Add an email address first.',
+  TWO_FACTOR_ALREADY_ON: 'Two-factor sign-in is already on.',
+  TWO_FACTOR_SETUP_REQUIRED: 'Start the two-factor setup again.',
+  TOO_MANY_OPEN_INVITATIONS: 'You have too many open invitations. Cancel some first.',
+  OWNER_CANNOT_BE_CHANGED: 'The owner of a workspace cannot be changed.',
+  OWNER_CANNOT_LEAVE: 'Owners cannot leave their own workspace. Clear it instead.',
+  MEMBER_NOT_FOUND: 'That person is no longer in this workspace.',
+  WORKSPACE_CLEARED: 'This workspace was cleared. Choose another one.',
+  WORKSPACE_OWNER_REQUIRED: 'Only the owner of a workspace can do this.',
+  RESTORE_WINDOW_ENDED: 'This data was cleared more than 30 days ago and can no longer be restored.',
+  SMART_ASSIST_OFF: 'Smart assist is turned off. Turn it on in Settings to use this.',
+  AI_NOT_CONFIGURED: 'Smart assist is not available right now.',
+  FX_UNAVAILABLE: 'Live exchange rates are not reachable right now. Try again shortly, or enter a rate yourself.',
+  FX_PAIR_UNAVAILABLE: 'No live rate is available for that currency pair.',
+  IMAGE_FORMAT_UNSUPPORTED: 'Use a JPG, PNG or WebP photo under about 1 MB.',
+  PHOTO_FORMAT_UNSUPPORTED: 'Use a JPG, PNG or WebP picture.',
+  SERVER_BUSY: 'The server is busy. Please try again in a moment.',
   TOO_MANY_FAILED_ATTEMPTS: 'Too many unsuccessful attempts. For your protection, wait 15 minutes and try again.',
   PLEASE_TRY_AGAIN: 'The server is busy securing another sign-in. Please try again in a few seconds.',
   ACCOUNT_CAPACITY_REACHED: 'New sign-ups are temporarily full. Please try again later.',
@@ -70,7 +97,16 @@ const friendly: Record<string,string> = {
 export async function accountRequest<T>(path:string, body?:unknown, signal?:AbortSignal):Promise<T> {
   const r = await fetch('/api'+path,{method:body===undefined?'GET':'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-SafeLedger-Client':'web'},body:body===undefined?undefined:JSON.stringify(body),signal:signal?AbortSignal.any([signal,AbortSignal.timeout(90000)]):AbortSignal.timeout(90000)});
   const data=await r.json().catch(()=>null);
-  if(!r.ok) throw new Error(friendly[data?.error?.code] || (r.status===422?(data?.error?.fields?.some((f:{message?:string})=>/less common/i.test(f.message||''))?'That password is too easy to guess. Choose a longer, less predictable one that is not your username.':'Check your username and use a password of at least 8 characters.'):data?.error?.code?.replaceAll('_',' ') || 'The server is unavailable. Please try again.'));
+  if(!r.ok) throw new Error(friendly[data?.error?.code] || (r.status===422&&data?.error?.fields?.some((f:{field?:string})=>/email/.test(f.field||''))?'Enter a valid email address.':null) || (r.status===422?(data?.error?.fields?.some((f:{message?:string})=>/less common/i.test(f.message||''))?'That password is too easy to guess. Choose a longer, less predictable one that is not your username.':'Check your username and use a password of at least 8 characters.'):data?.error?.code?.replaceAll('_',' ') || 'The server is unavailable. Please try again.'));
   if(data?.simulation_only!==true)throw new Error('Unexpected server response. Please try again.');
   return data as T;
+}
+
+/** Live exchange rate for the currency view. Display only; the server fetches and caches it. */
+export async function fxRate(from:string,to:string,signal?:AbortSignal){
+  const r=await fetch(`/api/fx/rate?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,{credentials:'same-origin',headers:{'X-SafeLedger-Client':'web'},signal:signal?AbortSignal.any([signal,AbortSignal.timeout(20000)]):AbortSignal.timeout(20000),cache:'no-store'});
+  const data=await r.json().catch(()=>null);
+  if(!r.ok)throw new Error(friendly[data?.error?.code]||'Live exchange rates are not reachable right now.');
+  if(data?.simulation_only!==true||typeof data.rate!=='string')throw new Error('Unexpected exchange-rate response.');
+  return data as import('./types').FxRate;
 }

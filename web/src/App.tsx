@@ -1,36 +1,48 @@
 import {LazyBoundary} from './LazyBoundary';
-import {ThemeButton} from './Theme';
-import {lazy,Suspense,useEffect,useRef,useState,type FormEvent} from 'react';
+import {lazy,Suspense,useEffect,useRef,useState} from 'react';
 import {accountRequest} from './api';
 import type {Session} from './types';
-import {PasswordStrength} from './PasswordStrength';
+import {Auth} from './Auth';
 const loadWorkspace=()=>import('./Workspace');
 const Workspace=lazy(loadWorkspace);
-import {CurrencySelect} from './Currency';
+const JOIN_KEY='safeledger-join-code';
+
+function takeJoinCode():string{
+  try{
+    const url=new URL(window.location.href);const fromUrl=url.searchParams.get('join');
+    if(fromUrl&&/^[A-Za-z0-9_-]{20,100}$/.test(fromUrl)){sessionStorage.setItem(JOIN_KEY,fromUrl);url.searchParams.delete('join');window.history.replaceState(null,'',url.pathname+(url.search||'')+url.hash);}
+    return sessionStorage.getItem(JOIN_KEY)||'';
+  }catch{return '';}
+}
 
 export default function App() {
-  const [auth,setAuth]=useState<{token:string;session:Session}|null>(null);
-  const [mode,setMode]=useState<'signup'|'login'|'recover'>('signup');
-  const [currency,setCurrency]=useState('BDT');
-  const [username,setUsername]=useState(''); const [password,setPassword]=useState('');
-  const [recoveryInput,setRecoveryInput]=useState('');const [recoveryCode,setRecoveryCode]=useState('');
-  const [showPassword,setShowPassword]=useState(false); const [error,setError]=useState('');
-  const [busy,setBusy]=useState(false); const [restoring,setRestoring]=useState(true);
+  const [auth,setAuth]=useState<{session:Session}|null>(null);
+  const [recoveryCode,setRecoveryCode]=useState('');
+  const [error,setError]=useState('');const [notice,setNotice]=useState('');
+  const [restoring,setRestoring]=useState(true);
+  const [joinCode,setJoinCode]=useState(takeJoinCode);
   const restoreRequest=useRef<AbortController|null>(null);
-  useEffect(()=>{const c=new AbortController();restoreRequest.current=c;void fetch('/api/session',{credentials:'same-origin',signal:AbortSignal.any([c.signal,AbortSignal.timeout(90000)])}).then(async r=>{if(r.ok){const session=await r.json() as Session;if(!c.signal.aborted&&!session.guest&&session.workspace_kind!=='demo')setAuth({token:'',session});}}).catch(()=>{}).finally(()=>{if(!c.signal.aborted)setRestoring(false);});return()=>c.abort();},[]);
-  async function enter(kind:'signup'|'login'|'recover',event?:FormEvent){
-    event?.preventDefault();if(busy)return;restoreRequest.current?.abort();setRestoring(false);setBusy(true);setError('');void loadWorkspace();
-    try{const session=await accountRequest<Session>('/auth/'+kind,{username,password,...(kind==='signup'?{currency}:{}),...(kind==='recover'?{recovery_code:recoveryInput}:{})});setAuth({token:'',session:{...session,recovery_code:undefined}});setRecoveryCode(session.recovery_code||'');setRecoveryInput('');setPassword('');}
-    catch(e){setError(e instanceof Error?e.message:'Could not connect. Please try again.');}finally{setBusy(false);}
-  }
-  async function signout(){try{await accountRequest('/auth/logout',{});}catch{setError('Could not sign out. Please retry.');return;}try{Object.keys(sessionStorage).filter(k=>k.startsWith('safeledger-financing-quotes-v1:')).forEach(k=>sessionStorage.removeItem(k));}catch{/* Storage may be unavailable. */}setAuth(null);setError('');setPassword('');}
+  useEffect(()=>{const c=new AbortController();restoreRequest.current=c;void fetch('/api/session',{credentials:'same-origin',signal:AbortSignal.any([c.signal,AbortSignal.timeout(90000)])}).then(async r=>{if(r.ok){const session=await r.json() as Session;if(!c.signal.aborted&&!session.guest&&session.workspace_kind!=='demo')setAuth({session});}}).catch(()=>{}).finally(()=>{if(!c.signal.aborted)setRestoring(false);});return()=>c.abort();},[]);
+  // An invitation link joins the shared workspace as soon as the person is signed in.
+  useEffect(()=>{
+    if(!auth||!joinCode)return;
+    const code=joinCode;setJoinCode('');try{sessionStorage.removeItem(JOIN_KEY);}catch{/* optional */}
+    void accountRequest<Session>('/account/join',{code}).then(session=>{setAuth({session});setNotice(`You joined ${session.workspace_name||'the workspace'} as ${session.role}.`);}).catch(e=>setError(e instanceof Error?e.message:'The invitation could not be used.'));
+  },[auth,joinCode]);
+  function enter(session:Session){restoreRequest.current?.abort();setRestoring(false);void loadWorkspace();setRecoveryCode(session.recovery_code||'');setError('');setAuth({session:{...session,recovery_code:undefined}});}
+  async function signout(){try{await accountRequest('/auth/logout',{});}catch{setError('Could not sign out. Please retry.');return;}try{Object.keys(sessionStorage).filter(k=>k.startsWith('safeledger-financing-quotes-v1:')).forEach(k=>sessionStorage.removeItem(k));}catch{/* Storage may be unavailable. */}setAuth(null);setError('');setNotice('');setRecoveryCode('');}
   function expired(){setAuth(null);setError('Your session ended. Sign in again to continue.');}
-  return <><div className="simulation">YOUR RECORDS. YOUR CONTROL. <span>· Private workspaces · No bank transfers</span></div>{auth&&error&&<p className="error" role="alert">{error}</p>}{auth&&recoveryCode&&<RecoveryNotice code={recoveryCode} done={()=>setRecoveryCode('')}/ >}{auth?<LazyBoundary><Suspense fallback={<main className="workspace-loading" role="status"><span className="loading-ring"/>Opening your financial workspace…</main>}><Workspace key={auth.session.business_id+auth.session.user_id+auth.token} token={auth.token} session={auth.session} logout={()=>void signout()} expired={expired} changeSession={session=>setAuth({token:'',session})}/></Suspense></LazyBoundary>:<main className="welcome">
-    <section className="welcome-story"><div className="brand"><span className="mark" aria-hidden="true">S</span> SafeLedger <span className="ai">AI</span></div><p className="eyebrow">CLARITY BEFORE EVERY DECISION</p><h1>See the numbers.<br/><em>Trust the decision.</em></h1><p className="welcome-copy">A clear view of your business finances. Add your records, understand cash flow, and keep every payment decision accountable.</p><div className="welcome-benefits"><span>✓ Your own records</span><span>✓ Global currencies</span><span>✓ Independent approvals</span></div></section>
-    <section className="welcome-entry"><div className="panel auth-card"><div className="auth-theme"><ThemeButton/></div><p className="eyebrow">YOUR FINANCIAL COMMAND CENTER</p><h2>Welcome to your workspace</h2><p className="muted">Sign in to manage your finances with clarity and confidence.</p><div className="auth-tabs" role="group" aria-label="Account access"><button className={mode==='signup'?'active':''} aria-pressed={mode==='signup'} onClick={()=>{setMode('signup');setError('');}} disabled={busy}>Create account</button><button className={mode==='login'?'active':''} aria-pressed={mode==='login'} onClick={()=>{setMode('login');setError('');}} disabled={busy}>Sign in</button></div><form onSubmit={e=>void enter(mode,e)}><label htmlFor="username">Username</label><input id="username" autoComplete="username" autoCapitalize="none" spellCheck={false} minLength={3} maxLength={32} pattern="[A-Za-z0-9_]{3,32}" placeholder="Choose your username" required value={username} onChange={e=>setUsername(e.target.value)} disabled={busy}/>{mode==='recover'&&<><label htmlFor="recovery-code">Recovery code</label><input id="recovery-code" autoComplete="off" required value={recoveryInput} onChange={e=>setRecoveryInput(e.target.value)} minLength={20} maxLength={100}/></>}<label htmlFor="password">{mode==='recover'?'New password':'Password'}</label><div className="password-field"><input id="password" type={showPassword?'text':'password'} autoComplete={mode==='login'?'current-password':'new-password'} minLength={8} maxLength={128} placeholder="At least 8 characters" required value={password} onChange={e=>setPassword(e.target.value)} disabled={busy}/><button type="button" className="secondary" aria-label={showPassword?'Hide password':'Show password'} onClick={()=>setShowPassword(!showPassword)}>{showPassword?'Hide':'Show'}</button></div>{mode!=='login'&&<PasswordStrength password={password} username={username}/>}<div hidden={mode!=='signup'}><label htmlFor="signup-currency">Workspace currency</label><CurrencySelect id="signup-currency" value={currency} onChange={setCurrency} disabled={busy}/><p className="small muted">Keep each workspace in one currency. Create another workspace for a different currency.</p></div><p className="small muted">{mode==='signup'?'3–32 letters, numbers or underscores. Password: 8–128 characters. No email required.':'Your workspace and saved records will be waiting for you.'}</p>{error&&<p role="alert" className="error">{error}</p>}<button className="full-width" disabled={busy}>{busy?'Please wait…':mode==='signup'?'Create my workspace':mode==='recover'?'Recover my account':'Sign in to my workspace'}</button></form><button type="button" className="link recovery-link" disabled={busy} onClick={()=>{setMode(mode==='recover'?'login':'recover');setError('');setPassword('');}}>{mode==='recover'?'Back to sign in':'Forgot password? Use your recovery code'}</button>{busy&&<p className="notice" role="status">Opening your workspace… The free server may take a moment to wake up.</p>}{restoring&&<p className="small muted" role="status">Checking for your saved session…</p>}<p className="small muted">Use a unique password. Save your one-time recovery code securely; it is the way to recover your account without an email service.</p></div></section></main>}</>;
+  if(restoring&&!auth)return <main className="workspace-loading" role="status"><span className="loading-ring"/>Opening SafeLedger…</main>;
+  return <>
+    {auth&&error&&<p className="error banner" role="alert">{error} <button className="link" onClick={()=>setError('')}>Dismiss</button></p>}
+    {auth&&notice&&<p className="success banner" role="status">{notice} <button className="link" onClick={()=>setNotice('')}>Dismiss</button></p>}
+    {auth&&recoveryCode&&<RecoveryNotice code={recoveryCode} done={()=>setRecoveryCode('')}/>}
+    {auth?<LazyBoundary><Suspense fallback={<main className="workspace-loading" role="status"><span className="loading-ring"/>Opening your workspace…</main>}><Workspace key={auth.session.business_id+auth.session.user_id} token="" session={auth.session} logout={()=>void signout()} expired={expired} changeSession={session=>setAuth({session})}/></Suspense></LazyBoundary>
+      :<Auth onSession={enter} joinPending={!!joinCode} notice={error||''}/>}
+  </>;
 }
 
 function RecoveryNotice({code,done}:{code:string;done:()=>void}) {
  const [copied,setCopied]=useState(false);
- return <section className="recovery-notice panel" role="region" aria-label="Save account recovery code"><span className="badge">SHOWS ONCE · KEEP PRIVATE</span><h2>Save your account recovery code</h2><p>This code can reset your password. Store it in a password manager or another safe private place. It will not appear again, and recovery rotates it.</p><label htmlFor="new-recovery-code">Recovery code</label><input id="new-recovery-code" value={code} readOnly autoComplete="off"/><div className="actions"><button className="secondary" onClick={()=>void navigator.clipboard.writeText(code).then(()=>setCopied(true)).catch(()=>setCopied(false))}>{copied?'Copied':'Copy code'}</button><button onClick={done}>I saved my recovery code</button></div></section>;
+ return <section className="recovery-notice panel" role="region" aria-label="Save your backup recovery key"><span className="badge">SHOWN ONCE · KEEP PRIVATE</span><h2>Save your backup recovery key</h2><p>If you ever lose your password and cannot get an email code, this key gets you back in. Keep it somewhere safe, such as a password manager.</p><label htmlFor="new-recovery-code">Recovery key</label><input id="new-recovery-code" value={code} readOnly autoComplete="off"/><div className="actions"><button className="secondary" onClick={()=>void navigator.clipboard.writeText(code).then(()=>setCopied(true)).catch(()=>setCopied(false))}>{copied?'Copied':'Copy key'}</button><button onClick={done}>I saved it</button></div></section>;
 }

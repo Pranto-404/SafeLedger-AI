@@ -1,7 +1,7 @@
 import {currencyDigits} from './api';
 import {currencies} from './currencies';
 
-export type CurrencyView = {base:string;currency:string;rate:string;updatedAt:string};
+export type CurrencyView = {base:string;currency:string;rate:string;updatedAt:string;source?:'live'|'manual';provider?:string;stale?:boolean};
 const supported = new Set<string>(currencies.map(c=>c.code));
 // A rate is target major units per one source major unit. Never infer a rate.
 export function parseRate(text:string):{numerator:bigint;denominator:bigint} {
@@ -30,6 +30,6 @@ export function readCurrencyView(key:string):CurrencyView|null {
   try {
     const v=JSON.parse(localStorage.getItem(key)||'null');
     if(!v||!supported.has(v.base)||!supported.has(v.currency)||typeof v.rate!=='string'||typeof v.updatedAt!=='string'||!Number.isFinite(Date.parse(v.updatedAt)))return null;
-    parseRate(v.rate);return {base:v.base,currency:v.currency,rate:v.rate,updatedAt:v.updatedAt};
+    parseRate(v.rate);return {base:v.base,currency:v.currency,rate:v.rate,updatedAt:v.updatedAt,source:v.source==='live'?'live':'manual',provider:typeof v.provider==='string'?v.provider.slice(0,60):undefined,stale:v.stale===true};
   } catch {return null;}
 }
