@@ -26,3 +26,6 @@ const good=outcomes.filter(x=>x.correct).length;const wrong=outcomes.filter(x=>x
 const out=process.env.SAFELEDGER_LOCAL_EVIDENCE||'evidence/local-intelligence';fs.mkdirSync(out,{recursive:true});fs.writeFileSync(path.join(out,'local-capability.json'),JSON.stringify(summary,null,2));
 console.log(JSON.stringify(summary,null,2));
 assert.equal(wrong.length,0,'Confidently wrong supported intents');assert(good>=30,'Too many supported questions abstained');assert.equal(unknownOutcomes.filter(x=>x.handled).length,0,'Out-of-domain question answered without knowledge');
+// Unified chat: out-of-domain questions are labelled so they can never be escalated online.
+for(const q of unknown)assert.equal(localAnswer(q,ctx).intent,'out_of_domain',q);
+for(const q of ['Which loan fits my cash flow?','Compare financing offers from lenders','আমার কি লোন দরকার?','Should I borrow for working capital?']){const a=localAnswer(q,ctx);assert.equal(a.intent,'financing',q);assert(a.handled&&a.actions.includes('Financing'),q);}

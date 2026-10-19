@@ -73,3 +73,5 @@ input,textarea,select{background:var(--input);color:var(--text);border:1px solid
 @keyframes tour-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:600px){.quick-tour,.quick-tour.tour-above{inset:auto 16px 16px;padding:20px;max-height:calc(100dvh - 32px);overflow-y:auto}.quick-tour.tour-above{inset:16px 16px auto}.quick-tour h2{font-size:20px}.quick-tour #tour-body{font-size:13px}.tour-actions{flex-wrap:wrap}.tour-highlight{display:none}}
 @media(prefers-reduced-motion:reduce){.quick-tour{animation:none}}
+
+.inline-fields{display:flex;gap:8px}.inline-fields input{flex:1;min-width:0}.inline-fields select{width:auto}td small{display:block}

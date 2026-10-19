@@ -147,25 +147,7 @@ def project_cashflow(dataset: Dataset, request: ScenarioRequest) -> dict:
     if request.as_of != ds.as_of:
         raise ValueError("Scenario as_of must equal the immutable snapshot as_of")
     cash = snapshot(ds)["balance_minor"]
-    first = request.as_of + timedelta(days=1)
-    days = defaultdict(list)
-    scheduled_keys = set()
-    for event in ds.events:
-        if event.status != "scheduled":
-            continue
-        if event.invoice_id:
-            invoice = next(x for x in ds.invoices if x.invoice_id == event.invoice_id)
-            scheduled_keys.add(invoice_key(invoice))
-        day = max(first, event.effective_on)
-        if event.direction == "inflow":
-            day += timedelta(days=request.delay_inflows_days)
-        days[day].append((event.direction, event.amount_minor, event.source_record_id))
-    canonical = {}
-    for invoice in sorted(ds.invoices, key=lambda x: x.invoice_id):
-        canonical.setdefault(invoice_key(invoice), invoice)
-    for key, invoice in canonical.items():
-        if invoice.status == "open" and key not in scheduled_keys:
-            days[max(first, invoice.due_on)].append(("outflow", invoice.amount_minor, invoice.source_record_id))
+    days = scheduled_movements(ds, request.delay_inflows_days)
     result = []
     for offset in range(1, request.horizon_days + 1):
         day = request.as_of + timedelta(days=offset)
@@ -187,6 +169,31 @@ def project_cashflow(dataset: Dataset, request: ScenarioRequest) -> dict:
                             "Overdue open obligations and scheduled cash start on day one; only scheduled inflows shift in delayed scenario",
                             "Linked invoice/event counted once; identical canonical invoice duplicates counted once; possible duplicates both counted conservatively",
                             "Scheduled outflows assumed to occur on planned dates; no new sales, tax, interest or financing inferred"]}
+
+
+def scheduled_movements(dataset: Dataset, delay_inflows_days: int = 0) -> defaultdict:
+    """Date -> [(direction, amount_minor, source_id)] for scheduled cash and unlinked open payables."""
+    ds = dataset
+    first = ds.as_of + timedelta(days=1)
+    days = defaultdict(list)
+    scheduled_keys = set()
+    for event in ds.events:
+        if event.status != "scheduled":
+            continue
+        if event.invoice_id:
+            invoice = next(x for x in ds.invoices if x.invoice_id == event.invoice_id)
+            scheduled_keys.add(invoice_key(invoice))
+        day = max(first, event.effective_on)
+        if event.direction == "inflow":
+            day += timedelta(days=delay_inflows_days)
+        days[day].append((event.direction, event.amount_minor, event.source_record_id))
+    canonical = {}
+    for invoice in sorted(ds.invoices, key=lambda x: x.invoice_id):
+        canonical.setdefault(invoice_key(invoice), invoice)
+    for key, invoice in canonical.items():
+        if invoice.status == "open" and key not in scheduled_keys:
+            days[max(first, invoice.due_on)].append(("outflow", invoice.amount_minor, invoice.source_record_id))
+    return days
 
 
 class FictionalOffer(Contract):
