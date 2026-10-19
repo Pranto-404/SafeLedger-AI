@@ -59,3 +59,11 @@ When authorized, failover only follows primary quota/timeout/network failure, ta
 Production remains Vercel frontend + Render API. Native migration branch `migration/vercel-native-20261018` is separate and must absorb this release before eventual cutover. The prior request for temporary Preview database access and copying existing signing/provider secrets has not received explicit action-time confirmation. Do not save that security-sensitive browser change or rotate any credential during this release.
 
 No system can be claimed breach-proof from this test scope. Live Gemini diagnostics and local-browser checks must be recorded separately from mocks.
+
+## Final checkpoint
+
+- Main and deployed frontend source: `04ef451fd7b427e96cb87fd97b5ffa9a484781bf`. Vercel deployment `AHrf8yTavp9euKV5U8Y3zQDdeMAA` is Ready. Backend remains the qualified `fb8c3d7ecd8dde64a865c54f58fa89fe97648a03` on Render; later commits are frontend/evidence only and intentionally skip Render.
+- Final live browser checks repeated on that frontend: greeting and Banglish balance answer work locally; an unrelated Mars question safely declines; chat remains available at the corner. Screenshot saved privately, not added to Git.
+- Public API health: 200. Unauthenticated workspace: 401. Both have no-store, frame denial, HSTS and feature-permission headers. Browser console errors observed were only from the user's Grammarly extension.
+- Local browser viewport emulation did not actually alter DOM dimensions (requested 390px, observed 1912px). Temporary override reset. Do not claim mobile-browser acceptance from this session.
+- All source, training examples, generated model, checks and security evidence are in GitHub. This checkpoint does not enable OpenAI spend or grant pending native-migration access.
