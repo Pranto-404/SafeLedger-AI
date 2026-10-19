@@ -26,6 +26,8 @@ export function Financing({snapshot,forecast,session,request}:{snapshot:Snapshot
   const [rateType,setRateType]=useState<LenderQuote['rate_type']>('annual_reducing');const [term,setTerm]=useState('12');const [unit,setUnit]=useState<'months'|'days'>('months');
   const [repayment,setRepayment]=useState<LenderQuote['repayment']>('equal_installments');const [source,setSource]=useState('');const [quotedOn,setQuotedOn]=useState(today);
   useEffect(()=>{try{localStorage.setItem(key,JSON.stringify(quotes));}catch{/* Quotes still work for this session. */}},[key,quotes]);
+  // An imported workspace can be dated before today; quotes cannot postdate its snapshot.
+  useEffect(()=>{if(snapshot&&quotedOn>snapshot.as_of)setQuotedOn(snapshot.as_of);},[snapshot,quotedOn]);
   const canAnalyze=session.role==='owner'||session.role==='approver';
   const shortfall=forecast&&forecast.first_shortfall_on;
   function add(e:FormEvent){e.preventDefault();setError('');try{

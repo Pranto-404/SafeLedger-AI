@@ -12,6 +12,7 @@
 | Local assistant training and AI safeguards | `docs/LOCAL_ASSISTANT_SECURITY_RELEASE.md` |
 | Currency catalog and reference conversion | `docs/CURRENCY_VIEW_RELEASE.md` |
 | Guided tutorial | `docs/GUIDED_TOUR_RELEASE.md` |
+| Judge walkthrough + sample records | `submission/JUDGE_QUICKSTART.md`, `submission/judge_sample_records.json` |
 | Demo video script | `submission/DEMO_SCRIPT.md` |
 | Submission checklist | `submission/SUBMISSION_CHECKLIST.md` |
 

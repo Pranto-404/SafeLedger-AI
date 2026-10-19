@@ -13,6 +13,11 @@ const messages:Record<string,string> = {
   REQUEST_BUDGET_EXCEEDED:'Too many requests. Please wait a minute before trying again.',
   DATABASE_UNAVAILABLE:'The workspace is temporarily unavailable. Please refresh in a moment.',
   HUMAN_APPROVER_REQUIRED:'A separate approver account must review this proposal.',
+  QUOTE_CURRENCY_MISMATCH:'Quotes must use the workspace record currency.',
+  QUOTE_DATE_AFTER_SNAPSHOT:'The quote date cannot be later than your records snapshot date.',
+  QUOTE_TERMS_INVALID:'These quote terms cannot be repaid as entered. Check the rate, term and installments.',
+  OWNER_OR_APPROVER_REQUIRED:'Only the owner or approver can run financing analysis.',
+  SNAPSHOT_DATE_CHANGED_REFRESH_REQUIRED:'Your records changed. Refresh data and try again.',
 };
 export class ApiError extends Error {
   constructor(public code: string, public status: number, message = messages[code] || code.replaceAll('_', ' '), public providerStatus?:number) { super(message); }

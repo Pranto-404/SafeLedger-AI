@@ -15,6 +15,8 @@
 | Approvals | Independent approver reviews the exact payee, amount and action hash; one posting only |
 | Audit | Tenant hash chain with HMAC signatures; export |
 
+**Judges:** see `submission/JUDGE_QUICKSTART.md` for a 4-minute walkthrough using a sample records file.
+
 Documentation map: `docs/INDEX.md`. Technical documentation: `submission/TECHNICAL_REPORT.md`. Security: `docs/SECURITY_SELF_ASSESSMENT.md`.
 
 Private financial recordkeeping at https://safeledger-ai.vercel.app. Create a username/password account: every workspace starts with BDT0, no invoices and no cash events. Add your own cash activity and invoices in **Data**, or import your own conforming records JSON into an empty workspace. No demo, guest example or fictional lender offers are exposed by the product; financing comparisons use only quotes the user enters.

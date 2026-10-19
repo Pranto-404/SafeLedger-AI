@@ -300,112 +300,112 @@
   "unknownOutcomes": [
     {
       "question": "What is the weather in Dhaka right now?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "Who won the last World Cup?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "Write a Python web scraper",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "Explain quantum entanglement",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "What is the latest NVIDIA share price?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "What is the capital of Peru?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "Who is the prime minister of Bangladesh?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "What is a compound fracture?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "How do I cure a headache?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "Write an essay about oceans",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "What is the price of Bitcoin?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "Recommend a laptop for gaming",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "Tell me a funny joke",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "Can you predict tomorrow's lottery?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "What is the distance to Mars?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "Who is Mahin?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "What does photosynthesis mean?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "Translate this to French",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "Help me cheat in an exam",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "Book a hotel room",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "What is the capital of France?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     },
     {
       "question": "What does a neural network do?",
-      "actual": "unknown",
+      "actual": "out_of_domain",
       "handled": false
     }
   ]
