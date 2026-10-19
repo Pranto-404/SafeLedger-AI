@@ -7,7 +7,7 @@ type Props={snapshot:Snapshot|null;forecast:Forecast|null;week:Forecast|null;eve
 type Message={id:number;role:'user'|'assistant';text:string;result?:AgentResult;source?:string;sourceIds?:string[];actions?:AssistantAction[];onlineQuestion?:string};
 type Provider={provider_name:string;configured:boolean;fallback_configured:boolean;free_only:boolean};
 export default function Assistant({snapshot,forecast,week,events,invoices,session,request,onProposal,onNavigate,onClose,visible}:Props){
- const {money}=useCurrency();
+ const {nativeMoney:money}=useCurrency();
  const [provider,setProvider]=useState<Provider|null>(null);const [statusError,setStatusError]=useState('');
  const [diagnostic,setDiagnostic]=useState('');const [testing,setTesting]=useState(false);
  async function testProvider(){if(testing)return;setTesting(true);setDiagnostic('');try{await request('/agent/diagnostic',{confirm_synthetic_test:true});if(mounted.current)setDiagnostic('Google Gemini passed the synthetic tool and structured-response checks. No workspace records were sent.');}catch(e){if(mounted.current)setDiagnostic((e instanceof Error?e.message:'The synthetic provider test failed.')+(e instanceof ApiError&&e.providerStatus?' (provider HTTP '+e.providerStatus+')':''));}finally{if(mounted.current)setTesting(false);}}
