@@ -4,7 +4,9 @@ import {Icon} from './Icon';
 import type {Audit,CashEvent,Forecast,Invoice,Proposal,Snapshot} from './types';
 type Destination='Data'|'Invoices'|'Cash flow'|'Approvals'|'Audit';
 export function Dashboard({snapshot,week,month,invoices,events,proposals,audit,navigate,openAssistant}:{snapshot:Snapshot|null;week:Forecast|null;month:Forecast|null;invoices:Invoice[];events:CashEvent[];proposals:Proposal[];audit:Audit|null;navigate:(page:Destination)=>void;openAssistant:()=>void}){
- const {money}=useCurrency();const open=invoices.filter(i=>i.status==='open');const overdue=open.filter(i=>snapshot&&i.due_on<snapshot.as_of);const paid=invoices.filter(i=>i.status==='paid');
+ const {money}=useCurrency();
+ if(!snapshot)return <section className="panel" role="status"><p>Loading your verified financial overview…</p></section>;
+ const open=invoices.filter(i=>i.status==='open');const overdue=open.filter(i=>snapshot&&i.due_on<snapshot.as_of);const paid=invoices.filter(i=>i.status==='paid');
  const total=(rows:Invoice[])=>rows.reduce((n,i)=>n+i.amount_minor,0);const recent=events.slice().sort((a,b)=>b.effective_on.localeCompare(a.effective_on)||b.event_id.localeCompare(a.event_id)).slice(0,5);
  const pending=proposals.filter(p=>p.state==='AWAITING_APPROVAL');
  return <><div className="dashboard-intro"><p>Make room for better decisions.<span> Your records, brought into focus.</span></p><button onClick={()=>navigate('Data')}><Icon name="Data"/>Add financial record</button></div>
