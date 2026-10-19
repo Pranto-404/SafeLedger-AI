@@ -5,14 +5,14 @@
   "contains_real_customer_data": false,
   "as_of": "2026-10-17",
   "files_sha256": {
-    "duplicate_exact.json": "385e5a6a45a6c72047d1c965d8ac266d6922417c1bf81df27ee3a7c5b46a17bf",
-    "duplicate_possible.json": "f32d2d9ff2c75726de99fd651320a065803517b78b9882bea36d1dea5c1e20f1",
-    "expected_results.json": "65b5d7f1f7bdf4f2910b291a800f9f4f18a5c134c916a5cd5ac820f76583bf61",
-    "fictional_offers.json": "ed16ae46db4be62fd21e50f49584b81f0912bc6759eb8a489f574f309311b3b2",
-    "invalid_amount.json": "aff52e591ab0f7729f3d1fd34ae5c250e19017488b9aa31c8f1ad53b6bb1576d",
-    "seed_2026.json": "b7acced1f77a6acf495c33d9526d8b9a04c5fdb9ae4b3737d68cabdca78cfd04",
+    "duplicate_exact.json": "b7ce7d41c2290332bff3ffe1c99daa2b4ea81ce4143738b8870fc8e3abb07640",
+    "duplicate_possible.json": "cc10208edef011fcd5c51433f40665039a865617a01c98dfb217592cc3f2b7e8",
+    "expected_results.json": "bc2ddd46ff80aaed2c99a510d879c66b6fcf1c4bfb21b3db5dbfde18e4763c12",
+    "fictional_offers.json": "e86fed651fcc6bda0057347c4d0112ff5bcd3fe1650b51495c263e2f31708d66",
+    "invalid_amount.json": "a775301f2ca6cb50527a8337a70e8c1b96e6b920ef6a4550a45070a0c33dd2ed",
+    "seed_2026.json": "1ecc408bfa47129b59453f72b0a580a56b9c0f5dc8f357ede7d7001c325d370b",
     "seed_2026_events.csv": "436bf72c269bd4cd786f0e33bd8511c2b6f611eb18a8e502327668421875407b",
     "seed_2026_invoices.csv": "dac0f7a79514857dfa03daccca2745c7053b686377c5f5c3fb85a86ca962f92e",
-    "untrusted_memo.json": "90a0dc59e2a8756b52b37763f6f73a9415ee3e509229e58bf25bb1700c8f0ada"
+    "untrusted_memo.json": "85f1c81374201e143c7dbf8c779506335a3b73028a9b4cee5fd72151121a94f1"
   }
 }
