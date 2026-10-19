@@ -9,3 +9,5 @@ A native modal dialog provides focus containment and an inert background. Next/B
 The welcome step does not navigate away from the current page and advises saving unfinished inputs before proceeding. The tour does not load the assistant. Highlights recompute on resize/scroll, mobile layout uses a compact modal, and reduced-motion preferences disable the entrance animation. Cross-device completion is not synchronized.
 
 Build validation: TypeScript and Vite production build pass. Existing currency parsing and exact-conversion checks pass. Live browser verification follows deployment; do not infer full mobile or assistive-technology certification from these checks.
+
+Live verification: all seven steps navigate to the expected page; Back, Bangla, Escape, completion, launcher focus, login after completion and manual replay verified in the connected local Edge browser. The assistant stayed unloaded throughout. A replay check found that Data highlighting measured before the page committed; the measurement effect now also tracks the current page so it remeasures after navigation. Mobile/device and screen-reader certification remain outside this browser check.
