@@ -75,3 +75,5 @@ input,textarea,select{background:var(--input);color:var(--text);border:1px solid
 @media(prefers-reduced-motion:reduce){.quick-tour{animation:none}}
 
 .inline-fields{display:flex;gap:8px}.inline-fields input{flex:1;min-width:0}.inline-fields select{width:auto}td small{display:block}
+@media(min-width:761px){header{flex-wrap:wrap}.header-actions{flex-wrap:wrap;flex-shrink:1;justify-content:flex-end;max-width:100%}}
+.wrap-cells th,.wrap-cells td,.wrap-cells td small{white-space:normal}.wrap-cells td:nth-child(2){min-width:170px}.wrap-cells td.amount{white-space:normal}

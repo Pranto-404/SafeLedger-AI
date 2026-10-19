@@ -49,3 +49,22 @@ jobs:
           node scripts/check_local_assistant.cjs > /dev/null
           node scripts/check_currency_ui.cjs
           node scripts/check_currency_view.cjs
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Python advisories (informational)
+        run: |
+          pip install pip-audit
+          pip-audit -r api/requirements.lock.txt --no-deps --disable-pip
+      - name: npm advisories (informational)
+        run: npm audit --prefix web --omit=dev

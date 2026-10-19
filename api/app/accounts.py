@@ -16,7 +16,7 @@ import uuid
 from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Depends, Request, Response
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from api.app import security as sec
 from api.app.contracts import Contract, Currency
 from api.app.currencies import scale
@@ -28,6 +28,7 @@ COOKIE = 'safeledger_session'
 TEMPLATE = 'public-demo-v3'
 PUBLIC_TEMPLATES = {'public-demo-v2', TEMPLATE}
 HASH_LOCK = threading.BoundedSemaphore(1)
+ACCOUNT_CAP = 5000
 DUMMY_SALT = '0'*32
 
 
@@ -39,6 +40,7 @@ def schema(db):
     CREATE TABLE IF NOT EXISTS workspace_meta(business_id TEXT PRIMARY KEY, name TEXT NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('personal','demo')));
     CREATE TABLE IF NOT EXISTS workspace_input_requests(business_id TEXT NOT NULL, request_id TEXT NOT NULL, body_sha256 TEXT NOT NULL, PRIMARY KEY(business_id,request_id));
     CREATE TABLE IF NOT EXISTS workspace_invites(code_hash TEXT PRIMARY KEY, business_id TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('approver','viewer')), created_by TEXT NOT NULL, expires_at INTEGER NOT NULL, used_by TEXT);
+    CREATE TABLE IF NOT EXISTS auth_failures(scope TEXT NOT NULL, window INTEGER NOT NULL, count INTEGER NOT NULL, PRIMARY KEY(scope,window));
     ''')
 
 
@@ -62,15 +64,54 @@ def browser_origin(request):
         sec.fail(403,'UNTRUSTED_BROWSER_ORIGIN')
 
 
-def rate(request, db, kind, limit):
-    # Use the transport peer, not a client-supplied forwarding header.
-    peer = request.client.host if request.client else 'unknown'
-    sec.budget(db, 'account:'+kind+':'+hashlib.sha256(peer.encode()).hexdigest(), limit)
+def rate(request, db, kind, claimed_limit, edge_limit, global_limit):
+    """Per-minute floods: best-effort end user, infrastructure-observed edge address, and a global ceiling."""
+    claimed, edge = sec.client_keys(request)
+    sec.budgets(db,[('account:'+kind+':'+claimed,claimed_limit),('account:'+kind+'-edge:'+edge,edge_limit),('account:'+kind+'-all',global_limit)])
+    return edge
+
+
+FAILURE_WINDOW_MINUTES = 15
+
+
+def failure_scopes(kind, name, edge, per_pair, per_name, per_edge):
+    digest = hashlib.sha256(name.encode()).hexdigest()[:32]
+    return [(kind+'-name-edge:'+digest+':'+edge,per_pair),(kind+'-name:'+digest,per_name),(kind+'-edge:'+edge,per_edge)]
+
+
+def locked_out(db, scopes):
+    """Failed-attempt lockout over a rolling window. Cheap: it runs before any password hashing."""
+    since = sec.now()//60 - FAILURE_WINDOW_MINUTES
+    for scope, limit in scopes:
+        total = db.execute('SELECT COALESCE(SUM(count),0) FROM auth_failures WHERE scope=? AND window>?',(scope,since)).fetchone()[0]
+        if total >= limit:sec.fail(429,'TOO_MANY_FAILED_ATTEMPTS')
+
+
+def record_failure(db, scopes):
+    window = sec.now()//60
+    with sec.transaction(db):
+        db.execute('DELETE FROM auth_failures WHERE window<?',(window-60,))
+        for scope, _ in scopes:
+            db.execute('INSERT INTO auth_failures VALUES (?,?,1) ON CONFLICT(scope,window) DO UPDATE SET count=count+1',(scope,window))
+
+
+COMMON_PASSWORDS = {
+    'password','password1','password12','password123','password1234','passw0rd','p@ssw0rd','p@ssword','12345678','123456789','1234567890','12341234','123123123','87654321','987654321','11111111','00000000','12121212',
+    'qwertyui','qwerty123','qwertyuiop','qwerty12','1q2w3e4r','1qaz2wsx','1q2w3e4r5t','abc12345','abcd1234','abcdefgh','abcdefg1','iloveyou','iloveyou1','letmein1','letmein123','welcome1','welcome123','admin123','administrator','changeme','changeme123',
+    'football','baseball','monkey123','dragon123','superman','trustno1','sunshine','princess','starwars','whatever','master123','bangladesh','bangladesh1','dhaka1234','safeledger','safeledger1','safeledger123','capzoryx','business1','company123','test1234','testtest','testing123','default123','secret123','access123','login123','hello123','hellohello','zaq12wsx','asdfghjk','asdf1234','zxcvbnm1','passpass',
+}
+
+
+def reject_weak_password(password, username=''):
+    folded = password.strip().lower()
+    if folded in COMMON_PASSWORDS or folded == username.lower() or len(set(folded)) < 4:
+        raise ValueError('Choose a less common password that is not your username')
+    return password
 
 
 def password_hash(password, salt=None):
     salt = salt or secrets.token_hex(16)
-    if not HASH_LOCK.acquire(timeout=2):sec.fail(429,'PLEASE_TRY_AGAIN')
+    if not HASH_LOCK.acquire(timeout=8):sec.fail(429,'PLEASE_TRY_AGAIN')
     try:
         digest=hashlib.scrypt(password.encode(),salt=bytes.fromhex(salt),n=32768,r=8,p=3,maxmem=64*1024*1024,dklen=32).hex()
     finally:HASH_LOCK.release()
@@ -115,15 +156,20 @@ class Credentials(Contract):
 class SignupCredentials(Credentials):
     currency: Currency = 'BDT'
 
+    @model_validator(mode='after')
+    def not_weak(self):
+        reject_weak_password(self.password,self.username)
+        return self
+
 
 @router.post('/auth/signup',status_code=201)
 def signup(body:SignupCredentials, request:Request, response:Response, db=Depends(db_connection)):
-    browser_origin(request);rate(request,db,'signup',4)
+    browser_origin(request);rate(request,db,'signup',4,20,60)
     hashed=password_hash(body.password)
     account=uuid.uuid4().hex;business='workspace-'+uuid.uuid4().hex;user='user-'+uuid.uuid4().hex;code=secrets.token_urlsafe(24)
     try:
         with sec.transaction(db):
-            if db.execute('SELECT count(*) FROM auth_accounts').fetchone()[0]>=1000:sec.fail(503,'ACCOUNT_CAPACITY_REACHED')
+            if db.execute('SELECT count(*) FROM auth_accounts').fetchone()[0]>=ACCOUNT_CAP:sec.fail(503,'ACCOUNT_CAPACITY_REACHED')
             db.execute('INSERT INTO auth_accounts VALUES (?,?,?,?)',(account,body.username,hashed,sec.now()))
             db.execute("INSERT INTO security_users VALUES (?,?, 'owner',1)",(user,business))
             db.execute('INSERT INTO account_members VALUES (?,?,?)',(account,business,user))
@@ -138,13 +184,17 @@ def signup(body:SignupCredentials, request:Request, response:Response, db=Depend
 
 @router.post('/auth/login')
 def login(body:Credentials,request:Request,response:Response,db=Depends(db_connection)):
-    browser_origin(request);rate(request,db,'login',8)
-    sec.budget(db,'login-name:'+hashlib.sha256(body.username.encode()).hexdigest(),8)
+    browser_origin(request);edge=rate(request,db,'login',12,120,300)
+    scopes=failure_scopes('login',body.username,edge,8,40,40)
+    locked_out(db,scopes)
     row=db.execute('SELECT account_id,password_hash FROM auth_accounts WHERE username=?',(body.username,)).fetchone()
     stored=row[1] if row else 'scrypt-v1$'+DUMMY_SALT+'$'+'0'*64
     computed=password_hash(body.password,stored.split('$')[1])
-    if not row or not hmac.compare_digest(computed,stored):sec.fail(401,'INVALID_USERNAME_OR_PASSWORD')
+    if not row or not hmac.compare_digest(computed,stored):
+        record_failure(db,scopes)
+        sec.fail(401,'INVALID_USERNAME_OR_PASSWORD')
     with sec.transaction(db):
+        sec.prune_expired_sessions(db)
         member=personal_member(db,row[0])
         token=issue(db,member)
         code=None
@@ -283,14 +333,22 @@ def new_workspace(body:NewWorkspace,response:Response,actor=Depends(principal),d
 class RecoveryRequest(Credentials):
     recovery_code: str = Field(min_length=20,max_length=100)
 
+    @model_validator(mode='after')
+    def not_weak(self):
+        reject_weak_password(self.password,self.username)
+        return self
+
 
 @router.post('/auth/recover')
 def recover(body:RecoveryRequest,request:Request,response:Response,db=Depends(db_connection)):
-    browser_origin(request);rate(request,db,'recover',4)
-    sec.budget(db,'recover-name:'+hashlib.sha256(body.username.encode()).hexdigest(),4)
+    browser_origin(request);edge=rate(request,db,'recover',4,20,40)
+    scopes=failure_scopes('recover',body.username,edge,5,20,30)
+    locked_out(db,scopes)
     row=db.execute('SELECT a.account_id,r.code_hash FROM auth_accounts a JOIN auth_recovery r ON r.account_id=a.account_id WHERE a.username=?',(body.username,)).fetchone()
     supplied=hashlib.sha256(body.recovery_code.encode()).hexdigest()
-    if row is None or not hmac.compare_digest(supplied,row[1]):sec.fail(401,'INVALID_RECOVERY_DETAILS')
+    if row is None or not hmac.compare_digest(supplied,row[1]):
+        record_failure(db,scopes)
+        sec.fail(401,'INVALID_RECOVERY_DETAILS')
     hashed=password_hash(body.password);code=secrets.token_urlsafe(24)
     with sec.transaction(db):
         current=db.execute('SELECT code_hash FROM auth_recovery WHERE account_id=?',(row[0],)).fetchone()

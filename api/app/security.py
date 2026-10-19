@@ -138,13 +138,51 @@ def recheck(db, principal):
     return resolve_hash(db,principal.token_hash)
 
 
-def budget(db, scope, limit):
+def budgets(db, items):
+    """Increment several request budgets in one transaction; 429 if any is over its limit."""
     window = now() // 60
+    over = False
     with transaction(db):
         db.execute('DELETE FROM request_budgets WHERE window<?',(window-1,))
-        count = db.execute('INSERT INTO request_budgets VALUES (?,?,1) ON CONFLICT(scope,window) DO UPDATE SET count=count+1 RETURNING count',(scope,window)).fetchone()[0]
-    if count > limit:
+        for scope, limit in items:
+            count = db.execute('INSERT INTO request_budgets VALUES (?,?,1) ON CONFLICT(scope,window) DO UPDATE SET count=count+1 RETURNING count',(scope,window)).fetchone()[0]
+            over = over or count > limit
+    if over:
         fail(429,'REQUEST_BUDGET_EXCEEDED')
+
+
+def budget(db, scope, limit):
+    budgets(db,[(scope,limit)])
+
+
+def _address(value):
+    value = (value or '').strip()[:64]
+    return value or None
+
+
+def client_keys(request):
+    """Return (claimed, edge) hashed client identifiers for rate limits.
+
+    The API sits behind Vercel and Render's Cloudflare edge. uvicorn trusts X-Forwarded-For and reports its
+    LEFT-most entry, which a direct caller can set to anything. So:
+      edge    = the connection address added by infrastructure (cf-connecting-ip, else the right-most
+                X-Forwarded-For entry, else the socket peer). A caller cannot choose it; users behind Vercel
+                share it, so its limits are generous and mainly stop single-origin floods.
+      claimed = the best-effort end-user address (left-most entry) for fairness between normal users.
+                It is spoofable, so no security decision depends on it alone.
+    """
+    headers = request.headers
+    chain = [x for x in (_address(v) for v in headers.get('x-forwarded-for','').split(',')[:20]) if x]
+    peer = _address(request.client.host if request.client else None)
+    edge = _address(headers.get('cf-connecting-ip')) or _address(headers.get('true-client-ip')) or (chain[-1] if chain else None) or peer or 'unknown'
+    claimed = (chain[0] if chain else None) or peer or edge
+    digest = lambda value: hashlib.sha256(value.encode()).hexdigest()[:32]
+    return digest(claimed), digest(edge)
+
+
+def prune_expired_sessions(db):
+    if db.in_transaction:
+        db.execute('DELETE FROM security_sessions WHERE expires_at<?',(now(),))
 
 
 def audit(db, principal, trace, kind, payload):

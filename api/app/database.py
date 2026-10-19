@@ -140,7 +140,8 @@ def connect():
             raise sqlite3.DatabaseError('Invalid remote database configuration')
         connection=RemoteConnection(url,token)
     else:
-        if os.environ.get('VERCEL')=='1':raise sqlite3.DatabaseError('Persistent database required on Vercel')
+        # Hosted platforms have ephemeral disks: starting on local SQLite there would silently lose the ledger.
+        if (os.environ.get('VERCEL')=='1' or os.environ.get('RENDER')) and os.environ.get('SAFELEDGER_ALLOW_EPHEMERAL_DB')!='1':raise sqlite3.DatabaseError('Persistent database required on hosted platforms')
         connection=sqlite3.connect(os.environ.get('SAFELEDGER_DB','./safeledger.sqlite3'),timeout=5,check_same_thread=False)
     # RemoteConnection enables foreign keys in its first pipeline request.
     if not isinstance(connection,RemoteConnection):connection.execute('PRAGMA foreign_keys=ON')

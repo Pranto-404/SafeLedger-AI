@@ -42,6 +42,8 @@ class LenderQuote(Contract):
             raise ValueError("A single payment quote has exactly one installment")
         if self.repayment == "equal_installments" and self.term_days % self.installments:
             raise ValueError("Term days must divide evenly into installment periods")
+        if self.principal_minor < self.installments:
+            raise ValueError("Principal is too small for this many installments")
         return self
 
 
@@ -64,7 +66,14 @@ def half_up(value: Fraction) -> int:
 
 
 def repayment_schedule(quote: LenderQuote) -> list[tuple[int, int, int]]:
-    """[(day_offset, payment_minor, interest_minor)] that repays principal exactly."""
+    """[(day_offset, payment_minor, interest_minor)] that repays principal exactly; every payment is positive."""
+    rows = _schedule(quote)
+    if any(amount <= 0 for _, amount, _ in rows):
+        raise ValueError("Quote terms produce an empty installment")
+    return rows
+
+
+def _schedule(quote: LenderQuote) -> list[tuple[int, int, int]]:
     p, n = quote.principal_minor, quote.installments
     period = quote.term_days // n
     rate = Fraction(quote.rate_bps, 10000)
@@ -151,8 +160,9 @@ def match_financing(dataset: Dataset, reserve_minor: int, request: FinancingMatc
         for offset in range(1, horizon + 1):
             cumulative += paid_by_day.get(offset, 0)
             balances.append(baseline[offset - 1] + net - cumulative)
-        with_loan_min = min([current] + balances[:quote.term_days])
-        month_with_loan = min([current] + balances[:30])
+        # Day 0 is before the proceeds arrive, so only post-financing days describe this offer.
+        with_loan_min = min(balances[:quote.term_days])
+        month_with_loan = min(balances[:30])
         breach = next((k + 1 for k, b in enumerate(balances[:quote.term_days]) if b < reserve_minor), None)
         warnings = []
         if (ds.as_of - quote.quoted_on).days > STALE_QUOTE_DAYS:

@@ -62,11 +62,15 @@ const friendly: Record<string,string> = {
   INVITATION_INVALID_OR_EXPIRED: 'This invitation has expired or was already used. Ask the workspace owner for a new one.',
   INVALID_RECOVERY_DETAILS:'The username and recovery code do not match. Check your saved code.',
   ALREADY_A_WORKSPACE_MEMBER: 'You already belong to that workspace. Select it from the workspace list.',
+  TOO_MANY_FAILED_ATTEMPTS: 'Too many unsuccessful attempts. For your protection, wait 15 minutes and try again.',
+  PLEASE_TRY_AGAIN: 'The server is busy securing another sign-in. Please try again in a few seconds.',
+  ACCOUNT_CAPACITY_REACHED: 'New sign-ups are temporarily full. Please try again later.',
+  UNTRUSTED_BROWSER_ORIGIN: 'This request came from an unrecognised site. Open SafeLedger from its official address.',
 };
 export async function accountRequest<T>(path:string, body?:unknown, signal?:AbortSignal):Promise<T> {
   const r = await fetch('/api'+path,{method:body===undefined?'GET':'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-SafeLedger-Client':'web'},body:body===undefined?undefined:JSON.stringify(body),signal:signal?AbortSignal.any([signal,AbortSignal.timeout(90000)]):AbortSignal.timeout(90000)});
   const data=await r.json().catch(()=>null);
-  if(!r.ok) throw new Error(friendly[data?.error?.code] || (r.status===422?'Check your username and use a password of at least 8 characters.':data?.error?.code?.replaceAll('_',' ') || 'The server is unavailable. Please try again.'));
+  if(!r.ok) throw new Error(friendly[data?.error?.code] || (r.status===422?(data?.error?.fields?.some((f:{message?:string})=>/less common/i.test(f.message||''))?'That password is too easy to guess. Choose a longer, less predictable one that is not your username.':'Check your username and use a password of at least 8 characters.'):data?.error?.code?.replaceAll('_',' ') || 'The server is unavailable. Please try again.'));
   if(data?.simulation_only!==true)throw new Error('Unexpected server response. Please try again.');
   return data as T;
 }

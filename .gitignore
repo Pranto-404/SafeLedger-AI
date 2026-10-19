@@ -14,3 +14,4 @@ test-results/
 *.key
 
 .private/
+.claude/

@@ -3,7 +3,7 @@
 Shenzhen International FinTechathon 2026, International Track. Topic E: SME Finance Copilot. Theme: AI as a Financial Participant.
 
 - Live application: https://safeledger-ai.vercel.app
-- Source: https://github.com/Pranto-404/SafeLedger-AI (release 0.4.0, commit `30ecef8` or the tagged submission commit)
+- Source: https://github.com/Pranto-404/SafeLedger-AI (release 0.4.1, the tagged submission commit)
 - CI: GitHub Actions runs the backend suite, a secret scan, the type-checked production build and the assistant/currency acceptance checks on every push.
 
 ## 1. Problem
@@ -71,12 +71,12 @@ One chat. Questions are answered on the device first. If the local engine cannot
 
 | Evidence | Result |
 | --- | --- |
-| Backend tests (`api/tests`, 382) | All pass on GitHub Actions (Linux) at `30ecef8` |
+| Backend tests (`api/tests`, 414) | All pass on GitHub Actions (Linux); the 20 Oct security review added 23 hardening tests and a randomized financing check (`docs/SECURITY_REVIEW_20261020.md`) |
 | Financing tests (`test_financing.py`, 18) | Independent arithmetic, exact amortization, order-independence, authority, no ledger mutation, audit event |
 | Assistant acceptance (`scripts/check_local_assistant.cjs`) | 36/36, 22/22 OOD, 8 security, financing intent, 0 external calls |
 | Currency checks | Parsing precision and exact rational conversion pass |
 | Secret scan | Known-pattern history scan passes |
-| Production | `/api/health` reports 0.4.0 / `30ecef8`; financing route returns 401 without a session |
+| Production | `/api/health` reports the deployed version and commit; financing route returns 401 without a session; forged-`X-Forwarded-For` rate-limit bypass found and fixed (see review) |
 
 ## 8. Deployment
 

@@ -1,6 +1,6 @@
 # Security self-assessment: permission tiers and known-risk register
 
-Release 0.4.0 (financing match), 20 October 2026. This is an internal assessment by the team, not an independent penetration test or certification. Evidence: `api/tests/` (382 backend tests, all passing on GitHub Actions at 30ecef8), `.github/workflows/ci.yml`, `scripts/security_scan.py` and the release notes in `docs/`.
+Release 0.4.1 (financing match + security hardening), 20 October 2026. This is an internal assessment by the team, not an independent penetration test or certification. Evidence: `api/tests/` (414 backend tests plus a 14,000-scenario randomized check of the financing engine (see `docs/SECURITY_REVIEW_20261020.md`)), `.github/workflows/ci.yml`, `scripts/security_scan.py` and the release notes in `docs/`.
 
 ## 1. Design principle: the AI is never the authority for money
 
@@ -27,7 +27,7 @@ Roles come from authenticated server state, never from a request body. Invitatio
 
 | Threat | Implemented control | Evidence / residual risk |
 | --- | --- | --- |
-| Password guessing | Salted scrypt (N=32768, r=8, p=3), 8–128 exact characters, per-peer and per-username budgets, bounded hashing concurrency | Tests for hashing, budgets and timing-equalized unknown users. No MFA. |
+| Password guessing | Salted scrypt (N=32768, r=8, p=3), 8–128 exact characters, common-password and username-as-password rejection at signup/recovery, rolling 15-minute failed-attempt lockouts per account+address (8), per account (40) and per address (40), checked before any hashing, bounded hashing concurrency | Tests for hashing, lockouts, forged-header resistance and timing-equalized unknown users. A lockout from one address never blocks the owner signing in from another. No MFA. |
 | Session theft / CSRF | Secure HttpOnly SameSite=Lax cookie, 24 h expiry, server-side revocation, exact Origin plus `X-SafeLedger-Client` header on every mutation | CSRF and logout tests. A compromised device remains out of scope. |
 | Tenant escape / IDOR | Business scope from session; membership-checked switching; object IDs filtered by tenant | Cross-tenant read/write tests return 403/404 with no leak. |
 | Self-approval / role escalation | Distinct approver required; proposer can never execute; invitations limited to approver/viewer | Adversarial tests for self-approval, forged role fields and invitation reuse. |
@@ -39,9 +39,10 @@ Roles come from authenticated server state, never from a request body. Invitatio
 | Misleading financing advice | Quotes are labelled user-supplied; exact integer schedules; effective annual rate is an IRR estimate; suspect terms (> 100% effective or fees > 20%) are excluded from best match; no eligibility or approval claims | 18 financing tests with independent arithmetic. Not financial advice; repayment capacity ignores unrecorded future sales. |
 | Financing analysis tampering | Reserve and cash flow are read from the server, not the request; result fingerprint stored in a signed audit event | Analysis never writes to the ledger (asserted in tests). |
 | Audit tampering | Tenant hash chain + HMAC-SHA256; database triggers reject update/delete on audit, approvals, postings and ledger | Tamper test detects a modified event. An administrator holding both database and key is outside HMAC protection; no external anchor yet. |
-| Malformed input / resource abuse | Strict Pydantic contracts (no floats, booleans or numeric strings as money), 1 MiB body cap, duplicate JSON keys rejected, per-route rate budgets, account cap | Validation tests. Not a distributed WAF. |
+| Malformed input / resource abuse | Strict Pydantic contracts (no floats, booleans or numeric strings as money), 1 MiB body cap, duplicate JSON keys rejected, per-route rate budgets keyed on three identifiers (end user, infrastructure-observed address, global ceiling) so a forged `X-Forwarded-For` cannot bypass them, account cap 5,000 | Validation tests; the forged-header bypass found on 20 Oct was reproduced on production and fixed. Not a distributed WAF: a botnet with many real addresses is only slowed. |
+| Stale credentials | Expired sessions are purged at login; failed-attempt rows pruned after 60 minutes; financing quotes kept in tab-scoped storage, validated on load and cleared at sign-out | Covered by tests. |
 | Secret leakage | Server-only credentials; nothing sensitive in the JS bundle; ignored `.env`/`.private`; known-pattern history scan in CI | Pattern scan cannot prove absence of every secret. |
-| Storage loss | Persistent Turso primary over HTTPS; signing key preserved across deploys; startup refuses invalid key | Workspace export is not a full disaster-recovery restore; no restore drill yet. |
+| Storage loss | Persistent Turso primary over HTTPS; signing key preserved across deploys; startup refuses an invalid key and **refuses to start on Render or Vercel without the persistent database** | Workspace export is not a full disaster-recovery restore; no restore drill yet. |
 
 ## 4. Known-risk list (honest limitations)
 

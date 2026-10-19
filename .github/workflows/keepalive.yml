@@ -1,0 +1,25 @@
+name: Keepalive
+
+# Render Free sleeps after ~15 minutes without traffic and the first visitor then waits up to a minute.
+# This only requests the public health endpoint (no accounts, no data) so judges find the API awake.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Wake the API through the public site
+        run: |
+          for attempt in 1 2 3; do
+            code=$(curl -s -o /tmp/health.json -w '%{http_code}' --max-time 75 https://safeledger-ai.vercel.app/api/health || true)
+            if [ "$code" = "200" ]; then cat /tmp/health.json; echo; exit 0; fi
+            echo "attempt $attempt returned HTTP $code"; sleep 15
+          done
+          echo "API health check failed" >&2
+          exit 1

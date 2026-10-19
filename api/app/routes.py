@@ -34,8 +34,8 @@ def principal(request: Request, db=Depends(db_connection)):
             if token and request.method not in {'GET','HEAD','OPTIONS'}:browser_origin(request)
         actor=sec.authenticate(db,token)
     except sec.PolicyError:
-        peer=request.client.host if request.client else 'unknown'
-        sec.budget(db,'auth-failure:'+hashlib.sha256(peer.encode()).hexdigest(),20)
+        claimed,edge=sec.client_keys(request)
+        sec.budgets(db,[('auth-failure:'+claimed,20),('auth-failure-edge:'+edge,200)])
         raise
     sec.budget(db,'session:'+actor.token_hash,240 if request.method=='GET' else 60)
     from api.app.accounts import PUBLIC_TEMPLATES
