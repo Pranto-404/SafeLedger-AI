@@ -1,20 +1,59 @@
-# Security self-assessment — current public sandbox
+# Security self-assessment: permission tiers and known-risk register
 
-18 October 2026. Internal assessment of release25a255e plus4a4bbd7 polish; not an independent penetration-test certificate. Evidence: `evidence/finalization/` and prior regression fixtures.
+Release 0.4.0 (financing match), 20 October 2026. This is an internal assessment by the team, not an independent penetration test or certification. Evidence: `api/tests/` (382 backend tests, all passing on GitHub Actions at 30ecef8), `.github/workflows/ci.yml`, `scripts/security_scan.py` and the release notes in `docs/`.
 
-| Threat | Implemented boundary | Current evidence / residual risk |
+## 1. Design principle: the AI is never the authority for money
+
+SafeLedger treats the language model, the browser and every user-supplied text as untrusted. Money, identity, permissions and execution are decided only by server-side policy over verified records:
+
+`source evidence → deterministic calculation → bounded AI explanation/proposal → server policy → independent human approval → one atomic ledger posting → signed audit`
+
+## 2. Permission tiers (enforced on the server)
+
+| Capability | Owner | Approver | Viewer | AI agent (tool runner) | Anonymous |
+| --- | --- | --- | --- | --- | --- |
+| Read dashboard, invoices, forecast, audit | Yes | Yes | Yes | Read tools only, current tenant | No (401) |
+| Add records / import / change empty-workspace currency | Yes | No (403) | No | No | No |
+| Allow or block a payee (vendor permission) | Yes | No | No | No | No |
+| Run financing match (records signed analysis event) | Yes | Yes | No (403) | No tool exposed | No |
+| Create payment proposal | Yes | Yes | No | Only with explicit per-request user permission, one scoped invoice, after analysis | No |
+| Approve / reject / execute a proposal | **No: cannot approve own work** | Yes, only if not the proposer | No | **No tool exists** | No |
+| Invite teammate | Yes (approver or viewer only) | No | No | No | No |
+| Export workspace records | Yes | Yes | Yes | No | No |
+
+Roles come from authenticated server state, never from a request body. Invitations are one-time, hashed and expire after one hour; they can grant only approver or viewer. Hiding a button in the UI is never the control: every route rechecks the role inside the transaction.
+
+## 3. Threats, controls and residual risk
+
+| Threat | Implemented control | Evidence / residual risk |
 | --- | --- | --- |
-| Password disclosure/brute force | Salted scrypt, exact8–128chars, process hashing semaphore, persistent per-peer/per-username limits | Hash/cookie/login/expiry tests.8chars allowed by owner request; strength meter is an estimate. No recovery or MFA. |
-| Browser session theft/CSRF | Secure HttpOnly SameSite=Lax host cookies; exact Origin + application header on mutations;24h expiry; revoked logout | Public cookie/CSRF/login/logout checks pass. Compromised device or same-origin script remains a risk. |
-| Tenant/role escalation | Server-derived principal; membership-restricted switching; independent approver; one-time hashed/expiring invitations | Public tenant denial, separate approval and role tests pass. An invited account gains only the server-stored invited role. |
-| Guest mutations | Shared guest read-only, rejected before financial audit writes; no AI use | Guest browser/API denial and clean verified guest audit. |
-| SQL/HTML/prompt injection | Parameterized SQL; schema validation; React text rendering; source memos treated as untrusted; typed bounded AI tools | Existing adversarial tests remain in312-test regression. Internal tests/smokes are finite and not a claim that all attacks are impossible. |
-| Input tampering/stale writes/replay | Strict integer/date schemas,1MiB body cap, duplicate-key rejection, expected revision, request UUID/payload binding, transaction | Manual exact-cent tests, four concurrent same-request attempts create one record, real public replay/conflict and UI invalid JSON pass. New UUIDs do not prove economic uniqueness of self-reported cash. |
-| Changing signed history after input | Immutable dataset version snapshots; signed proposal binds old version; invoice continuity checked; append-only sources/audit | Approval and posting remain verified after append in local/public tests. Database administrator controlling signing key is outside HMAC protection. |
-| Unauthorized/duplicate payment | Owner/proposer cannot approve; allowlist/reserve/limit/expiry rechecked; atomic approval/posting; unique constraints; balanced ledger | Existing adversarial regression and public independent approval/replay produce one posting. Cash input is declared accounting evidence, not a bank payment API. |
-| AI authority/fabricated numbers | Finite schema tools; backend fact/source verification; no approve/execute/SQL/code tools; explicit scoped proposal permission | Public free-model manual-balance answer passed. Broader statistical accuracy and independent attack evaluation remain limited. |
-| Quota/billing/resource abuse | Free-profile/no paid fallback, persistent global/public per-user limits, account/workspace/input caps, request size limits | No paid resources/billing activation. Hash concurrency is per process, not a distributed concurrency cap. Hosting/provider quotas may still suspend features. |
-| Secret leakage | Ignored .private/.env; server-only credentials; staged/release exact-value scans; no passwords/tokens in public artifacts | Scans pass for known configured private values. This is not an exhaustive external history/PII assessment. |
-| Ephemeral or uncertain storage | Persistent primary Turso; fail-closed remote transactions; no authoritative serverless SQLite | Actual public account/ledger preservation passes. Vercel native candidate refuses missing persistent database; native deployment remains unverified. |
+| Password guessing | Salted scrypt (N=32768, r=8, p=3), 8–128 exact characters, per-peer and per-username budgets, bounded hashing concurrency | Tests for hashing, budgets and timing-equalized unknown users. No MFA. |
+| Session theft / CSRF | Secure HttpOnly SameSite=Lax cookie, 24 h expiry, server-side revocation, exact Origin plus `X-SafeLedger-Client` header on every mutation | CSRF and logout tests. A compromised device remains out of scope. |
+| Tenant escape / IDOR | Business scope from session; membership-checked switching; object IDs filtered by tenant | Cross-tenant read/write tests return 403/404 with no leak. |
+| Self-approval / role escalation | Distinct approver required; proposer can never execute; invitations limited to approver/viewer | Adversarial tests for self-approval, forged role fields and invitation reuse. |
+| Payment tampering / replay | Proposal binds payee, amount, currency, source hash, dataset version, proposer and 15-minute expiry with HMAC; approval must echo the exact action hash; `BEGIN IMMEDIATE` atomic posting; unique constraints | Concurrent approvals produce exactly one posting; replay returns the same posting; ledger deltas sum to zero. |
+| Duplicate invoice payment | Canonical vendor + normalized reference; similarity ≥ 0.85 flags possible duplicates; execution blocked until reviewed | Heuristic: may over-flag similar references or miss unrelated-number duplicates. |
+| Prompt injection (memo, task text) | Memos are escaped untrusted data; model can only pick from finite typed read/propose tools; second stage may return only fact IDs and reason codes, validated against server facts | Injection tests in suite. Finite evaluation, not proof that every attack fails. |
+| AI fabricating numbers | All displayed amounts come from deterministic objects; model output with invented amounts, IDs or prose fails validation | Mocked and live synthetic diagnostics. No statistical accuracy claim. |
+| Private data sent to AI provider | On-device intent model answers first; out-of-domain and security prompts are never sent; in-scope questions ask permission before the first share; only the current question and relevant verified facts leave | Acceptance script: 36/36 supported, 22/22 out-of-domain kept local, 8/8 security prompts refused, zero external calls. Free provider terms may allow training on submissions; the UI warns users. |
+| Misleading financing advice | Quotes are labelled user-supplied; exact integer schedules; effective annual rate is an IRR estimate; suspect terms (> 100% effective or fees > 20%) are excluded from best match; no eligibility or approval claims | 18 financing tests with independent arithmetic. Not financial advice; repayment capacity ignores unrecorded future sales. |
+| Financing analysis tampering | Reserve and cash flow are read from the server, not the request; result fingerprint stored in a signed audit event | Analysis never writes to the ledger (asserted in tests). |
+| Audit tampering | Tenant hash chain + HMAC-SHA256; database triggers reject update/delete on audit, approvals, postings and ledger | Tamper test detects a modified event. An administrator holding both database and key is outside HMAC protection; no external anchor yet. |
+| Malformed input / resource abuse | Strict Pydantic contracts (no floats, booleans or numeric strings as money), 1 MiB body cap, duplicate JSON keys rejected, per-route rate budgets, account cap | Validation tests. Not a distributed WAF. |
+| Secret leakage | Server-only credentials; nothing sensitive in the JS bundle; ignored `.env`/`.private`; known-pattern history scan in CI | Pattern scan cannot prove absence of every secret. |
+| Storage loss | Persistent Turso primary over HTTPS; signing key preserved across deploys; startup refuses invalid key | Workspace export is not a full disaster-recovery restore; no restore drill yet. |
 
-No real banking/customer identifiers should be entered. Records cannot currently be edited/deleted through the UI; create another workspace for a corrected scenario. No external messages, identity-document sharing, real transfers or competition submission is performed by these tests. Keep the existing effective signing key stable across deploys. Free hosting cold starts, operational backup/restore drills, password recovery, actual-device/browser coverage and independent review remain limitations before real financial production use.
+## 4. Known-risk list (honest limitations)
+
+1. **No bank connection.** Records are self-reported; approval records a payment in the ledger but moves no money.
+2. **Free hosting.** Render Free cold starts (30–60 s on first request) and Gemini free-tier quotas can make the first action slow or the online assistant unavailable. Deterministic finance keeps working.
+3. **Forecasts are deterministic scenarios**, not probabilistic predictions; future sales, tax and seasonality are not modelled.
+4. **Financing match depends on quote accuracy.** SafeLedger does not verify lenders, eligibility or regulatory disclosures.
+5. **Duplicate detection is heuristic.**
+6. **Administrator trust.** Whoever controls the database and the signing key could rewrite history; external anchoring and key rotation are future work.
+7. **No MFA, no email recovery service** (one-time recovery code only).
+8. **Testing is finite.** No independent penetration test, physical iOS/Android device lab or full WCAG audit has been performed.
+
+## 5. What we will not claim
+
+We do not describe SafeLedger as bank-grade, breach-proof, certified, compliant with a specific regulator, or an autonomous payment agent. It is a tested competition prototype with server-enforced controls and disclosed limits.

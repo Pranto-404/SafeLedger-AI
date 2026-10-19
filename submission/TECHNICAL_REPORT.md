@@ -1,53 +1,87 @@
-# SafeLedger AI — current technical report
+# SafeLedger AI: technical documentation
 
-18 October 2026 · Topic E, AI as a Financial Participant · Public financial simulation
+Shenzhen International FinTechathon 2026, International Track. Topic E: SME Finance Copilot. Theme: AI as a Financial Participant.
 
-Live application: https://safeledger-ai.vercel.app/
-Repository: https://github.com/Pranto-404/SafeLedger-AI
-Qualified product release:25a255e; final health/copy polish:4a4bbd7. Exact evidence and source hashes are in `evidence/finalization/`. This report describes the current product; earlier presentation/video artifacts are historical drafts.
+- Live application: https://safeledger-ai.vercel.app
+- Source: https://github.com/Pranto-404/SafeLedger-AI (release 0.4.0, commit `30ecef8` or the tagged submission commit)
+- CI: GitHub Actions runs the backend suite, a secret scan, the type-checked production build and the assistant/currency acceptance checks on every push.
 
-## Problem and product
+## 1. Problem
 
-An SME owner needs to understand available cash, upcoming supplier obligations and the evidence behind a proposed payment. SafeLedger combines exact deterministic financial calculations with a bounded AI assistant and a separate human approval workflow. The Verified Decision Chain is: source evidence → calculation → recommendation → backend policy → independent human approval → one atomic sandbox posting → signed audit.
+Small businesses usually fail on cash timing, not on demand. An owner has to answer three questions every week: *Will I have enough cash on each day of the next month? Which supplier bills can I safely pay? If I need financing, which offer actually fits my cash flow and costs least?* Generic chatbots can talk about these questions, but they invent numbers and cannot be trusted to act. Bank tools act, but they don't explain themselves.
 
-New personal accounts start at BDT 0 with no sample transactions. Users can enter their own non-sensitive figures or explicitly create a separate practice workspace with sample data. A login-free guest example is read-only. The application does not connect to banks, move real funds, underwrite loans or certify imported records as authentic.
+## 2. Solution: the Verified Decision Chain
 
-## Architecture and persistence
+SafeLedger is an AI copilot that does real financial work (forecasting, financing matching, payment preparation) while never holding authority over money:
 
-React 19/TypeScript/Vite serves eight views: overview, data, invoices, cash flow, financing, assistant, approvals and audit. The frontend is on Vercel and proxies same-origin API calls to FastAPI/Pydantic on Render Free. Persistent Turso uses the primary-only Hrana HTTP adapter; local development uses SQLite. No authoritative local-cloud replica or ephemeral production ledger is used. Signed account, proposal, posting, audit and rate-limit state lives in the database.
+```
+Owner-entered evidence → deterministic finance engine → bounded AI explanation / proposal
+→ server policy (role, reserve, limit, payee, duplicate) → independent human approval
+→ one atomic ledger posting → tenant hash-chained, HMAC-signed audit
+```
 
-A combined workspace endpoint returns a consistent snapshot rather than repeating seven independent data loads. The interface uses local system fonts and no new animation dependencies. The production frontend bundle after polish is approximately74.4kB gzipped JavaScript and4.85kB gzipped CSS. Small opacity/transform animations respect reduced-motion preferences. These bundle sizes are build measurements, not a guarantee of network latency or universal device performance.
+Topic E coverage:
 
-A native Vercel FastAPI backend candidate has been prepared separately with runtime source/required fixtures only. Local import and persistent-database fail-closed behavior pass. Its deployment is blocked by403 access to the existing Vercel team/project and absent CLI authentication. No native runtime, speedup or migration is claimed. Render remains the actual backend.
+| Topic E requirement | SafeLedger capability |
+| --- | --- |
+| Business financial analysis | Exact cash snapshot (opening + cleared inflows − cleared outflows), income/expense, open and overdue payables, source evidence on every figure |
+| Cash-flow management with alerts | 7/30-day deterministic daily forecast, reserve-breach alert date, receipt-delay what-if, duplicate-invoice risk flags |
+| Financing-option matching | User-entered lender quotes → exact schedules, effective annual rate, cash-flow fit, ranked best match with warnings (`docs/FINANCING_MATCH_RELEASE.md`) |
+| AI agent completing real tasks | Constrained tool-calling agent prepares payment proposals; on-device assistant answers balance/forecast/invoice/financing questions with sources |
 
-## Data and calculations
+## 3. Architecture
 
-All financial amounts use strict integer BDT minor units;100 minor units =BDT 1.00. Schemas reject booleans, floating amounts, unsupported dates, unknown authority fields, invalid linked settlements and inconsistent duplicate invoice economics. Cleared cash changes current balance; scheduled cash and unpaid invoices change forecasts. An unpaid invoice is not prematurely deducted from cleared cash.
+| Layer | Technology | Responsibility |
+| --- | --- | --- |
+| Browser | React 19, TypeScript 5.9, Vite 7 | Eight pages (Overview, Data, Invoices, Cash flow, Financing, Assistant, Approvals, Audit); on-device intent model; no financial authority |
+| Edge | Vercel CDN | Static assets, CSP and security headers, `/api/*` rewrite to the API |
+| API | FastAPI 0.135, Pydantic 2.12 on Render | Authentication, policy, finance engine, agent runner, audit |
+| Storage | Turso/libSQL (production), SQLite (development) | Datasets, immutable versions, proposals, approvals, postings, ledger, audit, accounts |
+| AI provider | Google Gemini (free tier), optional | Tool planning and constrained rationale; called only with user permission |
 
-Users add append-only cash records or unpaid supplier invoices. Complete Dataset JSON is accepted only into an untouched empty workspace. Duplicate JSON keys and oversized bodies are rejected before model validation. Vendor permission is explicit: imports do not automatically authorize payees. Cash records are self-reported historical/planned activity; invoice payments must use their approval flow rather than being independently recorded again as unrelated cash.
+Trust boundaries: (1) browser → API: identity, tenant and role come only from the server session; cookie mutations require an exact Origin and a client header. (2) API → financial state: every write runs in `BEGIN IMMEDIATE` with policy rechecks and uniqueness constraints. (3) API → model: the model sees bounded verified facts and can only choose finite typed tools; the server owns every amount and ID. (4) Operator: signing key and database credentials are server-side only.
 
-Each input request carries an idempotency UUID and expected source revision. A locked transaction checks identity/audit/revision, validates the full extended dataset, retains the immutable old version, appends source evidence, updates the head, verifies existing signed postings and records the audit. A retry of the same UUID/payload returns the existing outcome; UUID reuse with changed content and stale concurrent edits fail. The mechanism prevents request replay, not a user's intentional creation of economically identical cash records with new UUIDs.
+## 4. Core algorithms
 
-Historical proposals bind their exact dataset fingerprint and invoice economics. After new evidence is appended, verification loads the immutable bound version and checks continuity of that invoice against current evidence. Existing signatures, approvals, ledger entries and audit events are not rewritten.
+**Exact money.** All amounts are strict integers in the currency's minor unit (165 ISO 4217 codes with 0/2/3/4 decimals). Floats, booleans and numeric strings are rejected as money. Inputs are bounded to 10¹² minor units.
 
-Forecasts calculate daily7/30-day scheduled cash under stated reserve and receipt-delay assumptions. Canonically duplicate invoices are counted once; possible duplicates are conservatively flagged/blocked for execution. Paid invoice overlays remove their future obligation and add the actual sandbox outflow once. Financing compares three explicitly fictional BDT 50,000/30-day offers using stated flat term interest/fees, net proceeds, total cost, repayment and modeled capacity. No APR, lender approval probability or financial advice is invented.
+**Cash snapshot and forecast.** `B(0)` is the verified balance; `B(d) = B(d−1) + scheduled inflows(d) − scheduled outflows(d) − unlinked open payables(d)`. Overdue items move to day 1; linked invoice payments are counted once; confirmed duplicates count once and possible duplicates count twice (conservative). The reserve-breach day is the first `d` with `B(d) < reserve`. The forecast is a deterministic scenario, not a prediction.
 
-## Identity and payment authority
+**Duplicate detection.** Canonical key = vendor + uppercase alphanumeric invoice number. Same vendor, date and amount with reference similarity ≥ 0.85 (SequenceMatcher) forms a possible-duplicate group, and payment is blocked until a human reviews it.
 
-Public signup uses username and an exact8–128-character password. Password strength is a UI estimate; no personal password is sent to a third-party scoring service. Salted scrypt hashing, bounded hashing concurrency, database-backed request limits, Secure/HttpOnly/SameSite cookies,24-hour sessions and server-side logout revocation are retained. Cookie mutations require an exact allowed Origin and application header. Optional legacy bearer access remains collapsed compatibility functionality.
+**Financing match.** For each user-entered quote: flat-per-term interest `round(P·r)`, or a reducing-balance annuity `A = P·i/(1−(1+i)^−n)` with per-period rounding and an exact final clearing payment. The effective annual rate is the IRR of the borrower's cash flows on net proceeds. Proceeds and repayments are overlaid on the forecast to test reserve coverage. Offers are ranked by fit, then total cost, and flagged when stale, high-cost, flat-rate-misleading or suspect.
 
-Owners can invite an independently registered approver using a one-time, hashed, one-hour code. Roles and workspace scope come from authenticated server state. The owner/proposer cannot self-approve. A proposal binds tenant, invoice, payee, currency, amount, source hash, dataset version, proposer and expiry. Execution rechecks permission, expiry, funds/reserve, vendor allowlist and duplicate risk. Approval and paired ledger entries occur in one transaction; unique posting constraints make retries idempotent. HMAC-protected chained audit evidence detects unauthorized modification without the signing key.
+**Payment state machine.** `AWAITING_APPROVAL → APPROVED → EXECUTED` or `REJECTED`/`EXPIRED`. A proposal binds tenant, invoice, payee, amount, currency, proposer, source and dataset fingerprints and a 15-minute expiry, and is HMAC-signed. Approval must echo the exact action hash; a distinct approver is required; posting creates balanced cash/payables entries (Σ = 0) exactly once.
 
-## AI interaction and boundaries
+**Audit integrity.** `Hᵢ = SHA256(canonical(eventᵢ ‖ Hᵢ₋₁))`, signed with HMAC-SHA256. Database triggers reject updates and deletes on audit, approvals, postings and ledger rows. The chain is verified before sensitive reads and writes.
 
-Question shortcuts and direct task input make the assistant easier to use. Deterministic balance, outlook and invoice-risk insights remain usable without a model call. The model can request only finite typed read/propose tools. It cannot approve, execute, run arbitrary SQL/code, retrieve secrets or change roles. Proposal permission requires explicit caller consent and one scoped invoice. Financial values and source references are validated against backend facts.
+**On-device assistant.** Hashed TF-IDF (word uni/bigrams and character trigrams, 768 bins) nearest-centroid classifier over 36 intents trained on 301 synthetic English/Bangla/Banglish utterances, plus high-precision rules and a finance-domain gate. Answers are rendered from the live snapshot with source IDs. Acceptance: 36/36 supported, 22/22 out-of-domain declined, 8/8 security prompts refused, zero network calls.
 
-The configured free model has finite budgets/deadlines and no paid retry or fallback. The actual public smoke returned the source-grounded BDT 85,000 balance from newly entered manual data without proposing/executing a payment. This is an integration smoke, not statistical model accuracy. The earlier uploaded eight-case provider report is retained historical evidence with its original source hashes; it is not relabeled as evaluation of every later UI/auth/input change.
+**Online agent (optional).** Stage A: the model selects up to three typed tools (`get_business_snapshot`, `analyze_invoice`, `project_cash_flow`, `propose_payment`); arguments are schema-checked; there is no approve, execute, SQL, HTTP or file tool. Stage B: the model may return only an allowed disposition, reason codes and fact IDs, validated against server facts; text is rendered from templates. Budgets: two provider calls, 90 s deadline, 24 KB request, 600-token completion.
 
-## Verification and limits
+## 5. Security design
 
-The full backend suite passed312 tests with two known warnings. Focused post-polish deployment/input checks passed20 tests. The latest browser suite passed16 scenarios and six automated axe scans, including valid/invalid JSON uploads, manual exact-cent entries, separate demos, invitations, one posting and login/logout. Viewports360/390/768/1366px had no tested horizontal overflow or captured page errors. This is Chromium/Linux emulation, not physical Android/iOS/Safari or full WCAG certification.
+See `docs/SECURITY_SELF_ASSESSMENT.md` for the permission-tier matrix and the known-risk register. Highlights: scrypt passwords, HttpOnly cookies, CSRF origin checks, rate budgets, strict contracts, tenant isolation, independent approval, signed proposals and audit, append-only records with versioned history, no secrets in the bundle, closed API docs in production, CSP/HSTS/frame denial headers.
 
-The actual public API passed34 acceptance checks: preservation of existing account/ledger; zero-start8-character signup; cookie flags; exact-cent own input; replay/conflict; unpaid forecast; independent approval; tenant isolation; one audited execution; preserved historical proof after append; CSRF denial; separate optional demo; grounded live AI; logout and restored login. Source/private-value scans passed before Git publication. Subsequent redeployment persistence is recorded separately in `evidence/finalization/persistence.json` when completed.
+## 6. AI privacy and consent
 
-The product is a public sandbox release. Free-service cold starts/quotas, lack of password recovery, append-only corrections via new workspaces, unverified self-reported inputs, database/signing-key administrator trust and finite internal testing remain disclosed limitations. It is not a certified real-money financial production service. Registration/eligibility, owner-selected project license, final spoken presentation/demo refresh and external submission receipt are separate competition tasks.
+One chat. Questions are answered on the device first. If the local engine cannot answer an in-scope finance question, it asks permission before anything is shared, and then shares only the current question and the relevant verified figures. Off-topic and security/injection prompts are never sent. Chat history is not stored. Deterministic finance works when the AI provider is down or out of quota.
+
+## 7. Verification
+
+| Evidence | Result |
+| --- | --- |
+| Backend tests (`api/tests`, 382) | All pass on GitHub Actions (Linux) at `30ecef8` |
+| Financing tests (`test_financing.py`, 18) | Independent arithmetic, exact amortization, order-independence, authority, no ledger mutation, audit event |
+| Assistant acceptance (`scripts/check_local_assistant.cjs`) | 36/36, 22/22 OOD, 8 security, financing intent, 0 external calls |
+| Currency checks | Parsing precision and exact rational conversion pass |
+| Secret scan | Known-pattern history scan passes |
+| Production | `/api/health` reports 0.4.0 / `30ecef8`; financing route returns 401 without a session |
+
+## 8. Deployment
+
+Vercel (frontend, auto-deploy from `main`) and Render (FastAPI, auto-deploy from `main`) with persistent Turso. Required server secrets: `SAFELEDGER_SIGNING_KEY` (stable across deploys), `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, optional `SAFELEDGER_LLM_*`. Local: Python 3.12 + Node 22; `pip install -r api/requirements.lock.txt`, `npm ci --prefix web`, `uvicorn api.app.main:app`, `npm run dev --prefix web`.
+
+## 9. Limitations
+
+No bank connection or real transfers; self-reported inputs; deterministic (non-probabilistic) forecasts; heuristic duplicate detection; user-supplied financing quotes with no eligibility check; free-tier cold starts and AI quotas; no MFA; administrator who holds both the database and the key is outside HMAC protection; no independent penetration test or device lab.

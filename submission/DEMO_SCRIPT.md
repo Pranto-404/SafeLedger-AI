@@ -1,16 +1,40 @@
-# English demo rehearsal script
-Target4min20s,maximum5min. This is a recording plan,not a claim that a video exists. Record actual UI/server behavior with synthetic fixtures. No default/public access token. Enter credentials before recording or pause/trim credential entry;never record token fields,request headers,private files or browser developer panels. Do not edit a failed result into a fake success. Avoid touching other projects/accounts.
+# Demo video script (≤ 5 minutes): current release 0.4.0
 
-| Time | Screen/action | English narration |
+Record against https://safeledger-ai.vercel.app at commit `30ecef8` or later. **Open the site 2 minutes before recording** so the free Render backend is warm. Use two fresh accounts you create for the video (owner and approver). Enter only made-up business figures. Never show passwords, recovery codes, browser dev tools or URLs containing tokens. Do not cut a failed step into a fake success: re-record instead.
+
+Prepare before recording (off camera): the owner account with these records added on the **Data** page (dates relative to today):
+
+| Record | Type | Amount (BDT) | Date |
+| --- | --- | --- | --- |
+| Opening cash from bank statement | Cash in, cleared | 150,000 | today |
+| Raw material purchase | Cash out, scheduled | 420,000 | today + 6 |
+| Customer receivable (export order) | Cash in, scheduled | 600,000 | today + 25 |
+| Rahman Logistics RL-552 | Unpaid invoice, payee allowed | 20,000 | due today + 3 |
+| Dhaka Packaging DP-1182 | Unpaid invoice, payee allowed | 35,000 | due today + 10 |
+| Dhaka Packaging DP-1182-A (same vendor, date, amount: a resent copy) | Unpaid invoice | 35,000 | due today + 10 |
+
+Financing quotes to type on camera (quote date = today):
+
+| Lender | Product | Amount | Fees | Rate | Basis | Term / repayment |
+| --- | --- | --- | --- | --- | --- | --- |
+| Prime Bank SME desk | Term loan | 400,000 | 4,000 | 13.5 | Per year, reducing | 12 months, monthly |
+| QuickCash NBFI | Working-capital line | 400,000 | 0 | 9 | Flat for whole term | 12 months, monthly |
+| Supplier invoice finance | Invoice financing | 350,000 | 1,500 | 2 | Flat for whole term | 60 days, one payment |
+
+Verified on the local build with exactly these inputs: need BDT 360,000 from day 6; Prime Bank fits (effective 16.59%, total cost BDT 33,432.79, best match); QuickCash fits but is 17.74% effective with the flat-rate warning (cost BDT 36,000); supplier finance is cheapest (15.79%, BDT 8,500) but does not cover the shortfall.
+
+Also invite the approver account (Workspace & teammates → Create approver invitation → join from the second account).
+
+| Time | Screen | Narration (English) |
 | --- | --- | --- |
-|0:00–0:25|Owner overview,synthetic banner visible|“SafeLedger AI is our Topic E SME Finance Copilot prototype. This recording uses synthetic BDT data and a local sandbox. No real money moves. We will follow an invoice from source evidence to a separate human approval and a verifiable posting.”|
-|0:25–0:55|Available balance/income/expense;expand source evidence|“The backend calculates the balance from integer minor units. Opening cash is one hundred thousand taka. Cleared income is thirty thousand and expenses are ten thousand,leaving one hundred twenty thousand. These source IDs connect each figure to its input records.”|
-|0:55–1:30|Cash flow baseline;select7-day receipt delay,calculate|“The seven-day outlook closes at minus fifteen thousand taka. The baseline thirty-day outlook closes at minus eighteen thousand seven hundred fifty. These are deterministic scheduled-cash scenarios. Delaying scheduled receipts exposes a lower minimum balance. The scenario changes no ledger entry or payment permission.”|
-|1:30–1:55|Financing comparison|“These three offers are entirely fictional. We compare fees,net proceeds,interest and total repayment over thirty days. Total costs rank at two thousand,two thousand one hundred,and two thousand five hundred taka. All exceed modeled repayment capacity in this baseline. This screen does not apply for financing.”|
-|1:55–2:15|Assistant run with unconfigured service|“The bounded agent adapter supports structured read or proposal tools. This checkpoint has no live model configured,so the UI reports that honestly. The deterministic financial workflow continues. We do not present scripted text as a live AI recommendation.”|
-|2:15–2:45|Invoices:filter INV-104 duplicate denial,then INV-105 review|“The backend blocks this duplicate-risk invoice. For INV-105,it creates a pending thirty-five-thousand-taka payment proposal. The proposal binds the payee,source,amount,action hash and expiry. Creating it moves no funds.”|
-|2:45–3:25|Pause capture for private signout/login;resume independent approver review dialog|“A separate authenticated approver reviews the exact invoice,payee,amount and hash. The checkbox records an explicit review action. The backend still rechecks identity,independence,expiry,available cash and policy before executing. Approving here posts only to the sandbox.”|
-|3:25–3:55|Approve once;overview balance85000;Audit verified trace|“The confirmed posting reduces available cash to eighty-five thousand taka. The audit chain records proposal,approval and execution. Concurrent retries and a real process restart return the same posting in our evidence tests. They do not create a second payment.”|
-|3:55–4:20|Audit export and current limits|“Our recorded local suites include two hundred twenty-six backend tests and eighteen browser scenarios. Public hosting,real-model evaluation and independent review remain open release gates. The repository contains commands,source hashes and retained failures with fixes. This is a working local financial prototype with explicit limits.”|
+| 0:00–0:20 | Landing page → owner overview | "Small businesses run out of cash before they run out of customers. SafeLedger is an SME finance copilot where AI does real financial work, but never holds the authority to move money." |
+| 0:20–0:50 | Overview cards, expand source evidence | "Every number is calculated by the server in exact integer units from records the owner entered, and each figure links to its source records. There are no bank credentials and no bank transfers." |
+| 0:50–1:25 | Cash flow page, then 7-day receipt delay | "The deterministic forecast shows a reserve breach on day six: we are BDT 360,000 short before the export receipt arrives. A seven-day delay scenario shows how much worse it gets, without touching the ledger." |
+| 1:25–2:30 | **Financing** page: add three quotes, then Match | "Topic E asks for financing-option matching. The owner enters the real offers they received. SafeLedger computes every installment exactly, converts each to an effective annual rate, and tests it against this cash flow. The supplier finance is the cheapest, but it is too small to cover the gap. And notice: the nine percent flat offer looks cheaper than the bank's thirteen and a half percent, but converted to an effective annual rate it is seventeen point seven percent against sixteen point six. The best match is the bank loan: it covers the gap and keeps the balance above the reserve through the last installment. SafeLedger does not apply for credit. It shows its assumptions, and the analysis is written to the signed audit trail." |
+| 2:30–3:00 | Assistant: "Which loan fits my cash flow?" then an open question → permission card → Keep it local | "The assistant answers on the device first, with source evidence. When it needs the online model it asks permission and shares only this question and the verified figures. Off-topic and injection prompts never leave the browser." |
+| 3:00–3:25 | Invoices: Review payment on DP-1182 → blocked (DUPLICATE_INVOICE_BLOCKED); Review payment on RL-552 | "This packaging invoice was sent twice with a slightly different reference, so policy blocks payment until a human reviews it. For the freight invoice the workflow creates a proposal bound to the payee, amount, source hash and a fifteen-minute expiry. Nothing is paid yet." |
+| 3:25–4:10 | Switch to the approver account, then Approvals → review dialog → approve | "A different person must approve. The owner cannot approve their own proposal, and no AI tool can approve or execute. The server rechecks the balance, reserve, payee permission and the exact action hash, then posts once. Retries return the same posting." |
+| 4:10–4:40 | Audit page: verified chain, FINANCING_ANALYZED, PROPOSED, APPROVED, EXECUTED; Export | "Every step is in a tenant hash chain signed with HMAC, so tampering is detectable. 382 automated tests run in GitHub Actions on every push." |
+| 4:40–5:00 | Overview | "SafeLedger: verified evidence in, an explainable decision out, and a human in charge of the money. Limits we disclose: no bank connection, free-tier hosting, and forecasts are scenarios, not predictions." |
 
-Rehearsal uses duplicate_exact.json and newly generated private sessions. Each take needs a fresh private directory;bootstrap refuses to overwrite working data. Use separate human accounts,not a role dropdown. Keep source record/hash details visible long enough to read. If real-model access becomes available,replace only the unavailable-AI segment after an actual source-linked live run and rerun its policy checks. Update counts/commit only from current evidence. Actual video must keep the limitations segment.
+Captions: add English subtitles. Export at 1080p, at most 5:00.

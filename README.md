@@ -1,6 +1,23 @@
 # SafeLedger AI
 
-Private financial recordkeeping at https://safeledger-ai.vercel.app. Create a username/password account: every workspace starts with BDT0, no invoices and no cash events. Add your own cash activity and invoices in **Data**, or import your own conforming records JSON into an empty workspace. No demo, guest example or fictional lender offers are exposed by the product.
+[![CI](https://github.com/Pranto-404/SafeLedger-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/Pranto-404/SafeLedger-AI/actions/workflows/ci.yml)
+
+**SME Finance Copilot (Topic E, Shenzhen International FinTechathon 2026).** AI that does real financial work (cash-flow forecasting with alerts, financing-option matching and payment preparation) without ever holding authority over money. Every figure is computed exactly from the owner's records and linked to its source; every payment needs a separate human approver and leaves a signed audit trail.
+
+| Page | What it does |
+| --- | --- |
+| Overview | Verified cash position, 7/30-day outlook, open invoices, pending approvals, audit status |
+| Data | Add cash activity and supplier invoices (append-only, idempotent), or import a records JSON |
+| Invoices | Search, allow payees, start a payment review; duplicate-risk invoices are blocked |
+| Cash flow | Deterministic daily forecast, reserve-breach alert, receipt-delay what-if |
+| **Financing** | Enter real lender quotes; get exact schedules, effective annual rate, cash-flow fit and a ranked best match (`docs/FINANCING_MATCH_RELEASE.md`) |
+| Assistant | One chat: answers on the device first; asks permission before anything goes to the online model |
+| Approvals | Independent approver reviews the exact payee, amount and action hash; one posting only |
+| Audit | Tenant hash chain with HMAC signatures; export |
+
+Documentation map: `docs/INDEX.md`. Technical documentation: `submission/TECHNICAL_REPORT.md`. Security: `docs/SECURITY_SELF_ASSESSMENT.md`.
+
+Private financial recordkeeping at https://safeledger-ai.vercel.app. Create a username/password account: every workspace starts with BDT0, no invoices and no cash events. Add your own cash activity and invoices in **Data**, or import your own conforming records JSON into an empty workspace. No demo, guest example or fictional lender offers are exposed by the product; financing comparisons use only quotes the user enters.
 
 Passwords accept 8–128 exact characters and have a strength indicator. Sessions use Secure HttpOnly cookies on the deployed site; no token needs to be pasted. Save the one-time recovery code securely. A password reset rotates the code and revokes all sessions. Losing both the password and recovery code prevents self-service recovery; no email service is configured.
 

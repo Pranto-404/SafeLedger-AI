@@ -1,22 +1,15 @@
-# Submission and release checklist — 18 October 2026
+# Submission checklist (deadline 20 Oct 2026, 23:59 Beijing = 21:59 Dhaka = 15:59 UTC)
 
-Authority: `docs/REQUIREMENTS.md`, preserving the original uploaded organizer rules and playbook baseline. Recorded deadline:20 October 2026,21:59 Bangladesh /23:59 Beijing /15:59 UTC. Product delivery does not establish registration/submission.
+Send to the organizer address in the official rules (wangyr@pbcsf.tsinghua.edu.cn) from the team leader's own mailbox. Keep the sent email and any reply privately as the receipt. Never commit passports, IDs or the registration form to GitHub.
 
-| Item | Current status |
-| --- | --- |
-| Public Topic E application | Released at https://safeledger-ai.vercel.app/; Vercel frontend, Render Free API, persistent Turso |
-| Guest/self-service own-data workflow | Released; new personal accounts start0, optional isolated demos, manual cash/invoice and initial JSON import |
-| Financial/security verification |312 backend tests;20 focused polish tests;34 actual public acceptance checks, exactly one independent approved posting and verified audit |
-| Usability/accessibility |16 latest browser scenarios;6 axe scans;360/390/768/1366px; Chromium/Linux scope, not independent/device certification |
-| Real bounded AI | Public configured free-provider manual-balance smoke passed; historical eight-case report retains original source qualification; no statistical accuracy claim |
-| GitHub/source/setup | Published source and evidence; latest commit in Git history; production auto-deploy verified |
-| Data across redeployment | Existing account/ledger preserved; latest manual-workspace persistence proof stored separately when complete |
-| Native Vercel backend migration | NOT completed:403 project scope, no CLI authentication; prepared candidate/local fail-closed check only; working Render kept |
-| Technical report/security assessment | Updated to current own-data/auth/deployment/QA boundaries; owner/reviewer final review still required |
-| English presentation≤10minutes | Earlier editable10-slide draft exists; needs latest UI/flow refresh and measured spoken rehearsal |
-| Demo≤5minutes and sandbox logs | Earlier silent captioned local demo is historical; final current-flow recording/review remains open; public logs/evidence available |
-| Original work/license/dependencies | Source/dependency versions preserved; owner project-license/IP/attribution decision/review remains open |
-| Registration/all 5 students/ID eligibility | Completion/receipt NOT verified here; owner confirms privately, no IDs in Git |
-| Final channel/submission/receipt | NOT sent by this agent; owner must authorize exact external submission and retain receipt |
+| # | Organizer requirement | Our artifact | Status |
+| --- | --- | --- | --- |
+| 0 | Registration form + passport bio pages, all members | Official form (Appendix 3) | **Owner action**: confirm it was sent and acknowledged; if not, send it first |
+| 1 | Technical documentation (architecture, core algorithms, security design) | `submission/TECHNICAL_REPORT.md` → export to PDF, plus the 42-page Technical Work Report | Updated for 0.4.0 |
+| 2 | Presentation deck ≤ 10 minutes | 10–12 slides (outline in the strategy PDF) | **To build and rehearse** |
+| 3 | Demo video ≤ 5 minutes | `submission/DEMO_SCRIPT.md` | **To record** on the live 0.4.0 build |
+| 4 | Source code: README, GitHub link, deployment instructions, test cases | GitHub repo, `README.md`, `api/tests`, CI badge | Ready; tag the submitted commit |
+| 5 | Security self-assessment (permission tiers, known-risk list) | `docs/SECURITY_SELF_ASSESSMENT.md` → PDF | Updated for 0.4.0 |
+| 6 | Execution evidence: sandbox operation logs + demo video | Audit export JSON + workspace export from the demo account; CI run log link; video | **To export** after recording |
 
-Do not describe the sandbox as certified real-money production. No paid resources, real transfers or outbound registration/submission messages are authorized by this checklist. Do not waive financial authority, amount, duplicate, tenant or evidence failures to meet a deadline. Keep final materials consistent with the actual live revision and disclose free quotas/cold starts, no recovery, self-reported inputs, append-only correction approach and finite testing.
+Final gate (all must be true before sending): the same commit SHA appears in the report, deck, video caption and repo tag; the live `/api/health` shows that SHA or a later docs-only commit; the video is ≤ 5:00; no passwords, recovery codes or tokens are visible anywhere.
