@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from api.app import security
 from api.app.body_limit import BodyLimitMiddleware
+from api.app.ratelimit import limiter
 from api.app.routes import router
 from api.app.agents.schema import create_schema as agent_schema
 from api.app.agents.errors import ProviderError
@@ -28,6 +29,7 @@ SCHEMA_VERSION = 1
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    limiter.reset()
     with closing(connect()) as db:
         with db:
             db.execute("CREATE TABLE IF NOT EXISTS schema_meta (version INTEGER PRIMARY KEY)")

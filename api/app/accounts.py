@@ -18,6 +18,7 @@ from urllib.parse import urlsplit
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import Field, field_validator, model_validator
 from api.app import security as sec
+from api.app.ratelimit import limiter
 from api.app.contracts import Contract, Currency
 from api.app.currencies import scale
 from api.app.services.finance import fingerprint
@@ -40,7 +41,6 @@ def schema(db):
     CREATE TABLE IF NOT EXISTS workspace_meta(business_id TEXT PRIMARY KEY, name TEXT NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('personal','demo')));
     CREATE TABLE IF NOT EXISTS workspace_input_requests(business_id TEXT NOT NULL, request_id TEXT NOT NULL, body_sha256 TEXT NOT NULL, PRIMARY KEY(business_id,request_id));
     CREATE TABLE IF NOT EXISTS workspace_invites(code_hash TEXT PRIMARY KEY, business_id TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('approver','viewer')), created_by TEXT NOT NULL, expires_at INTEGER NOT NULL, used_by TEXT);
-    CREATE TABLE IF NOT EXISTS auth_failures(scope TEXT NOT NULL, window INTEGER NOT NULL, count INTEGER NOT NULL, PRIMARY KEY(scope,window));
     ''')
 
 
@@ -71,28 +71,19 @@ def rate(request, db, kind, claimed_limit, edge_limit, global_limit):
     return edge
 
 
-FAILURE_WINDOW_MINUTES = 15
-
-
 def failure_scopes(kind, name, edge, per_pair, per_name, per_edge):
     digest = hashlib.sha256(name.encode()).hexdigest()[:32]
     return [(kind+'-name-edge:'+digest+':'+edge,per_pair),(kind+'-name:'+digest,per_name),(kind+'-edge:'+edge,per_edge)]
 
 
 def locked_out(db, scopes):
-    """Failed-attempt lockout over a rolling window. Cheap: it runs before any password hashing."""
-    since = sec.now()//60 - FAILURE_WINDOW_MINUTES
+    """Failed-attempt lockout over a rolling 15-minute window, in memory. Runs before any password hashing."""
     for scope, limit in scopes:
-        total = db.execute('SELECT COALESCE(SUM(count),0) FROM auth_failures WHERE scope=? AND window>?',(scope,since)).fetchone()[0]
-        if total >= limit:sec.fail(429,'TOO_MANY_FAILED_ATTEMPTS')
+        if limiter.failure_total(scope) >= limit:sec.fail(429,'TOO_MANY_FAILED_ATTEMPTS')
 
 
 def record_failure(db, scopes):
-    window = sec.now()//60
-    with sec.transaction(db):
-        db.execute('DELETE FROM auth_failures WHERE window<?',(window-60,))
-        for scope, _ in scopes:
-            db.execute('INSERT INTO auth_failures VALUES (?,?,1) ON CONFLICT(scope,window) DO UPDATE SET count=count+1',(scope,window))
+    limiter.add_failure([scope for scope, _ in scopes])
 
 
 COMMON_PASSWORDS = {

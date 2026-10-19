@@ -1,6 +1,6 @@
 # Security and quality review, 20 October 2026
 
-Scope: the live site (https://safeledger-ai.vercel.app, API on Render), the repository at `0e01d5c`, and a local production-like build (production CSP and headers, same-origin API proxy, throwaway database). Method: source review of authentication, tenancy, approval and agent code; passive probes of the live site; adversarial and randomized tests; browser checks at 360, 390, 768, 900, 1024 and 1366 px; WCAG 2 A/AA scans with axe-core; dependency advisories. **No accounts were created and no passwords were submitted on the live site**; everything that needs a session ran against the local build.
+Scope: the live site (https://safeledger-ai.vercel.app, API on Render), the repository at `0e01d5c`, and a local production-like build (production CSP and headers, same-origin API proxy, throwaway database). Method: source review of authentication, tenancy, approval and agent code; passive probes of the live site; adversarial and randomized tests; browser checks at 360, 390, 768, 900, 1024 and 1366 px; WCAG 2 A/AA scans with axe-core; dependency advisories. **No accounts were created and no passwords were submitted on the live site**; everything that needs a session ran against the local build. One live load probe (finding 0) did cause a temporary outage, described below.
 
 This is an internal review, not an independent penetration test.
 
@@ -8,6 +8,7 @@ This is an internal review, not an independent penetration test.
 
 | # | Severity | Finding | Evidence | Fix (release 0.4.1) |
 | --- | --- | --- | --- | --- |
+| 0 | **High (availability)** | Every request that was rejected for rate limiting, and every unauthenticated request, still cost a **database write** (the per-minute budget row) on the single remote Turso writer. A burst of parallel hostile requests therefore jams the writer and every user gets 503. | The review's own live test, 300 parallel unauthenticated requests, took the production API offline for about 8 minutes (01:59–02:07 Dhaka, 20 Oct); it recovered by itself. The state before the fix was the same for any attacker. | Rate-limit counters and login lockouts moved to process memory (`api/app/ratelimit.py`): hostile and rejected traffic now costs no database write (asserted by a regression test that forbids write transactions during a 300-request parallel flood). A per-address request ceiling (1,200 per minute) applies before any database access, and write transactions are serialized inside the process so bursts queue instead of racing the single remote writer. |
 | 1 | **High** | Rate limits could be bypassed. uvicorn trusts `X-Forwarded-For` and used its left-most value as the client address. A caller reaching the API directly could rotate it per request and evade the signup, login, recovery and unauthenticated-probe limits. | Live: 24 requests with a fixed address were limited after 20; 24 requests with a random forged header were never limited. | Limits now use three identifiers: the best-effort end user, an address added by the infrastructure (`cf-connecting-ip`, else the right-most forwarded entry) that a caller cannot choose, and a global ceiling. `security.client_keys`, `security.budgets`. |
 | 2 | **High** | Password guessing was capped only per minute, which allows about 11,500 guesses per day per account, and every attempt (including successful ones) counted. | Source review of `accounts.login`. | Rolling 15-minute failed-attempt lockouts per account+address (8), per account (40) and per address (40), checked before any hashing. Successful logins do not count. A single attacker cannot lock the owner out from a different address. Same for recovery. |
 | 3 | Medium | Weak passwords such as `password123` were accepted. | Source review. | Common-password list, username-as-password and low-variety rejection at signup and recovery (not at login, so existing users can still sign in). Friendly UI message. |
@@ -35,6 +36,7 @@ This is an internal review, not an independent penetration test.
 
 ## Residual risks (also in `docs/SECURITY_SELF_ASSESSMENT.md`)
 
+- Rate-limit counters and lockouts are in memory: they reset when the single API instance restarts or sleeps, and are not shared across instances. A multi-instance deployment would need a shared store.
 - A distributed attacker with many real addresses is slowed but not stopped; there is no WAF or CAPTCHA.
 - Free-tier limits: Render cold starts (mitigated by the keep-alive workflow, which is best-effort), Gemini quota.
 - An administrator holding both the database and signing key can rewrite history; no external anchor yet.

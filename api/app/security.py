@@ -8,8 +8,10 @@ import json
 import os
 import secrets
 import sqlite3
+import threading
 import time
 import uuid
+from api.app.ratelimit import limiter
 from api.app.services.finance import analyze_duplicates, fingerprint, invoice_key, snapshot, validated
 from api.app.services.storage import create_schema as financial_schema, load_dataset
 
@@ -88,17 +90,27 @@ def create_schema(db):
     ''')
 
 
+# One writer at a time inside this process. The production database has a single remote writer; queueing here
+# (instead of racing BEGIN IMMEDIATE across many threads) avoids busy errors and lock convoys under bursts.
+WRITE_LOCK = threading.RLock()
+
+
 @contextmanager
 def transaction(db):
     if db.in_transaction:
         raise RuntimeError('Financial operation requires its own transaction')
-    db.execute('BEGIN IMMEDIATE')
+    if not WRITE_LOCK.acquire(timeout=30):
+        fail(503,'SERVER_BUSY')
     try:
-        yield
-        db.commit()
-    except BaseException:
-        db.rollback()
-        raise
+        db.execute('BEGIN IMMEDIATE')
+        try:
+            yield
+            db.commit()
+        except BaseException:
+            db.rollback()
+            raise
+    finally:
+        WRITE_LOCK.release()
 
 
 @dataclass(frozen=True)
@@ -139,15 +151,12 @@ def recheck(db, principal):
 
 
 def budgets(db, items):
-    """Increment several request budgets in one transaction; 429 if any is over its limit."""
-    window = now() // 60
-    over = False
-    with transaction(db):
-        db.execute('DELETE FROM request_budgets WHERE window<?',(window-1,))
-        for scope, limit in items:
-            count = db.execute('INSERT INTO request_budgets VALUES (?,?,1) ON CONFLICT(scope,window) DO UPDATE SET count=count+1 RETURNING count',(scope,window)).fetchone()[0]
-            over = over or count > limit
-    if over:
+    """Increment per-minute request budgets; 429 if any is over its limit.
+
+    Counters are process-local (see ratelimit.py): hostile traffic must never cost a database write. `db` is kept
+    so existing call sites do not change.
+    """
+    if limiter.hit(items):
         fail(429,'REQUEST_BUDGET_EXCEEDED')
 
 

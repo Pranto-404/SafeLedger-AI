@@ -134,16 +134,52 @@ def test_expired_sessions_are_removed_on_login(world, fast):
         assert db.execute('SELECT count(*) FROM security_sessions WHERE expires_at<?', (sec.now(),)).fetchone()[0] == 0
 
 
-def test_failed_attempt_rows_are_bounded_and_pruned(world, fast):
-    c, path = world
-    signup(c, 'bounded_user'); c.post('/api/auth/logout', json={})
-    login(c, 'bounded_user', 'bad-guess', '198.51.100.140')
-    with sqlite3.connect(path) as db:
-        db.execute("INSERT INTO auth_failures VALUES ('old-scope',1,5)")
-    login(c, 'bounded_user', 'bad-guess-2', '198.51.100.141')
-    with sqlite3.connect(path) as db:
-        assert db.execute("SELECT count(*) FROM auth_failures WHERE scope='old-scope'").fetchone()[0] == 0
-        assert db.execute('SELECT count(*) FROM auth_failures').fetchone()[0] <= 6
+def test_rate_limiter_windows_expire_and_memory_is_bounded():
+    from api.app.ratelimit import RateLimiter, FAILURE_WINDOW_MINUTES
+    now = [1_000_000.0]
+    limiter = RateLimiter(clock=lambda: now[0])
+    assert [limiter.hit([('a', 3)]) for _ in range(5)] == [False, False, False, True, True]
+    now[0] += 60
+    assert limiter.hit([('a', 3)]) is False  # a new minute starts a new window
+    limiter.add_failure(['f', 'g']); limiter.add_failure(['f'])
+    assert limiter.failure_total('f') == 2 and limiter.failure_total('g') == 1
+    now[0] += 60 * (FAILURE_WINDOW_MINUTES - 1)
+    assert limiter.failure_total('f') == 2  # still inside the rolling window
+    now[0] += 120
+    assert limiter.failure_total('f') == 0 and limiter.failure_total('g') == 0
+    limiter.hit([('z', 1)])  # triggers pruning of expired failure buckets
+    assert not limiter._failures
+    for i in range(500):
+        limiter.hit([('burst:%d' % i, 1)])
+    now[0] += 60
+    limiter.hit([('later', 1)])
+    assert len(limiter._counts) == 1  # only the current minute is kept
+
+
+def test_hostile_traffic_never_writes_to_the_database(world, fast, monkeypatch):
+    """Regression for the 20 Oct outage: rejected requests must cost no database write."""
+    c, _ = world
+    signup(c, 'quiet_user'); c.post('/api/auth/logout', json={})
+    def forbidden(db):
+        raise AssertionError('database write transaction opened by hostile traffic')
+    monkeypatch.setattr(sec, 'transaction', forbidden)
+    from concurrent.futures import ThreadPoolExecutor
+    def probe(i):
+        if i % 3 == 0:
+            return c.get('/api/session', headers=from_edge('198.51.100.%d' % (i % 250))).status_code
+        if i % 3 == 1:
+            return c.get('/api/workspace', headers={**from_edge('198.51.100.7'), 'Authorization': 'Bearer ' + 'x' * 40}).status_code
+        return login(c, 'quiet_user', 'wrong-guess-%d' % i, '198.51.100.%d' % (i % 250)).status_code
+    with ThreadPoolExecutor(max_workers=24) as pool:
+        codes = list(pool.map(probe, range(300)))
+    assert set(codes) <= {401, 429}, sorted(set(codes))
+    assert 401 in codes and 429 in codes
+
+
+def test_single_address_is_capped_before_it_reaches_the_database(world):
+    c, _ = world
+    codes = [c.get('/api/session', headers={'cf-connecting-ip': '198.51.100.250', 'x-forwarded-for': '203.0.113.%d' % (i % 250)}).status_code for i in range(1210)]
+    assert codes.count(429) >= 9 and codes[-1] == 429 and set(codes) <= {401, 429}
 
 
 @pytest.mark.parametrize('platform', ['RENDER', 'VERCEL'])

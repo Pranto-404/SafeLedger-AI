@@ -23,6 +23,8 @@ def db_connection():
 
 def principal(request: Request, db=Depends(db_connection)):
     authorization=request.headers.get('Authorization','')
+    # Cheap in-memory ceiling first: a flood from one infrastructure-observed address never reaches the database.
+    sec.budgets(db,[('request-edge:'+sec.client_keys(request)[1],1200)])
     try:
         parts=authorization.split()
         if authorization:
