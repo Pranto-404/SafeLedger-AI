@@ -1,4 +1,4 @@
-# SafeLedger finalization checkpoint — 18 October 2026
+# Capzoryx Copilot finalization checkpoint — 18 October 2026
 
 ## Completed phase one
 

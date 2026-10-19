@@ -138,7 +138,7 @@ def test_two_factor_setup_login_backup_code_and_disable(world, fast):
     assert c.post('/api/account/2fa/setup', json={'password': 'wrong-password-1'}).status_code == 401
     setup = c.post('/api/account/2fa/setup', json={'password': PASSWORD}).json()
     secret = setup['secret']
-    assert setup['uri'].startswith('otpauth://totp/SafeLedger:mfa_user?secret=' + secret)
+    assert setup['uri'].startswith('otpauth://totp/Capzoryx%20Copilot:mfa_user?secret=' + secret)
     assert c.post('/api/account/2fa/enable', json={'code': '000000'}).status_code == 401
     step = int(time.time() // 30)
     enable = c.post('/api/account/2fa/enable', json={'code': mfa.code_at(secret, step)})

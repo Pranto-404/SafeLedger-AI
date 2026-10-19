@@ -21,7 +21,7 @@ export async function buildPdf(data:ReportData):Promise<Blob>{
   const W=doc.internal.pageSize.getWidth();const M=44;let y=0;
   const NAVY:[number,number,number]=[19,42,74],TEAL:[number,number,number]=[15,122,99];
   doc.setFillColor(...NAVY);doc.rect(0,0,W,86,'F');
-  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(22);doc.text('SafeLedger financial report',M,40);
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(22);doc.text('Capzoryx Copilot financial report',M,40);
   doc.setFont('helvetica','normal');doc.setFontSize(10.5);
   doc.text(`${latin(data.workspace)}  |  ${currency}  |  Prepared for ${latin(data.owner)}`,M,60);
   doc.text(`As of ${snapshot.as_of}  |  Generated ${new Date().toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'})}`,M,75);

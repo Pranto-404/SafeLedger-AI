@@ -18,7 +18,7 @@ async function main(){
   async function pause(){await cdp.send('Page.stopScreencast');offset+=(Date.now()-start)/1000;await Promise.all(pending);pending=[];}
   async function scene(text,action,seconds=7){const from=offset+(Date.now()-start)/1000;await action();await page.waitForTimeout(seconds*1000);captions.push({start:from,end:offset+(Date.now()-start)/1000,text});}
   await page.goto(process.env.SAFELEDGER_BROWSER_URL);await login('owner');await record();
-  await scene('SafeLedger AI:actual local prototype. Synthetic BDT data and sandbox only. No real money moves.',async()=>{},7);
+  await scene('Capzoryx Copilot:actual local prototype. Synthetic BDT data and sandbox only. No real money moves.',async()=>{},7);
   await scene('Cleared balance:BDT 120,000. The backend preserves source IDs and uses exact integer minor units.',async()=>{assert.match(await page.locator('.metrics').first().innerText(),/120,000/);await page.getByText('Source evidence · 3 records',{exact:true}).click();},8);
   await scene('Deterministic 30-day outlook:BDT -18,750. Upcoming obligations reveal a reserve shortage.',async()=>{await nav('Cash flow').click();assert.match(await page.locator('.metrics').innerText(),/18,750/);},8);
   await scene('What-if:delay scheduled receipts by 7 days. The lowest projected balance falls to BDT -59,300.',async()=>{await page.getByLabel('Delay scheduled receipts').selectOption('7');await button('Calculate scenario').click();await settled();assert.match(await page.locator('.metrics').innerText(),/59,300/);},8);

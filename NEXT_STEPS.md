@@ -53,7 +53,7 @@ The previous synthetic demo was archived privately before cutover, including its
 
 ## Historical handoff
 
-# Continue SafeLedger AI
+# Continue Capzoryx Copilot
 1. Inspect status/history;read PROJECT_STATUS.md,evidence/m3-evaluation/verification.json. AuthorizedPranto-404/SafeLedger-AI. Latest zero-money extension is in git log;read evidence/free-ai/verification.json and its source hashes.273tests pass;M3 live-model/M6 public release gates remain open. Do not rebuild/re-readPDFs/repeat completed work.
 2. Owner budget is BDT0. No paid service,billing activation or credit purchase. Follow docs/FREE_AI_SETUP.md:private Google AI Studio project showing Free tier,billing disabled,private key and SAFELEDGER_LLM_FREE_TIER_CONFIRMED=1. Default gemini_free profile pins endpoint/model. Never request a key in chat;model eligibility does not verify account billing. No private key exists here. Legacy compatible profile is not a paid-use authorization or fallback.
 3. Run zero-network preflight first,then explicit ../.venv/bin/python scripts/evaluate_live_agent.py --live --free-tier --max-provider-calls 14 --output FRESH_DIR after private setup.14attempts max,600requested tokens,no retry/no approve/execute,no paid fallback. Do not pass price/budget overrides in free mode. Report real usage and zero-rate assumption;missing metadata fails. Actual preflight in evidence/free-ai/ exited3 AI_NOT_CONFIGURED,0calls.

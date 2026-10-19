@@ -2,7 +2,7 @@
 
 Superseded by the real-records product. These old fixture/token/demo workflows are for isolated development only and do not describe public access.
 
-# SafeLedger AI — public sandbox
+# Capzoryx Copilot — public sandbox
 
 Explore **https://safeledger-ai.vercel.app**. Choose **Explore the demo** without an account, or create a free username/passphrase account for an isolated synthetic workspace. To test approval, invite a teammate from **Workspace & teammates**; they register separately and join with your one-time code. No real funds move.
 
@@ -12,7 +12,7 @@ See [public access and verification](docs/PUBLIC_ACCESS.md). Local development a
 
 ---
 
-# SafeLedger AI
+# Capzoryx Copilot
 Topic E — SME Finance Copilot. Competition prototype; synthetic data and sandbox only.
 
 **Current checkpoint: local QA/reproduction verified;live AI and public release pending.** The connected financial dashboard, deterministic services and secure sandbox execution are implemented. Backend tests, real browser workflows and automated accessibility scans passed. M3's bounded agent adapter is mock-tested, but real-model evaluation is still pending. No public deployment or registration completion is claimed. See PROJECT_STATUS.md for exact source commits, results and remaining gates.

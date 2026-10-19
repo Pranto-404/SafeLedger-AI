@@ -1,4 +1,4 @@
-# SafeLedger AI
+# Capzoryx Copilot
 
 [![CI](https://github.com/Pranto-404/SafeLedger-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/Pranto-404/SafeLedger-AI/actions/workflows/ci.yml)
 

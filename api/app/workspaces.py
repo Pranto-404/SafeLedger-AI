@@ -86,8 +86,25 @@ def invite(body: InviteRequest, actor=Depends(principal), db=Depends(db_connecti
         base = os.environ.get('SAFELEDGER_PUBLIC_URL', 'https://safeledger-ai.vercel.app').rstrip('/')
         name = db.execute("SELECT COALESCE(NULLIF(p.display_name,''),a.username) FROM auth_accounts a LEFT JOIN account_profiles p ON p.account_id=a.account_id WHERE a.account_id=?", (account,)).fetchone()[0]
         role_text = 'approve payments' if body.role == 'approver' else 'view the records'
-        emailed = mailer.send(email, f'{name} invited you to a SafeLedger workspace', f'{name} invited you to {role_text} in their SafeLedger workspace.\n\nOpen this link, sign in or create a free account, and you will be added:\n{base}/?join={code}\n\nThe invitation expires in {body.hours} hours and works once.')
+        emailed = mailer.send(email, f'{name} invited you to a Capzoryx Copilot workspace', f'{name} invited you to {role_text} in their Capzoryx Copilot workspace.\n\nOpen this link, sign in or create a free account, and you will be added:\n{base}/?join={code}\n\nThe invitation expires in {body.hours} hours and works once.')
     return dict(code=code, role=body.role, expires_at=expires, expires_in_seconds=body.hours * 3600, emailed=emailed, simulation_only=True)
+
+
+class InvitePreview(Exact):
+    code: str = Field(min_length=20, max_length=100)
+
+
+@router.post('/invitations/preview')
+def preview_invitation(body: InvitePreview, request: Request, db=Depends(db_connection)):
+    """Lets the sign-up page say who invited the visitor. Anyone holding the secret link may see this much, nothing more."""
+    from api.app.accounts import rate
+    browser_origin(request)
+    rate(request, db, 'invprev', 20, 60, 120)
+    row = db.execute("SELECT w.name,i.role,COALESCE(NULLIF(p.display_name,''),a.username) FROM workspace_invites i JOIN workspace_meta w ON w.business_id=i.business_id AND w.kind='personal' AND w.archived_at IS NULL "
+                     "LEFT JOIN account_members m ON m.user_id=i.created_by LEFT JOIN auth_accounts a ON a.account_id=m.account_id LEFT JOIN account_profiles p ON p.account_id=a.account_id "
+                     "WHERE i.code_hash=? AND i.expires_at>? AND i.used_by IS NULL", (hashlib.sha256(body.code.encode()).hexdigest(), sec.now())).fetchone()
+    if not row:sec.fail(404, 'INVITATION_INVALID_OR_EXPIRED')
+    return dict(workspace_name=row[0], role=row[1], invited_by=row[2], simulation_only=True)
 
 
 class InviteId(Exact):

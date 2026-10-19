@@ -137,3 +137,17 @@ def test_rename_workspace_is_owner_only(world):
     assert c.post('/api/account/workspaces/rename', json={'name': '  Dhaka   shop  '}).status_code == 200
     assert c.get('/api/account/workspaces').json()['workspaces'][0]['name'] == 'Dhaka shop'
     assert c.post('/api/account/workspaces/rename', json={'name': ''}).status_code == 422
+
+
+def test_invitation_preview_names_inviter_without_signing_in(world):
+    c, _ = world
+    signup(c, 'preview_owner')
+    c.post('/api/account/profile', json={'display_name': 'Rahim Uddin'})
+    c.post('/api/account/workspaces/rename', json={'name': 'Rahim Traders'})
+    code = c.post('/api/account/invitations', json={'role': 'viewer', 'hours': 24}).json()['code']
+    c.post('/api/auth/logout', json={})
+    seen = c.post('/api/invitations/preview', json={'code': code})
+    assert seen.status_code == 200
+    assert seen.json() == {'workspace_name': 'Rahim Traders', 'role': 'viewer', 'invited_by': 'Rahim Uddin', 'simulation_only': True}
+    assert c.post('/api/invitations/preview', json={'code': 'x' * 30}).status_code == 404
+    assert c.post('/api/invitations/preview', json={'code': 'short'}).status_code == 422

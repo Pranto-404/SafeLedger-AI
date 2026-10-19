@@ -75,7 +75,7 @@ export default function Assistant({snapshot,forecast,week,events,invoices,sessio
         {m.role==='assistant'&&<small>{m.kind==='smart'?'Smart answer':'Assistant'}</small>}
         {m.text.split('\n\n').map((para,i)=><p key={i}>{para}</p>)}
         {m.draft&&owner&&<DraftCard compact draft={m.draft} revision={revision} request={request} onSaved={onSaved} onDiscard={()=>setMessages(cur=>cur.map(x=>x.id===m.id?{...x,draft:undefined,text:'Discarded. Nothing was added.'}:x))}/>}
-        {!!m.actions?.length&&<div className="chat-actions">{m.actions.map(a=><button className="secondary" key={a} onClick={()=>onNavigate(a)}>{a==='Financing'?'Open Loans':`Open ${a}`}</button>)}</div>}
+        {!!m.actions?.length&&<div className="chat-actions">{m.actions.map(a=><button className="secondary" key={a} onClick={()=>onNavigate(a)}>{({Financing:'Open Loans',Data:'Open Add records',Audit:'Open Activity'} as Record<string,string>)[a]||`Open ${a}`}</button>)}</div>}
         {m.offTopic&&smart&&<div className="chat-actions"><button className="secondary" disabled={busy} onClick={()=>void ask(m.offTopic!,true)}>It is about my business: try anyway</button></div>}
         {m.retry&&<div className="chat-actions"><button className="secondary" disabled={busy} onClick={()=>void ask(m.retry!)}>Try again</button></div>}
         {m.agent?.proposal&&<button onClick={()=>void onProposal()}>Open payment approval</button>}

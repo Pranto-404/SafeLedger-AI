@@ -63,7 +63,7 @@ def verify(secret, code, last_step=0, now=None):
 
 
 def provisioning_uri(secret, username):
-    return f'otpauth://totp/SafeLedger:{username}?secret={secret}&issuer=SafeLedger&algorithm=SHA1&digits=6&period={STEP_SECONDS}'
+    return f'otpauth://totp/Capzoryx%20Copilot:{username}?secret={secret}&issuer=Capzoryx%20Copilot&algorithm=SHA1&digits=6&period={STEP_SECONDS}'
 
 
 def new_backup_codes(count=10):

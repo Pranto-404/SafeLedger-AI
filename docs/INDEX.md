@@ -4,7 +4,7 @@
 
 | Need | Read |
 | --- | --- |
-| What SafeLedger is, how to run it | `README.md` |
+| What Capzoryx Copilot is, how to run it | `README.md` |
 | Technical documentation for judges (architecture, algorithms, security) | `submission/TECHNICAL_REPORT.md` |
 | Permission tiers and known-risk list | `docs/SECURITY_SELF_ASSESSMENT.md` |
 | Security review findings and fixes (20 Oct) | `docs/SECURITY_REVIEW_20261020.md` |

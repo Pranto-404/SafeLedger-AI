@@ -249,7 +249,13 @@
     "join team workspace",
     "can my accountant view my workspace",
     "let my bookkeeper review payments",
-    "share access with my partner"
+    "share access with my partner",
+    "how do i share my workspace",
+    "invite someone to my workspace",
+    "send an invitation link",
+    "how do invitation links work",
+    "let my accountant join",
+    "workspace share korbo kivabe"
   ],
   "currency": [
     "how to change currency",
@@ -261,7 +267,12 @@
     "currency change korbo kivabe",
     "bdt theke usd korbo",
     "jpy decimal places",
-    "how many currencies are available"
+    "how many currencies are available",
+    "how do i change currency",
+    "show amounts in dollars",
+    "live exchange rate conversion",
+    "convert my balance to usd",
+    "মুদ্রা বদলাব কীভাবে"
   ],
   "export": [
     "download my records",
@@ -271,7 +282,12 @@
     "ডাটা ডাউনলোড করব",
     "ব্যাকআপ নিব কীভাবে",
     "backup nibo kivabe",
-    "record export korte chai"
+    "record export korte chai",
+    "how do i download a pdf report",
+    "download my report as pdf",
+    "export my documents",
+    "pdf report kothay",
+    "রিপোর্ট পিডিএফ ডাউনলোড"
   ],
   "recovery": [
     "forgot my password",
@@ -281,7 +297,15 @@
     "পাসওয়ার্ড ভুলে গেছি",
     "অ্যাকাউন্ট ফিরে পাব কীভাবে",
     "password bhule gesi",
-    "account recover korbo"
+    "account recover korbo",
+    "how do i change my password",
+    "where can i change password",
+    "i forgot my password",
+    "reset my password with email code",
+    "password bhule gechi",
+    "পাসওয়ার্ড বদলাব কীভাবে",
+    "send me a code to reset password",
+    "email code for password reset"
   ],
   "privacy": [
     "is my data private",
@@ -417,5 +441,90 @@
     "what are your limitations",
     "what cant you help with",
     "do you have any limits"
+  ],
+  "how_it_works": [
+    "how does this website work",
+    "how does this site work",
+    "how does this app work",
+    "how do i use this website",
+    "how to use this app",
+    "what does this website do",
+    "explain this website",
+    "walk me through the app",
+    "hey how does this website work",
+    "how does capzoryx copilot work",
+    "ei website kivabe kaj kore",
+    "kivabe use korbo",
+    "এই ওয়েবসাইট কীভাবে কাজ করে",
+    "কিভাবে ব্যবহার করব",
+    "how can i use this platform",
+    "give me a tour of the site"
+  ],
+  "about_product": [
+    "what is capzoryx copilot",
+    "what is this website",
+    "who made this website",
+    "tell me about capzoryx",
+    "what is capzoryx",
+    "who built this app",
+    "about this platform",
+    "capzoryx copilot ki",
+    "capzoryx copilot কি",
+    "what does capzoryx copilot do"
+  ],
+  "scan_bill": [
+    "can i scan a bill",
+    "how to upload a photo of an invoice",
+    "take a picture of my receipt",
+    "bill photo upload",
+    "how do i scan an invoice",
+    "read my receipt from a photo",
+    "ocr for bills",
+    "বিলের ছবি দিয়ে কীভাবে যোগ করব",
+    "bill er chobi tulte pari",
+    "camera diye invoice"
+  ],
+  "chat_add_record": [
+    "can i add a payment by chat",
+    "add a transaction by typing a message",
+    "record an expense through the assistant",
+    "can i just tell you what i paid",
+    "how do i add records using chat",
+    "type a sentence to add a bill",
+    "চ্যাটে লিখে record যোগ করা যায়",
+    "chat e likhe hisab add"
+  ],
+  "two_factor": [
+    "how do i turn on two step sign in",
+    "enable 2fa",
+    "what is two factor authentication",
+    "set up authenticator app",
+    "where are my backup codes",
+    "add extra security to my account",
+    "two step verification",
+    "2fa kivabe on korbo",
+    "টু স্টেপ ভেরিফিকেশন চালু করব কীভাবে"
+  ],
+  "profile": [
+    "how do i change my name",
+    "add a profile photo",
+    "change my profile picture",
+    "where is my profile",
+    "update my display name",
+    "upload my photo",
+    "নাম বদলাব কীভাবে",
+    "profile e photo dibo kivabe"
+  ],
+  "clear_data": [
+    "how do i clear my data",
+    "remove all my data",
+    "how to reset my workspace",
+    "can i undo clearing data",
+    "hide my records",
+    "clear data for one currency",
+    "start fresh with empty data",
+    "restore cleared data",
+    "data clear korbo kivabe",
+    "ডাটা মুছব কীভাবে"
   ]
 }

@@ -1,5 +1,5 @@
 # Requirements baseline — frozen M0, 2026-10-17 Asia/Dhaka
-Authority: uploaded organizer Appendix 2 (4 pages), then uploaded SafeLedger playbook (24 pages), then implementation decisions documented here. Read once during M0; preserve this concise baseline. Attachment hashes: SOURCE_MANIFEST.json.
+Authority: uploaded organizer Appendix 2 (4 pages), then uploaded Capzoryx Copilot playbook (24 pages), then implementation decisions documented here. Read once during M0; preserve this concise baseline. Attachment hashes: SOURCE_MANIFEST.json.
 
 ## Official rules
 - Theme: AI as a Financial Participant. Topic E: financing matching, cash-flow management/alerts, business financial analysis (p2).

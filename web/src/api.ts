@@ -92,7 +92,7 @@ const friendly: Record<string,string> = {
   TOO_MANY_FAILED_ATTEMPTS: 'Too many unsuccessful attempts. For your protection, wait 15 minutes and try again.',
   PLEASE_TRY_AGAIN: 'The server is busy securing another sign-in. Please try again in a few seconds.',
   ACCOUNT_CAPACITY_REACHED: 'New sign-ups are temporarily full. Please try again later.',
-  UNTRUSTED_BROWSER_ORIGIN: 'This request came from an unrecognised site. Open SafeLedger from its official address.',
+  UNTRUSTED_BROWSER_ORIGIN: 'This request came from an unrecognised site. Open Capzoryx Copilot from its official address.',
 };
 export async function accountRequest<T>(path:string, body?:unknown, signal?:AbortSignal):Promise<T> {
   const r = await fetch('/api'+path,{method:body===undefined?'GET':'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-SafeLedger-Client':'web'},body:body===undefined?undefined:JSON.stringify(body),signal:signal?AbortSignal.any([signal,AbortSignal.timeout(90000)]):AbortSignal.timeout(90000)});

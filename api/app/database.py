@@ -6,6 +6,7 @@ A failed/lost stream is permanently unusable; financial transactions are never r
 import os
 import sqlite3
 from urllib.parse import urlsplit
+import threading
 import httpx
 
 
@@ -48,10 +49,25 @@ class Cursor:
     def __iter__(self):return self.rows
 
 
+_SHARED = {}
+_SHARED_LOCK = threading.Lock()
+
+
+def _shared_client(token):
+    """One pooled client per process: every request reuses warm TLS connections instead of a fresh handshake."""
+    with _SHARED_LOCK:
+        client = _SHARED.get(token)
+        if client is None or client.is_closed:
+            client = _SHARED[token] = httpx.Client(headers={'Authorization':'Bearer '+token},timeout=10,follow_redirects=False,
+                                                   limits=httpx.Limits(max_connections=20,max_keepalive_connections=10,keepalive_expiry=20))
+        return client
+
+
 class RemoteConnection:
     def __init__(self, url, token, *, transport=None):
         self.base = 'https://' + urlsplit(url).netloc
-        self.client = httpx.Client(headers={'Authorization':'Bearer '+token},timeout=10,follow_redirects=False,transport=transport)
+        self.owns_client = transport is not None
+        self.client = httpx.Client(headers={'Authorization':'Bearer '+token},timeout=10,follow_redirects=False,transport=transport) if transport is not None else _shared_client(token)
         self.baton = None
         self.started = False
         self.failed = False
@@ -62,7 +78,12 @@ class RemoteConnection:
         if self.failed:raise sqlite3.DatabaseError('Database stream unavailable')
         try:
             requests=([{'type':'execute','stmt':{'sql':'PRAGMA foreign_keys=ON'}}] if self.baton is None and request['type']!='close' else [])+[request]
-            response=self.client.post(self.base+'/v2/pipeline',json={'baton':self.baton,'requests':requests})
+            try:
+                response=self.client.post(self.base+'/v2/pipeline',json={'baton':self.baton,'requests':requests})
+            except (httpx.ConnectError,httpx.RemoteProtocolError,httpx.ReadError):
+                # A pooled connection the server already closed. Nothing has started on this stream yet, so one retry is safe.
+                if self.baton is not None:raise
+                response=self.client.post(self.base+'/v2/pipeline',json={'baton':self.baton,'requests':requests})
             response.raise_for_status()
             body=response.json()
             baton=body['baton']
@@ -115,10 +136,11 @@ class RemoteConnection:
 
     def close(self):
         try:
-            if self.baton is not None and not self.failed:self._request({'type':'close'})
+            # An idle stream expires by itself, so skip the extra round trip unless a transaction is still open.
+            if self.baton is not None and not self.failed and self.in_transaction:self._request({'type':'close'})
         finally:
             self.failed=True
-            self.client.close()
+            if self.owns_client:self.client.close()
 
     def __enter__(self):return self
 

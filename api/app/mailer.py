@@ -1,10 +1,11 @@
 """Outbound email for verification and password-reset codes.
 
 Nothing is sent unless a provider is configured in the environment (never in code):
+  SAFELEDGER_MAIL_RELAY_URL / _SECRET Google Apps Script web app that sends through your own Gmail (free, HTTPS)
   SAFELEDGER_BREVO_API_KEY            Brevo (free tier, HTTPS API)
   SAFELEDGER_RESEND_API_KEY           Resend (HTTPS API)
   SAFELEDGER_SMTP_HOST / _PORT / _USER / _PASSWORD   any SMTP server (for Gmail use an app password)
-  SAFELEDGER_MAIL_FROM                sender address, e.g. "SafeLedger <you@example.com>"
+  SAFELEDGER_MAIL_FROM                sender address, e.g. "Capzoryx Copilot <you@example.com>"
 Failures never raise and never log recipient addresses or message bodies.
 """
 import json
@@ -20,6 +21,7 @@ log = logging.getLogger('safeledger.mail')
 
 
 def provider():
+    if os.environ.get('SAFELEDGER_MAIL_RELAY_URL') and os.environ.get('SAFELEDGER_MAIL_RELAY_SECRET'):return 'relay'
     if os.environ.get('SAFELEDGER_BREVO_API_KEY'):return 'brevo'
     if os.environ.get('SAFELEDGER_RESEND_API_KEY'):return 'resend'
     if os.environ.get('SAFELEDGER_SMTP_HOST') and os.environ.get('SAFELEDGER_SMTP_USER') and os.environ.get('SAFELEDGER_SMTP_PASSWORD'):return 'smtp'
@@ -33,15 +35,21 @@ def configured():
 def sender():
     raw = os.environ.get('SAFELEDGER_MAIL_FROM') or os.environ.get('SAFELEDGER_SMTP_USER') or ''
     name, address = parseaddr(raw)
-    return (name or 'SafeLedger'), address
+    return (name or 'Capzoryx Copilot'), address
 
 
 def send(to, subject, text):
     """Return True if the provider accepted the message."""
     kind = provider()
     name, address = sender()
-    if kind is None or not address:return False
+    if kind is None:return False
+    if kind != 'relay' and not address:return False
     try:
+        if kind == 'relay':
+            url = os.environ['SAFELEDGER_MAIL_RELAY_URL']
+            if not url.startswith('https://script.google.com/'):return False
+            r = httpx.post(url, timeout=20, follow_redirects=True, json={'secret': os.environ['SAFELEDGER_MAIL_RELAY_SECRET'], 'to': to, 'subject': subject, 'text': text, 'name': name})
+            return r.status_code == 200 and r.json().get('ok') is True
         if kind == 'brevo':
             r = httpx.post('https://api.brevo.com/v3/smtp/email', timeout=10, follow_redirects=False,
                            headers={'api-key': os.environ['SAFELEDGER_BREVO_API_KEY'], 'accept': 'application/json'},
@@ -76,6 +84,6 @@ def send(to, subject, text):
 
 def code_message(purpose, code):
     what = {'verify': 'verify your email address', 'reset': 'reset your password'}[purpose]
-    return (f'Your SafeLedger code is {code}',
+    return (f'Your Capzoryx Copilot code is {code}',
             f'Use this code to {what}: {code}\n\nIt expires in 10 minutes and works once. '
-            'If you did not ask for it, you can ignore this email; nobody can use it without your account.\n\n— SafeLedger')
+            'If you did not ask for it, you can ignore this email; nobody can use it without your account.\n\n— Capzoryx Copilot')

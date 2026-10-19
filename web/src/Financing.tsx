@@ -57,7 +57,7 @@ export function Financing({snapshot,forecast,session,request}:{snapshot:Snapshot
   const best=result?.quotes.find(q=>q.quote_id===result.best_match_quote_id);
   return <>
     <section className="panel"><span className="badge">YOUR QUOTES · NO LENDER CONNECTION</span><h2>Match financing to your cash flow</h2>
-      <p>Enter real offers you received from banks, NBFIs or lenders. SafeLedger computes every repayment exactly, converts each offer to an estimated effective annual cost, and tests it against your recorded cash flow and reserve. It does not apply for credit or check eligibility.</p>
+      <p>Enter real offers you received from banks, NBFIs or lenders. Capzoryx Copilot computes every repayment exactly, converts each offer to an estimated effective annual cost, and tests it against your recorded cash flow and reserve. It does not apply for credit or check eligibility.</p>
       {forecast&&<div className="metrics"><article className="metric"><p>Lowest projected balance · 30 days</p><strong className={forecast.minimum_balance_minor<0?'negative':''}>{money(forecast.minimum_balance_minor)}</strong></article><article className="metric"><p>First reserve breach</p><strong>{shortfall||'None'}</strong><small>{shortfall?'Financing may bridge this gap':'No projected gap; borrowing is optional'}</small></article><article className="metric"><p>Quotes to compare</p><strong>{quotes.length}</strong><small>Up to 10</small></article></div>}
     </section>
     <section className="panel"><h2>Add a lender quote</h2>{!canAnalyze?<p className="notice">Viewers can read results. Ask the owner or approver to enter quotes.</p>:<form onSubmit={add}><div className="form-grid">

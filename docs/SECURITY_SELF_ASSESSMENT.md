@@ -4,7 +4,7 @@ Release 0.4.1 (financing match + security hardening), 20 October 2026. This is a
 
 ## 1. Design principle: the AI is never the authority for money
 
-SafeLedger treats the language model, the browser and every user-supplied text as untrusted. Money, identity, permissions and execution are decided only by server-side policy over verified records:
+Capzoryx Copilot treats the language model, the browser and every user-supplied text as untrusted. Money, identity, permissions and execution are decided only by server-side policy over verified records:
 
 `source evidence → deterministic calculation → bounded AI explanation/proposal → server policy → independent human approval → one atomic ledger posting → signed audit`
 
@@ -49,7 +49,7 @@ Roles come from authenticated server state, never from a request body. Invitatio
 1. **No bank connection.** Records are self-reported; approval records a payment in the ledger but moves no money.
 2. **Free hosting.** Render Free cold starts (30–60 s on first request) and Gemini free-tier quotas can make the first action slow or the online assistant unavailable. Deterministic finance keeps working.
 3. **Forecasts are deterministic scenarios**, not probabilistic predictions; future sales, tax and seasonality are not modelled.
-4. **Financing match depends on quote accuracy.** SafeLedger does not verify lenders, eligibility or regulatory disclosures.
+4. **Financing match depends on quote accuracy.** Capzoryx Copilot does not verify lenders, eligibility or regulatory disclosures.
 5. **Duplicate detection is heuristic.**
 6. **Administrator trust.** Whoever controls the database and the signing key could rewrite history; external anchoring and key rotation are future work.
 7. **No MFA, no email recovery service** (one-time recovery code only).
@@ -57,4 +57,4 @@ Roles come from authenticated server state, never from a request body. Invitatio
 
 ## 5. What we will not claim
 
-We do not describe SafeLedger as bank-grade, breach-proof, certified, compliant with a specific regulator, or an autonomous payment agent. It is a tested competition prototype with server-enforced controls and disclosed limits.
+We do not describe Capzoryx Copilot as bank-grade, breach-proof, certified, compliant with a specific regulator, or an autonomous payment agent. It is a tested competition prototype with server-enforced controls and disclosed limits.

@@ -4,7 +4,7 @@ Commit `30ecef8`, 19 October 2026. Closes audit finding SL-001 (Topic E financin
 
 ## What the SME owner gets
 
-The owner types in the offers they actually received (bank term loan, NBFI working-capital line, invoice financing, equipment loan). SafeLedger:
+The owner types in the offers they actually received (bank term loan, NBFI working-capital line, invoice financing, equipment loan). Capzoryx Copilot:
 
 1. computes the exact repayment schedule for each offer in integer minor units;
 2. converts every offer to an **estimated effective annual rate**, so a "9% flat" offer can be compared fairly with a "13.5% per year on reducing balance" offer;

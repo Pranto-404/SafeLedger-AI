@@ -70,7 +70,7 @@ Publication dry-run was rejected by automatic approval review as outside inspect
 
 ## Historical checkpoint (superseded where stated above)
 
-# SafeLedger AI — preserved checkpoint
+# Capzoryx Copilot — preserved checkpoint
 Updated:2026-10-17 UTC/18 BD. Deadline:2026-10-20 21:59 BD/15:59 UTC.
 
 ## Latest extension / zero-money AI

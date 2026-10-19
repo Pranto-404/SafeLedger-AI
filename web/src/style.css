@@ -112,3 +112,30 @@ input,textarea,select{background:var(--input);color:var(--text);border:1px solid
 :root[data-theme=dark] .draft-card{background:#10263a;border-color:#2d5d73}:root[data-theme=dark] .draft-card.saved{background:#0f2b25}
 :root[data-theme=dark] .qr{background:#fff;border-color:#2c3b57}:root[data-theme=dark] .badge.warn{background:#4a3710;color:#ffd98a}
 :root[data-theme=dark] .chat-pick{border-color:#2c3b57}
+/* v0.5.1 polish: spacing, focus, motion. Motion is switched off for people who ask for less of it. */
+.settings-section form>button,.settings-section form>.actions,.auth-card form>button{margin-top:16px}
+.error,.notice{margin:14px 0 0}
+.settings-section .error,.settings-section .notice{margin-top:14px}
+button,input,select,textarea{transition:transform .14s ease,box-shadow .2s ease,background-color .2s ease,border-color .2s ease,opacity .2s ease}
+button:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 8px 20px #0000002b}
+button:not(:disabled):active{transform:translateY(0);box-shadow:none}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.link:hover,button.link:active{transform:none;box-shadow:none}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;border-color:#3fd2b4;box-shadow:0 0 0 3px #3fd2b44d}
+.brand{gap:10px}
+.brand-name{letter-spacing:-.4px}
+.brand-name b{font-weight:800;color:#0f9b7c}
+.logo-mark{flex:none;filter:drop-shadow(0 4px 10px #0f7a6340)}
+.logo-rise{stroke-dasharray:40;stroke-dashoffset:40;animation:draw 1s .25s ease forwards}
+.invite-card{display:flex;gap:12px;align-items:center;padding:14px 16px;margin-bottom:18px;border-radius:12px;background:#0f7a6318;border:1px solid #0f7a6342}
+.invite-card small{display:block;color:var(--muted);margin-top:2px}
+.invite-card .avatar{flex:none}
+.panel,.auth-card,.welcome-story,.invite-card,.draft-card{animation:rise .38s ease both}
+.dashboard-grid>*:nth-child(2){animation-delay:.05s}.dashboard-grid>*:nth-child(3){animation-delay:.1s}.dashboard-grid>*:nth-child(4){animation-delay:.15s}
+.chat-message{animation:rise .25s ease both}
+nav button{transition:background-color .2s ease,color .2s ease,transform .14s ease}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@media(max-width:600px){.settings-section form>button,.auth-card form>button{width:100%}.invite-card{padding:12px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}.logo-rise{stroke-dashoffset:0}}
+nav{scrollbar-width:none}nav::-webkit-scrollbar{display:none}

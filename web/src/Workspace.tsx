@@ -1,3 +1,4 @@
+import {Brand} from './Logo';
 import {QuickTour} from './QuickTour';
 import {LazyBoundary} from './LazyBoundary';
 import {ThemeButton} from './Theme';
@@ -100,12 +101,12 @@ function WorkspaceContent({token,session,logout,expired,changeSession,setCurrenc
     setMessage(result.state==='EXECUTED'?'Payment recorded in your books. Your balance and activity are updated.':'Payment rejected. Nothing was recorded.');
   }
   function save(blob:Blob,name:string){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-  async function exportJson(){await run(async()=>{const data=await request('/workspace/export');save(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'safeledger-backup.json');setMessage('Backup file downloaded. It contains your financial records, so keep it private.');});}
+  async function exportJson(){await run(async()=>{const data=await request('/workspace/export');save(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'capzoryx-backup.json');setMessage('Backup file downloaded. It contains your financial records, so keep it private.');});}
   async function exportPdf(){
     if(!snapshot||exporting)return;setExporting(true);setError('');
     try{
       const {downloadPdf}=await import('./exportPdf');
-      await downloadPdf({workspace:session.workspace_name||lists.workspaces.find(w=>w.business_id===session.business_id)?.name||'My workspace',owner:profile?.display_name||session.username||'',currency,snapshot,week,month:baselineMonth,invoices,events,proposals},`safeledger-report-${snapshot.as_of}.pdf`);
+      await downloadPdf({workspace:session.workspace_name||lists.workspaces.find(w=>w.business_id===session.business_id)?.name||'My workspace',owner:profile?.display_name||session.username||'',currency,snapshot,week,month:baselineMonth,invoices,events,proposals},`capzoryx-report-${snapshot.as_of}.pdf`);
       setMessage('Your PDF report was downloaded.');
     }catch(e){report(e);}finally{setExporting(false);}
   }
@@ -118,7 +119,7 @@ function WorkspaceContent({token,session,logout,expired,changeSession,setCurrenc
   const number=(id:string)=>invoices.find(i=>i.invoice_id===id)?.invoice_number||'';
   const visible=invoices.filter(i=>`${i.vendor_id} ${i.invoice_number}`.toLowerCase().includes(query.toLowerCase()));
   return <div className="shell"><aside>
-    <div className="brand"><span className="mark" aria-hidden="true">S</span> SafeLedger <span className="ai">AI</span></div>
+    <Brand/>
     <nav aria-label="Workspace">{tabs.map(t=><button key={t} data-tour={t} aria-current={tab===t?'page':undefined} onClick={()=>{setTab(t);setSelected(null);if(t==='Assistant'){setChatLoaded(true);setChatOpen(false);}}}><Icon name={t}/>{tabLabel[t]}</button>)}</nav>
     <div className="identity">
       <button className="identity-user" onClick={()=>setTab('Settings')} aria-label="Open your profile and settings"><Avatar profile={profile} name={name}/><span><strong>{name}</strong><small>{session.role==='owner'?'Owner':session.role==='approver'?'Approver':'Viewer'}</small></span></button>
@@ -165,7 +166,7 @@ function WorkspaceContent({token,session,logout,expired,changeSession,setCurrenc
         {audit?<><p className={audit.chain_verified?'success':'error'}>{audit.chain_verified?'✓ History verified: nothing has been changed or removed.':'History could not be verified. Contact support.'}</p>
           {!audit.events.length&&<p>No activity yet.</p>}
           <ol className="audit-list">{audit.events.slice().reverse().map(event=>{const p=(event.payload||{}) as Record<string,unknown>;const who=event.actor_id===session.user_id?'You':'A teammate';return <li key={event.event_id}><strong>{AUDIT_TEXT[event.kind]||event.kind.replaceAll('_',' ').toLowerCase()}</strong><small>{formatTime(event.created_at)} · {who}{typeof p.note==='string'&&p.note?` · ${p.note}`:''}{event.kind==='EXECUTED'&&typeof p.cash_delta_minor==='number'?` · ${nativeMoney(Math.abs(p.cash_delta_minor))}`:''}{event.kind==='DENIED'?' · blocked by a safety rule':''}</small></li>;})}</ol>
-          <details className="advanced"><summary>For auditors</summary><p className="muted small">Each entry is linked to the one before it and signed by the server, so any later change is detectable. This is not a claim of protection from the system administrator.</p><button className="secondary" onClick={()=>save(new Blob([JSON.stringify(audit,null,2)],{type:'application/json'}),'safeledger-activity-log.json')}>Download the full signed log</button></details></>:<p>Activity is unavailable. Refresh to try again.</p>}</Panel>}
+          <details className="advanced"><summary>For auditors</summary><p className="muted small">Each entry is linked to the one before it and signed by the server, so any later change is detectable. This is not a claim of protection from the system administrator.</p><button className="secondary" onClick={()=>save(new Blob([JSON.stringify(audit,null,2)],{type:'application/json'}),'capzoryx-activity-log.json')}>Download the full signed log</button></details></>:<p>Activity is unavailable. Refresh to try again.</p>}</Panel>}
       {tab==='Data'&&<>
         <QuickAdd request={request} revision={revision} profile={profile} cloudAvailable={cloudAvailable} onSaved={async()=>{await refresh();}}/>
         <DataEntry events={events} session={session} revision={revision} snapshot={snapshot} busy={busy} submit={async body=>{let saved=false;await run(async()=>{await request('/workspace/records',body);saved=true;await refresh();setMessage('Record saved. Your balance, forecast and activity are updated.');});if(!saved)throw new Error('The record was not saved. Check the message above and try again.');}}/>
@@ -173,7 +174,7 @@ function WorkspaceContent({token,session,logout,expired,changeSession,setCurrenc
       {tab==='Settings'&&<LazyBoundary><Suspense fallback={<section className="panel" role="status">Opening settings…</section>}><Settings session={session} profile={profile} request={request} reloadProfile={reloadProfile} changeSession={changeSession} lists={lists} reloadLists={reloadLists} onExportPdf={exportPdf} onExportJson={exportJson} exporting={exporting} cloudAvailable={cloudAvailable}/></Suspense></LazyBoundary>}
       {chatLoaded&&<div id="workspace-assistant" hidden={tab!=='Assistant'&&!chatOpen} className={tab==='Assistant'?'assistant-page':'chat-float'} onKeyDown={(e:KeyboardEvent)=>{if(e.key==='Escape'&&tab!=='Assistant')closeChat();}}><LazyBoundary><Suspense fallback={<section className="panel" role="status">Opening assistant…</section>}><Assistant visible={tab==='Assistant'||chatOpen} snapshot={snapshot} forecast={baselineMonth} week={week} events={events} invoices={invoices} session={session} profile={profile} cloudAvailable={cloudAvailable} revision={revision} request={request} onSaved={refresh} onNavigate={action=>{setTab(action);closeChat();}} onProposal={async()=>{await refresh();setTab('Approvals');closeChat();}} onClose={tab==='Assistant'?undefined:closeChat}/></Suspense></LazyBoundary></div>}
       {tab!=='Assistant'&&<button ref={chatButton} className="chat-launcher" aria-label={chatOpen?'Close assistant':'Open assistant'} aria-expanded={chatOpen} aria-controls="workspace-assistant" onClick={()=>{setChatLoaded(true);setChatOpen(!chatOpen);}}>✦ <span>{chatOpen?'Close':'Assistant'}</span></button>}
-      <footer>SafeLedger AI · Your records · A second person approves every payment · Nothing leaves your control</footer></main></div>;
+      <footer>Capzoryx Copilot · Your records · A second person approves every payment · Nothing leaves your control</footer></main></div>;
 }
 
 function ProposalDetails({proposal:p,number}:{proposal:Proposal;number:string}){

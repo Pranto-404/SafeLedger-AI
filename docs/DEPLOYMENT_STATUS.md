@@ -8,7 +8,7 @@ Public frontend and Render API are now connected. See DEPLOYMENT_REVIEW_20261018
 Owner explicitly requested Vercel deployment after completion and updates on future changes. Repository:Pranto-404/SafeLedger-AI. Intended new project:safeledger-ai,frontend root:web. Backend remains FastAPI/SQLite and requires a durable host; static React deployment alone is not the full application. Never put authoritative SQLite state on ephemeral serverless storage.
 
 ## Access inspected2026-10-17
-- Vercel authenticated account identity matches connected primary GitHub email/account context. list_projects returned existing trajectiq; no SafeLedger project confirmed. list_teams and get_git_deployment_context returned empty team lists.
+- Vercel authenticated account identity matches connected primary GitHub email/account context. list_projects returned existing trajectiq; no Capzoryx Copilot project confirmed. list_teams and get_git_deployment_context returned empty team lists.
 - Authenticated account's defaultTeamId and existing project's accountId both identify team_DBu9dfubsCdxVr9XuPxBFjWN.
 - Authorized operation attempted:create_git_project(repo=Pranto-404/SafeLedger-AI,projectName=safeledger-ai,rootDirectory=web,teamId=team_DBu9dfubsCdxVr9XuPxBFjWN). The tool defaults to a preview deployment; no production release was claimed.
 - Actual result:403 Forbidden during linked-project lookup. Error says resource scope challanger2 is not authorized. No project/deployment/Git-auto-update success or URL was returned. Error recovery says no automatic fix known; do not retry the unchanged request or assume re-authentication will fix it.

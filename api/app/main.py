@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
         accounts.archive_legacy_examples(db)
     yield
 
-app = FastAPI(title="SafeLedger AI", version="0.5.0", lifespan=lifespan)
+app = FastAPI(title="Capzoryx Copilot", version="0.5.1", lifespan=lifespan)
 app.add_middleware(BodyLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -98,7 +98,7 @@ async def headers(request, call_next):
 @app.get("/api/health")
 def health():
     configured=all(os.environ.get(key) for key in ("SAFELEDGER_LLM_BASE_URL","SAFELEDGER_LLM_MODEL","SAFELEDGER_LLM_API_KEY"))
-    return {"status": "ok", "version": "0.5.0", "build_commit": (os.environ.get("RENDER_GIT_COMMIT") or os.environ.get("VERCEL_GIT_COMMIT_SHA") or os.environ.get("SAFELEDGER_BUILD_COMMIT", "development")), "simulation_only": True, "release": "accounts-and-assistant", "ai_status": "configured_not_verified" if configured else "not_configured"}
+    return {"status": "ok", "version": "0.5.1", "build_commit": (os.environ.get("RENDER_GIT_COMMIT") or os.environ.get("VERCEL_GIT_COMMIT_SHA") or os.environ.get("SAFELEDGER_BUILD_COMMIT", "development")), "simulation_only": True, "release": "accounts-and-assistant", "ai_status": "configured_not_verified" if configured else "not_configured"}
 
 @app.get("/api/ready")
 def ready():
