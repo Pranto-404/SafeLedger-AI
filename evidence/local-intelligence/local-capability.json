@@ -1,0 +1,332 @@
+{
+  "supported_prompts": 36,
+  "correct": 36,
+  "abstained": 0,
+  "wrong": 0,
+  "out_of_domain_prompts": 6,
+  "out_of_domain_abstained": 6,
+  "security_prompts": 8,
+  "external_calls": 0,
+  "outcomes": [
+    {
+      "question": "Hi",
+      "expected": "greeting",
+      "actual": "greeting",
+      "handled": true,
+      "confidence": 1,
+      "correct": true
+    },
+    {
+      "question": "hello friend",
+      "expected": "greeting",
+      "actual": "greeting",
+      "handled": true,
+      "confidence": 1,
+      "correct": true
+    },
+    {
+      "question": "hey mate",
+      "expected": "greeting",
+      "actual": "greeting",
+      "handled": true,
+      "confidence": 1,
+      "correct": true
+    },
+    {
+      "question": "কেমন আছো",
+      "expected": "wellbeing",
+      "actual": "wellbeing",
+      "handled": true,
+      "confidence": 0.366,
+      "correct": true
+    },
+    {
+      "question": "kemon acho",
+      "expected": "wellbeing",
+      "actual": "wellbeing",
+      "handled": true,
+      "confidence": 1,
+      "correct": true
+    },
+    {
+      "question": "How are you today?",
+      "expected": "wellbeing",
+      "actual": "wellbeing",
+      "handled": true,
+      "confidence": 0.571,
+      "correct": true
+    },
+    {
+      "question": "ধন্যবাদ",
+      "expected": "gratitude",
+      "actual": "gratitude",
+      "handled": true,
+      "confidence": 0.395,
+      "correct": true
+    },
+    {
+      "question": "Thank you so much",
+      "expected": "gratitude",
+      "actual": "gratitude",
+      "handled": true,
+      "confidence": 0.559,
+      "correct": true
+    },
+    {
+      "question": "bye for now",
+      "expected": "goodbye",
+      "actual": "goodbye",
+      "handled": true,
+      "confidence": 0.353,
+      "correct": true
+    },
+    {
+      "question": "Who are you?",
+      "expected": "identity",
+      "actual": "identity",
+      "handled": true,
+      "confidence": 0.637,
+      "correct": true
+    },
+    {
+      "question": "How much have I spent?",
+      "expected": "expenses",
+      "actual": "expenses",
+      "handled": true,
+      "confidence": 0.575,
+      "correct": true
+    },
+    {
+      "question": "How much have I received?",
+      "expected": "income",
+      "actual": "income",
+      "handled": true,
+      "confidence": 0.75,
+      "correct": true
+    },
+    {
+      "question": "কত টাকা আছে আমার",
+      "expected": "balance",
+      "actual": "balance",
+      "handled": true,
+      "confidence": 0.8,
+      "correct": true
+    },
+    {
+      "question": "amar taka koto ase",
+      "expected": "balance",
+      "actual": "balance",
+      "handled": true,
+      "confidence": 0.8,
+      "correct": true
+    },
+    {
+      "question": "Tell me the available cash balance",
+      "expected": "balance",
+      "actual": "balance",
+      "handled": true,
+      "confidence": 0.491,
+      "correct": true
+    },
+    {
+      "question": "Explain my 30 day forecast",
+      "expected": "forecast",
+      "actual": "forecast",
+      "handled": true,
+      "confidence": 0.427,
+      "correct": true
+    },
+    {
+      "question": "How much cash in a week?",
+      "expected": "week",
+      "actual": "week",
+      "handled": true,
+      "confidence": 0.75,
+      "correct": true
+    },
+    {
+      "question": "Will cash fall below my reserve?",
+      "expected": "risk",
+      "actual": "risk",
+      "handled": true,
+      "confidence": 0.75,
+      "correct": true
+    },
+    {
+      "question": "Which bills are late?",
+      "expected": "overdue",
+      "actual": "overdue",
+      "handled": true,
+      "confidence": 0.404,
+      "correct": true
+    },
+    {
+      "question": "How many unpaid bills do I have?",
+      "expected": "invoices",
+      "actual": "invoices",
+      "handled": true,
+      "confidence": 0.75,
+      "correct": true
+    },
+    {
+      "question": "How do I enter an expense?",
+      "expected": "add_record",
+      "actual": "add_record",
+      "handled": true,
+      "confidence": 0.75,
+      "correct": true
+    },
+    {
+      "question": "Can I invite someone to review?",
+      "expected": "invite",
+      "actual": "invite",
+      "handled": true,
+      "confidence": 0.75,
+      "correct": true
+    },
+    {
+      "question": "Change BDT to dollars",
+      "expected": "currency",
+      "actual": "currency",
+      "handled": true,
+      "confidence": 0.252,
+      "correct": true
+    },
+    {
+      "question": "What is working capital?",
+      "expected": "working_capital",
+      "actual": "working_capital",
+      "handled": true,
+      "confidence": 0.794,
+      "correct": true
+    },
+    {
+      "question": "What does inflation mean?",
+      "expected": "inflation",
+      "actual": "inflation",
+      "handled": true,
+      "confidence": 0.565,
+      "correct": true
+    },
+    {
+      "question": "Explain diversification",
+      "expected": "diversification",
+      "actual": "diversification",
+      "handled": true,
+      "confidence": 0.66,
+      "correct": true
+    },
+    {
+      "question": "How is profit different from cash?",
+      "expected": "profit_definition",
+      "actual": "profit_definition",
+      "handled": true,
+      "confidence": 0.436,
+      "correct": true
+    },
+    {
+      "question": "What does a cash reserve do?",
+      "expected": "reserve_definition",
+      "actual": "reserve_definition",
+      "handled": true,
+      "confidence": 0.611,
+      "correct": true
+    },
+    {
+      "question": "Explain the signed audit trail",
+      "expected": "audit_definition",
+      "actual": "audit_definition",
+      "handled": true,
+      "confidence": 0.528,
+      "correct": true
+    },
+    {
+      "question": "Are my private questions sent outside?",
+      "expected": "privacy",
+      "actual": "privacy",
+      "handled": true,
+      "confidence": 0.75,
+      "correct": true
+    },
+    {
+      "question": "How can I download a backup?",
+      "expected": "export",
+      "actual": "export",
+      "handled": true,
+      "confidence": 0.456,
+      "correct": true
+    },
+    {
+      "question": "I forgot my password",
+      "expected": "recovery",
+      "actual": "recovery",
+      "handled": true,
+      "confidence": 0.52,
+      "correct": true
+    },
+    {
+      "question": "Cleared or scheduled, what is the difference?",
+      "expected": "cleared_definition",
+      "actual": "cleared_definition",
+      "handled": true,
+      "confidence": 0.497,
+      "correct": true
+    },
+    {
+      "question": "Why are duplicate bills risky?",
+      "expected": "duplicate_definition",
+      "actual": "duplicate_definition",
+      "handled": true,
+      "confidence": 0.461,
+      "correct": true
+    },
+    {
+      "question": "How do I prepare a cash budget?",
+      "expected": "budget_definition",
+      "actual": "budget_definition",
+      "handled": true,
+      "confidence": 0.493,
+      "correct": true
+    },
+    {
+      "question": "What are assets and liabilities?",
+      "expected": "accounting",
+      "actual": "accounting",
+      "handled": true,
+      "confidence": 0.555,
+      "correct": true
+    }
+  ],
+  "unknownOutcomes": [
+    {
+      "question": "What is the weather in Dhaka right now?",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "Who won the last World Cup?",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "Write a Python web scraper",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "Explain quantum entanglement",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "What is the latest NVIDIA share price?",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "What is the capital of Peru?",
+      "actual": "unknown",
+      "handled": false
+    }
+  ]
+}

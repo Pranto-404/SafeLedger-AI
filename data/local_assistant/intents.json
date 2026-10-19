@@ -1,0 +1,375 @@
+{
+  "greeting": [
+    "hi",
+    "hello",
+    "hey there",
+    "good morning",
+    "good evening",
+    "salam",
+    "assalamu alaikum",
+    "আসসালামু আলাইকুম",
+    "হ্যালো",
+    "কেমন আছো",
+    "kemon aso",
+    "kmn acho",
+    "hello assistant",
+    "হাই"
+  ],
+  "wellbeing": [
+    "how are you",
+    "how is it going",
+    "are you doing well",
+    "how are you today",
+    "তুমি কেমন আছ",
+    "কেমন আছো তুমি",
+    "tumi kemon acho",
+    "ki obostha",
+    "sob thik ache"
+  ],
+  "identity": [
+    "who are you",
+    "what can you do",
+    "tell me about yourself",
+    "are you chatgpt",
+    "are you human",
+    "তুমি কে",
+    "তুমি কি করতে পারো",
+    "tumi ke",
+    "ki ki paro",
+    "what are your capabilities"
+  ],
+  "gratitude": [
+    "thanks",
+    "thank you",
+    "thank you very much",
+    "appreciate it",
+    "ধন্যবাদ",
+    "অনেক ধন্যবাদ",
+    "dhonnobad",
+    "onek thanks",
+    "thank u"
+  ],
+  "goodbye": [
+    "bye",
+    "goodbye",
+    "see you later",
+    "good night",
+    "বিদায়",
+    "আবার কথা হবে",
+    "আল্লাহ হাফেজ",
+    "allah hafez",
+    "pore kotha hobe"
+  ],
+  "balance": [
+    "what is my balance",
+    "how much money do I have",
+    "show available cash",
+    "current account balance",
+    "what cash is available",
+    "আমার ব্যালেন্স কত",
+    "আমার কাছে কত টাকা আছে",
+    "বর্তমান টাকা কত",
+    "amar balance koto",
+    "koto taka ase",
+    "amar account e koto ache",
+    "available balance dekhao"
+  ],
+  "income": [
+    "how much income is cleared",
+    "show my income",
+    "money received so far",
+    "total recorded inflows",
+    "আমার আয় কত",
+    "মোট কত টাকা এসেছে",
+    "amar ay koto",
+    "koto taka ashche",
+    "income dekhao",
+    "how much did I receive"
+  ],
+  "expenses": [
+    "what are my expenses",
+    "show money spent",
+    "total cleared outflows",
+    "how much did I spend",
+    "আমার খরচ কত",
+    "মোট ব্যয় কত",
+    "koto khoroch hoise",
+    "amar expense dekhao",
+    "how much money went out",
+    "what have I spent"
+  ],
+  "forecast": [
+    "explain my cash outlook",
+    "what is my cash flow forecast",
+    "next thirty days",
+    "projected balance after 30 days",
+    "আগামী মাসে কত টাকা থাকবে",
+    "ক্যাশ ফ্লো কেমন হবে",
+    "samner mashe koto thakbe",
+    "cash flow bujhao",
+    "30 diner forecast",
+    "how much cash in one month"
+  ],
+  "week": [
+    "next seven days cash",
+    "what about one week",
+    "7 day closing balance",
+    "weekly cash outlook",
+    "আগামী সাত দিনে কত টাকা থাকবে",
+    "এক সপ্তাহের হিসাব",
+    "7 din pore koto",
+    "ek soptaho pore",
+    "show the next week forecast"
+  ],
+  "risk": [
+    "what risks should I review",
+    "is there a reserve shortfall",
+    "will I run out of cash",
+    "is my cash flow risky",
+    "check liquidity risk",
+    "ঝুঁকি কোথায়",
+    "টাকা কম পড়বে কি",
+    "kono risk ache",
+    "taka kom porbe naki",
+    "reserve breach kobe"
+  ],
+  "invoices": [
+    "show my invoices",
+    "how many open invoices",
+    "what bills are unpaid",
+    "list pending supplier bills",
+    "আমার ইনভয়েস দেখাও",
+    "কতগুলো বিল বাকি",
+    "koyta invoice ache",
+    "invoice gula dekhao",
+    "baki bill koto",
+    "show outstanding invoice amount"
+  ],
+  "overdue": [
+    "which invoices are overdue",
+    "show past due bills",
+    "unpaid bills already due",
+    "বকেয়া বিল কোনগুলো",
+    "কোন বিলের তারিখ পার হয়েছে",
+    "overdue invoice dekhao",
+    "meyad par hoyeche kon bill",
+    "what payments are late"
+  ],
+  "vendor": [
+    "which supplier do I owe",
+    "show invoices for vendor",
+    "vendor totals",
+    "supplier payable balance",
+    "কোন সরবরাহকারীকে কত দিতে হবে",
+    "vendor er bill koto",
+    "supplier er paona dekhao",
+    "how much do I owe this vendor"
+  ],
+  "activity": [
+    "show recent activity",
+    "latest cash transactions",
+    "recent money movements",
+    "cash history",
+    "সাম্প্রতিক লেনদেন দেখাও",
+    "শেষ লেনদেনগুলো",
+    "last transaction dekhao",
+    "notun record gula",
+    "what was recorded recently"
+  ],
+  "add_record": [
+    "how do I add a record",
+    "enter my income",
+    "where can I add cash",
+    "how to record an expense",
+    "add a supplier invoice",
+    "ডাটা কিভাবে যোগ করব",
+    "আয় যোগ করতে চাই",
+    "খরচ লিখব কীভাবে",
+    "record add korbo kivabe",
+    "taka add korte chai",
+    "invoice input dibo",
+    "how to start adding records"
+  ],
+  "approval": [
+    "how do approvals work",
+    "how to pay an invoice",
+    "review a payment proposal",
+    "can the owner approve own payment",
+    "how to settle an invoice",
+    "বিল পরিশোধ রেকর্ড করব",
+    "অনুমোদন কিভাবে হবে",
+    "payment approve korbo kivabe",
+    "nijer payment approve kora jay",
+    "invoice settle korbo kivabe"
+  ],
+  "invite": [
+    "invite an approver",
+    "how to add a teammate",
+    "join a shared workspace",
+    "create invitation code",
+    "সহকর্মী যোগ করব",
+    "একজন অনুমোদনকারী চাই",
+    "teammate add korbo",
+    "approver invite korbo kivabe",
+    "join team workspace"
+  ],
+  "currency": [
+    "how to change currency",
+    "choose USD or EUR",
+    "switch from BDT",
+    "which currencies are supported",
+    "ডলার কিভাবে সিলেক্ট করব",
+    "মুদ্রা বদলাতে চাই",
+    "currency change korbo kivabe",
+    "bdt theke usd korbo",
+    "jpy decimal places",
+    "how many currencies are available"
+  ],
+  "export": [
+    "download my records",
+    "export workspace backup",
+    "how to save my data",
+    "get a JSON backup",
+    "ডাটা ডাউনলোড করব",
+    "ব্যাকআপ নিব কীভাবে",
+    "backup nibo kivabe",
+    "record export korte chai"
+  ],
+  "recovery": [
+    "forgot my password",
+    "how do I recover my account",
+    "lost recovery code",
+    "reset password",
+    "পাসওয়ার্ড ভুলে গেছি",
+    "অ্যাকাউন্ট ফিরে পাব কীভাবে",
+    "password bhule gesi",
+    "account recover korbo"
+  ],
+  "privacy": [
+    "is my data private",
+    "do you send data to AI",
+    "where does my conversation go",
+    "does local chat call an API",
+    "আমার তথ্য নিরাপদ কি",
+    "তুমি কি তথ্য বাইরে পাঠাও",
+    "amar data ki safe",
+    "api call hoy naki",
+    "is my chat stored"
+  ],
+  "help": [
+    "help me use the website",
+    "where should I start",
+    "give me a quick tour",
+    "how does this app work",
+    "শুরু করব কোথা থেকে",
+    "ব্যবহার বুঝিয়ে দাও",
+    "kivabe use korbo",
+    "help koro",
+    "guide me"
+  ],
+  "cashflow_definition": [
+    "what is cash flow",
+    "explain cash inflows and outflows",
+    "cash flow meaning",
+    "ক্যাশ ফ্লো মানে কি",
+    "cash flow ki",
+    "cashflow বলতে কী বোঝায়"
+  ],
+  "profit_definition": [
+    "is cash balance the same as profit",
+    "what is profit",
+    "profit versus cash",
+    "can you show my profit",
+    "লাভ কত",
+    "লাভ আর টাকা কি এক",
+    "amar profit koto",
+    "profit ar cash er parthokko"
+  ],
+  "reserve_definition": [
+    "what does reserve mean",
+    "explain the cash reserve",
+    "why keep a reserve",
+    "রিজার্ভ মানে কি",
+    "reserve bolte ki",
+    "what is minimum cash buffer"
+  ],
+  "duplicate_definition": [
+    "how are duplicate invoices detected",
+    "explain duplicate invoice risk",
+    "what is a duplicate bill",
+    "ডুপ্লিকেট ইনভয়েস কি",
+    "duplicate invoice keno block hoy",
+    "same bill twice"
+  ],
+  "cleared_definition": [
+    "what does cleared mean",
+    "cleared versus scheduled",
+    "why scheduled money is not in my balance",
+    "ক্লিয়ারড আর শিডিউলড পার্থক্য",
+    "scheduled taka balance e nai keno",
+    "already received vs expected"
+  ],
+  "audit_definition": [
+    "what is an audit trail",
+    "how do I check integrity",
+    "explain signed evidence",
+    "অডিট ট্রেইল কি",
+    "audit chain ki",
+    "how can I verify recorded payments"
+  ],
+  "budget_definition": [
+    "how do I make a budget",
+    "explain a cash budget",
+    "budget planning basics",
+    "বাজেট কিভাবে করব",
+    "budget banabo kivabe",
+    "help plan my spending"
+  ],
+  "interest_definition": [
+    "how is simple interest calculated",
+    "explain compound interest",
+    "interest versus fees",
+    "সুদ কিভাবে হিসাব হয়",
+    "simple interest ki",
+    "compound interest mane ki"
+  ],
+  "working_capital": [
+    "what is working capital",
+    "working capital versus cash",
+    "explain current assets and liabilities",
+    "কার্যকরী মূলধন কি",
+    "working capital ki"
+  ],
+  "inflation": [
+    "what is inflation",
+    "why do prices rise",
+    "inflation meaning",
+    "মুদ্রাস্ফীতি কি",
+    "inflation ki",
+    "price increase meaning"
+  ],
+  "diversification": [
+    "what is diversification",
+    "why spread investment risk",
+    "diversification meaning",
+    "বিনিয়োগের ঝুঁকি ভাগ করা",
+    "diversification ki"
+  ],
+  "accounting": [
+    "what is a balance sheet",
+    "what is a liability",
+    "assets and liabilities explained",
+    "accounting equation",
+    "সম্পদ ও দায় কি",
+    "asset liability ki"
+  ],
+  "limitations": [
+    "can you answer everything",
+    "why do you need external AI",
+    "what are your limits",
+    "do you know live exchange rates",
+    "সব প্রশ্নের উত্তর দিতে পারো",
+    "tomar limit ki",
+    "live rate jano"
+  ]
+}

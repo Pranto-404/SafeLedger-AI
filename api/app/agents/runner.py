@@ -47,13 +47,16 @@ def reserve_run(db,actor,request,provider):
         sec.verified_audit(db,current.business_id)
         mode='mock_test_only' if provider.is_mock else 'configured_live_provider'
         db.execute('INSERT INTO agent_runs VALUES (?,?,?,?,?,?,?,NULL)',(run_id,current.business_id,current.user_id,sec.now(),'STARTED',hashlib.sha256(request.task.encode()).hexdigest(),mode))
-        sec.audit(db,current,run_id,'AGENT_STARTED',{'provider_mode':mode,'task_sha256':hashlib.sha256(request.task.encode()).hexdigest()})
+        sec.audit(db,current,run_id,'AGENT_STARTED',{'provider_mode':mode,'task_sha256':hashlib.sha256(request.task.encode()).hexdigest(),'external_ai_consent':request.external_ai_consent,'fallback_ai_consent':request.fallback_ai_consent})
     return run_id
 
 
 def run_task(db,actor,request,provider=None):
     if request.allow_proposal and actor.role not in {'owner','approver','agent'}:sec.fail(403,'AI_PROPOSAL_NOT_AUTHORIZED')
     provider=provider or get_provider()  # Missing provider is an explicit503, never a fake fallback.
+    if request.fallback_ai_consent:
+        from api.app.agents.fallback import with_authorized_fallback
+        provider=with_authorized_fallback(provider)
     run_id=reserve_run(db,actor,request,provider)
     try:
         ds=sec.runtime_dataset(db,actor.business_id)
@@ -105,10 +108,10 @@ def run_task(db,actor,request,provider=None):
         if not set(rationale.fact_ids)==set(facts) or set(rationale.reason_codes)!=reasons:raise ProviderError('AI_UNGROUNDED_RATIONALE')
         expected='PROPOSE_FOR_APPROVAL' if candidate else ('REVIEW_REQUIRED' if risks else 'READ_ONLY')
         if rationale.disposition!=expected:raise ProviderError('AI_UNSAFE_DISPOSITION')
-        result={'run_id':run_id,'simulation_only':True,'ai_mode':'mock_test_only' if provider.is_mock else 'configured_live_provider','disposition':expected,'explanation':[TEXTS[code] for code in rationale.reason_codes],'facts':[facts[x] for x in rationale.fact_ids],'risk_flags':risks,'tools':tool_results,'proposal':None,'limitations':['User-entered records; no bank transfer or independent verification','Rationale is constrained and rendered from verified facts; no unverified model prose']}
+        result={'run_id':run_id,'simulation_only':True,'ai_mode':'mock_test_only' if provider.is_mock else 'configured_live_provider','disposition':expected,'explanation':[TEXTS[code] for code in rationale.reason_codes],'facts':[facts[x] for x in rationale.fact_ids],'risk_flags':risks,'tools':tool_results,'proposal':None,'fallback_used':getattr(provider,'used_fallback',False),'provider_name':'OpenAI' if getattr(provider,'used_fallback',False) else ('Google Gemini' if getattr(provider,'profile',None)=='gemini_free' else 'Configured provider'),'limitations':['User-entered records; no bank transfer or independent verification','Rationale is constrained and rendered from verified facts; no unverified model prose']}
         def complete(proposal=None):
             result['proposal']=proposal
-            sec.audit(db,actor,run_id,'AGENT_RECOMMENDED',{'disposition':expected,'fact_ids':rationale.fact_ids,'runtime_sha256':runtime_sha,'proposal_id':proposal['proposal_id'] if proposal else None})
+            sec.audit(db,actor,run_id,'AGENT_RECOMMENDED',{'disposition':expected,'fact_ids':rationale.fact_ids,'runtime_sha256':runtime_sha,'proposal_id':proposal['proposal_id'] if proposal else None,'fallback_used':getattr(provider,'used_fallback',False)})
             db.execute("UPDATE agent_runs SET status='COMPLETED',result=? WHERE run_id=?",(json.dumps(result),run_id))
         if candidate:
             sec.propose(db,actor,candidate,expected_runtime_sha=runtime_sha,on_result=complete)

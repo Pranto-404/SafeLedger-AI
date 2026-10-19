@@ -7,6 +7,7 @@ class TaskRequest(Contract):
     invoice_id: RecordId | None = None
     allow_proposal: StrictBool = False
     external_ai_consent: StrictBool = False
+    fallback_ai_consent: StrictBool = False
 
     @model_validator(mode='after')
     def explicit_target(self):

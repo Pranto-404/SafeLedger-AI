@@ -53,7 +53,7 @@ app.include_router(inputs.router)
 
 @app.exception_handler(ProviderError)
 async def ai_error(request,exc):
-    return JSONResponse(status_code=503,content={"error":{"code":exc.code},"ai_status":"unavailable","deterministic_finance_available":True})
+    return JSONResponse(status_code=503,content={"error":{"code":exc.code},"ai_status":"unavailable","deterministic_finance_available":True,**({"provider_http_status":exc.http_status} if isinstance(exc.http_status,int) and 400<=exc.http_status<=599 else {})})
 
 @app.exception_handler(security.PolicyError)
 async def policy_error(request,exc):
@@ -72,7 +72,16 @@ async def database_error(request,exc):
 
 @app.middleware("http")
 async def headers(request, call_next):
-    response = await call_next(request)
+    if (os.environ.get('RENDER') or os.environ.get('VERCEL')) and request.url.path in {'/docs','/redoc','/openapi.json','/docs/oauth2-redirect'}:
+        response=JSONResponse(status_code=404,content={'error':{'code':'NOT_FOUND'}})
+    else:
+        response = await call_next(request)
+    response.headers['X-Frame-Options']='DENY'
+    response.headers['Permissions-Policy']='camera=(), microphone=(), geolocation=(), payment=()'
+    if request.url.path.startswith('/api/'):
+        response.headers['Content-Security-Policy']="default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+    if request.url.scheme=='https' or os.environ.get('RENDER') or os.environ.get('VERCEL'):
+        response.headers['Strict-Transport-Security']='max-age=31536000; includeSubDomains'
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Cache-Control"] = "no-store"
     response.headers["Referrer-Policy"] = "no-referrer"

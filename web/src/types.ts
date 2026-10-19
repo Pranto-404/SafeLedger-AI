@@ -7,6 +7,6 @@ export type Offer = { offer_id: string; label: string; net_proceeds_minor: numbe
 export type Financing = { offers: Offer[]; repayment_capacity_minor: number; assumptions: string[] };
 export type Proposal = { proposal_id: string; state: string; action_hash: string; details: { invoice_id: string; vendor_id: string; amount_minor: number; proposer_id: string; source_id: string; dataset_sha256: string; expires_at: number }; preview?: { available_minor: number; after_payment_minor: number; reserve_minor: number; payment_limit_minor: number } };
 export type Audit = { chain_verified: boolean; tenant_chain_head: string; events: { event_id: string; trace_id: string; kind: string; actor_id: string; created_at: number; event_hash: string; payload: unknown }[] };
-export type AgentResult = { run_id: string; ai_mode: string; disposition: string; explanation: string[]; facts: { fact_id: string; value_minor: number; source_ids: string[] }[]; limitations: string[]; proposal: Proposal | null };
+export type AgentResult = { run_id: string; ai_mode: string; provider_name?:string; fallback_used?:boolean; disposition: string; explanation: string[]; facts: { fact_id: string; value_minor: number; source_ids: string[] }[]; limitations: string[]; proposal: Proposal | null };
 
 export type CashEvent={event_id:string;source_record_id:string;direction:'inflow'|'outflow';status:'cleared'|'scheduled';effective_on:string;amount_minor:number;invoice_id?:string|null;note?:string};

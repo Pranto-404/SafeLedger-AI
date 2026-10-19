@@ -23,17 +23,17 @@ def strict_json(text):
 
 class ChatProvider:
     is_mock=False
-    def __init__(self,transport=None):
-        self.profile=os.environ.get('SAFELEDGER_LLM_PROFILE','gemini_free')
+    def __init__(self,transport=None,*,profile=None,base=None,model=None,key=None,allowed_hosts=None):
+        self.profile=profile if profile is not None else os.environ.get('SAFELEDGER_LLM_PROFILE','gemini_free')
         if self.profile not in {'gemini_free','compatible'}:raise ProviderError('AI_CONFIGURATION_INVALID')
         free=self.profile=='gemini_free'
-        self.base=os.environ.get('SAFELEDGER_LLM_BASE_URL','https://generativelanguage.googleapis.com/v1beta/openai' if free else '').rstrip('/')
-        self.model=os.environ.get('SAFELEDGER_LLM_MODEL','gemini-3.8-flash' if free else '')
-        self.key=os.environ.get('SAFELEDGER_LLM_API_KEY','')
+        self.base=(base if base is not None else os.environ.get('SAFELEDGER_LLM_BASE_URL','https://generativelanguage.googleapis.com/v1beta/openai' if free else '')).rstrip('/')
+        self.model=model if model is not None else os.environ.get('SAFELEDGER_LLM_MODEL','gemini-3.8-flash' if free else '')
+        self.key=key if key is not None else os.environ.get('SAFELEDGER_LLM_API_KEY','')
         if not all([self.base,self.model,self.key]):raise ProviderError('AI_NOT_CONFIGURED')
         try:
             parts=urlsplit(self.base)
-            allowed={x.strip().lower() for x in os.environ.get('SAFELEDGER_LLM_ALLOWED_HOSTS','generativelanguage.googleapis.com' if free else 'api.openai.com,ai-gateway.vercel.sh').split(',') if x.strip()}
+            allowed=allowed_hosts if allowed_hosts is not None else {x.strip().lower() for x in os.environ.get('SAFELEDGER_LLM_ALLOWED_HOSTS','generativelanguage.googleapis.com' if free else 'api.openai.com,ai-gateway.vercel.sh').split(',') if x.strip()}
             expected_path='/v1beta/openai' if free else '/v1'
             invalid=parts.scheme!='https' or not parts.hostname or parts.hostname not in allowed or parts.username or parts.password or parts.query or parts.fragment or parts.port not in (None,443) or parts.path!=expected_path
             if free:invalid=invalid or parts.hostname!='generativelanguage.googleapis.com' or self.model not in {'gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite', 'gemini-3.5-flash-lite'}
@@ -69,7 +69,7 @@ class ChatProvider:
             with httpx.Client(transport=self.transport,trust_env=False,follow_redirects=False,timeout=min(30,remaining)) as client:
                 with client.stream('POST',self.base+'/chat/completions',headers={'Authorization':'Bearer '+self.key},json=payload) as response:
                     if response.status_code==429:raise ProviderError('AI_QUOTA_EXHAUSTED')
-                    if response.status_code!=200:raise ProviderError('AI_PROVIDER_REJECTED')
+                    if response.status_code!=200:raise ProviderError('AI_PROVIDER_REJECTED',http_status=response.status_code)
                     chunks=[];size=0
                     for chunk in response.iter_bytes():
                         size+=len(chunk)

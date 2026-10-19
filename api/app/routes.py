@@ -181,7 +181,26 @@ def export_workspace(actor=Depends(principal),db=Depends(db_connection)):
 @router.get('/agent/status')
 def agent_status(actor=Depends(principal)):
     import os
+    from api.app.agents.provider import ChatProvider,ProviderError
+    from api.app.agents.fallback import configured_secondary
     profile=os.environ.get('SAFELEDGER_LLM_PROFILE','gemini_free')
-    configured=bool(os.environ.get('SAFELEDGER_LLM_API_KEY'))
-    if profile=='gemini_free':configured=configured and os.environ.get('SAFELEDGER_LLM_FREE_TIER_CONFIRMED')=='1'
-    return dict(provider_name='Google Gemini' if profile=='gemini_free' else 'Configured external provider',configured=configured,availability_checked=False,simulation_only=True)
+    reason=None
+    try:ChatProvider();configured=True
+    except ProviderError as exc:configured=False;reason=exc.code
+    return dict(provider_name='Google Gemini' if profile=='gemini_free' else 'Configured external provider',configured=configured,configuration_error=reason,availability_checked=False,fallback_provider='OpenAI',fallback_configured=configured_secondary(),free_only=os.environ.get('SAFELEDGER_ALLOW_PAID_AI')!='1',simulation_only=True)
+
+
+from pydantic import StrictBool
+
+class SyntheticDiagnostic(Contract):
+    confirm_synthetic_test: StrictBool = False
+
+@router.post('/agent/diagnostic')
+def agent_diagnostic(body:SyntheticDiagnostic,actor=Depends(principal),db=Depends(db_connection)):
+    if actor.role!='owner':sec.fail(403,'OWNER_REQUIRED')
+    if not body.confirm_synthetic_test:sec.fail(403,'SYNTHETIC_TEST_CONFIRMATION_REQUIRED')
+    sec.budget(db,'provider-diagnostic:'+actor.business_id,2)
+    sec.budget(db,'public-ai-global',8)
+    from api.app.agents.diagnostic import synthetic_check
+    # This function has no dataset access. No account identifiers or records are sent.
+    return synthetic_check()

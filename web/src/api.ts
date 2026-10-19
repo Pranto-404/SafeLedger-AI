@@ -15,7 +15,7 @@ const messages:Record<string,string> = {
   HUMAN_APPROVER_REQUIRED:'A separate approver account must review this proposal.',
 };
 export class ApiError extends Error {
-  constructor(public code: string, public status: number, message = messages[code] || code.replaceAll('_', ' ')) { super(message); }
+  constructor(public code: string, public status: number, message = messages[code] || code.replaceAll('_', ' '), public providerStatus?:number) { super(message); }
 }
 export function client(token: string, signal: AbortSignal, onUnauthorized: () => void) {
   return async function request<T>(path: string, body?: unknown): Promise<T> {
@@ -32,7 +32,7 @@ export function client(token: string, signal: AbortSignal, onUnauthorized: () =>
     if (!response.ok) {
       if (response.status === 401) onUnauthorized();
       const fields = data?.error?.fields as {field: string; message: string}[] | undefined;
-      throw new ApiError(data?.error?.code || 'SERVER_ERROR', response.status, fields ? fields.map(x => `${x.field}: ${x.message}`).join('; ') : undefined);
+      throw new ApiError(data?.error?.code || 'SERVER_ERROR', response.status, fields ? fields.map(x => `${x.field}: ${x.message}`).join('; ') : undefined,typeof data?.provider_http_status==='number'?data.provider_http_status:undefined);
     }
     if (!data || data.simulation_only !== true) throw new ApiError('INVALID_SERVER_RESPONSE', 502);
     return data as T;
