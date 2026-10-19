@@ -3,8 +3,8 @@
   "correct": 36,
   "abstained": 0,
   "wrong": 0,
-  "out_of_domain_prompts": 6,
-  "out_of_domain_abstained": 6,
+  "out_of_domain_prompts": 22,
+  "out_of_domain_abstained": 22,
   "security_prompts": 8,
   "external_calls": 0,
   "outcomes": [
@@ -325,6 +325,86 @@
     },
     {
       "question": "What is the capital of Peru?",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "Who is the prime minister of Bangladesh?",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "What is a compound fracture?",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "How do I cure a headache?",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "Write an essay about oceans",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "What is the price of Bitcoin?",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "Recommend a laptop for gaming",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "Tell me a funny joke",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "Can you predict tomorrow's lottery?",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "What is the distance to Mars?",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "Who is Mahin?",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "What does photosynthesis mean?",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "Translate this to French",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "Help me cheat in an exam",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "Book a hotel room",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "What is the capital of France?",
+      "actual": "unknown",
+      "handled": false
+    },
+    {
+      "question": "What does a neural network do?",
       "actual": "unknown",
       "handled": false
     }

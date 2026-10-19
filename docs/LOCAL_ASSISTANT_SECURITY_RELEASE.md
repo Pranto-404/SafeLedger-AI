@@ -43,7 +43,7 @@ When authorized, failover only follows primary quota/timeout/network failure, ta
 - New fallback tests: 12 passed.
 - New adversarial tests: 13 passed; audit tampering was rejected by a database trigger, and tampering after test-only trigger removal returned `AUDIT_INTEGRITY_FAILURE`.
 - New synthetic diagnostic tests: 4 passed.
-- Local acceptance prompts: 36 supported prompts correctly routed/rendered, 6 out-of-domain prompts declined, 8 secret/injection attempts refused; zero external calls. These are development acceptance checks, not a population-level model accuracy claim or independent research benchmark.
+- Local acceptance prompts: 36 supported prompts correctly routed/rendered, 22 out-of-domain prompts declined, 8 secret/injection attempts refused; zero external calls. These are development acceptance checks, not a population-level model accuracy claim or independent research benchmark.
 - Currency regression checks and production TypeScript/Vite build pass. Assistant chunk is about 35 kB gzip and is deferred.
 - Final complete suite: 364 passed. Existing browser acceptance script updated for the new controls; it was not run through a separate browser because the user requested their local Edge session.
 - Live local Edge checks passed: light dashboard, dark toggle, greeting, Banglish balance with the actual workspace currency, gratitude in online mode without sharing consent, prompt-injection refusal, Escape close and history retained in the Assistant section.
@@ -51,6 +51,7 @@ When authorized, failover only follows primary quota/timeout/network failure, ta
 - Vercel production: 7AWWedXqK17UXMCra7x2ESQA1R5v, Ready, application fb8c3d7ecd8dde64a865c54f58fa89fe97648a03. Render dep-dbart3m1egvs73e0mj6g live; public health and readiness both 200.
 - Follow-up UI safeguard: do not show provisional zero balances/invoice figures before the verified snapshot arrives. Theme and local model remain deferred/independent of financial writes.
 - CPU-only local-engine sample (not end-to-end latency): median 0.169 ms, p95 0.406 ms over 300 alternating synthetic greeting/concept prompts; zero requests.
+- Expanded out-of-domain testing exposed unrelated-topic matches from generic words. A domain gate now requires an actual finance/workspace topic before accepting a learned financial intent; follow-up context and conversational intents remain separate. All 22 expanded out-of-domain prompts decline safely.
 - No mobile-browser acceptance claim is made from these desktop checks. No paid service, provider key, signing identity or production access permission was changed.
 
 ## Remaining hosting gate
