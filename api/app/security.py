@@ -170,21 +170,22 @@ def _address(value):
 
 
 def client_keys(request):
-    """Return (claimed, edge) hashed client identifiers for rate limits.
+    """Return (claimed, edge) hashed client identifiers for per-address fairness limits.
 
-    The API sits behind Vercel and Render's Cloudflare edge. uvicorn trusts X-Forwarded-For and reports its
-    LEFT-most entry, which a direct caller can set to anything. So:
-      edge    = the connection address added by infrastructure (cf-connecting-ip, else the right-most
-                X-Forwarded-For entry, else the socket peer). A caller cannot choose it; users behind Vercel
-                share it, so its limits are generous and mainly stop single-origin floods.
-      claimed = the best-effort end-user address (left-most entry) for fairness between normal users.
-                It is spoofable, so no security decision depends on it alone.
+    claimed: the left-most X-Forwarded-For entry. Behind Vercel this is the real end user (Vercel sets it).
+             A caller who reaches the Render origin directly can forge it, and Render does not expose any other
+             trustworthy address (verified 20 Oct 2026: neither cf-connecting-ip nor an infrastructure-appended
+             entry is present). Per-address limits are therefore a fairness tool, not a security boundary.
+    edge:    an infrastructure header (cf-connecting-ip / true-client-ip) when the platform supplies one;
+             otherwise the same as claimed.
+    Abuse resistance rests on limits that do not depend on the address: per-account failed-attempt lockouts,
+    global ceilings, hourly signup caps, bounded hashing concurrency and memory-only counters.
     """
     headers = request.headers
     chain = [x for x in (_address(v) for v in headers.get('x-forwarded-for','').split(',')[:20]) if x]
     peer = _address(request.client.host if request.client else None)
-    edge = _address(headers.get('cf-connecting-ip')) or _address(headers.get('true-client-ip')) or (chain[-1] if chain else None) or peer or 'unknown'
-    claimed = (chain[0] if chain else None) or peer or edge
+    claimed = (chain[0] if chain else None) or peer or 'unknown'
+    edge = _address(headers.get('cf-connecting-ip')) or _address(headers.get('true-client-ip')) or claimed
     digest = lambda value: hashlib.sha256(value.encode()).hexdigest()[:32]
     return digest(claimed), digest(edge)
 

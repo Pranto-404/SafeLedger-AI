@@ -12,6 +12,7 @@ import threading
 import time
 
 FAILURE_WINDOW_MINUTES = 15
+RETENTION_MINUTES = 60
 MAX_KEYS = 200_000
 
 
@@ -35,7 +36,7 @@ class RateLimiter:
     def _prune(self, minute):
         if minute != self._pruned_at or len(self._counts) > MAX_KEYS:
             self._counts = {key: value for key, value in self._counts.items() if key[1] >= minute}
-            cutoff = minute - FAILURE_WINDOW_MINUTES
+            cutoff = minute - RETENTION_MINUTES
             for scope in list(self._failures):
                 kept = {m: c for m, c in self._failures[scope].items() if m > cutoff}
                 if kept:self._failures[scope] = kept

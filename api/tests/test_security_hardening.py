@@ -34,8 +34,9 @@ def test_client_keys_ignore_forged_left_side_of_forwarded_chain():
     a_claimed, a_edge = sec.client_keys(request(cf_connecting_ip='198.51.100.7', x_forwarded_for='1.1.1.1, 2.2.2.2'))
     b_claimed, b_edge = sec.client_keys(request(cf_connecting_ip='198.51.100.7', x_forwarded_for='9.9.9.9'))
     assert a_edge == b_edge and a_claimed != b_claimed
-    _, only_chain_edge = sec.client_keys(request(x_forwarded_for='6.6.6.6, 198.51.100.8'))
-    assert only_chain_edge == sec.client_keys(request(x_forwarded_for='7.7.7.7, 198.51.100.8'))[1]
+    # No infrastructure header (the production reality on Render): the best available address is the claimed one.
+    c1, e1 = sec.client_keys(request(x_forwarded_for='6.6.6.6, 198.51.100.8'))
+    assert c1 == e1 and c1 != sec.client_keys(request(x_forwarded_for='7.7.7.7, 198.51.100.8'))[0]
     assert sec.client_keys(request())[0] == sec.client_keys(request())[1]  # no headers: socket peer for both
     long_garbage = ','.join(['x' * 500] * 50)
     assert all(len(v) == 32 for v in sec.client_keys(request(x_forwarded_for=long_garbage)))
@@ -147,7 +148,9 @@ def test_rate_limiter_windows_expire_and_memory_is_bounded():
     assert limiter.failure_total('f') == 2  # still inside the rolling window
     now[0] += 120
     assert limiter.failure_total('f') == 0 and limiter.failure_total('g') == 0
-    limiter.hit([('z', 1)])  # triggers pruning of expired failure buckets
+    assert limiter.failure_total('f', 60) == 2  # hourly counters still see it
+    now[0] += 3600
+    limiter.hit([('z', 1)])  # triggers pruning of buckets older than the retention window
     assert not limiter._failures
     for i in range(500):
         limiter.hit([('burst:%d' % i, 1)])
@@ -193,3 +196,14 @@ def test_hosted_start_fails_closed_without_persistent_database(monkeypatch, tmp_
         connect()
     monkeypatch.setenv('SAFELEDGER_ALLOW_EPHEMERAL_DB', '1')
     connect().close()  # explicit, deliberate override for disposable environments only
+
+
+def test_forged_addresses_without_infrastructure_header_still_hit_account_and_signup_ceilings(world, fast, monkeypatch):
+    """Render supplies no trustworthy address, so address-independent limits must carry the load."""
+    c, _ = world
+    signup(c, 'forged_target'); c.post('/api/auth/logout', json={})
+    codes = [c.post('/api/auth/login', json={'username': 'forged_target', 'password': 'wrong-guess-%d' % i}, headers={'x-forwarded-for': '10.1.%d.%d' % (i // 250, i % 250)}).status_code for i in range(45)]
+    assert codes[:40] == [401] * 40 and set(codes[40:]) == {429}, codes
+    monkeypatch.setattr(accounts, 'SIGNUP_HOURLY_CAP', 3)
+    made = [c.post('/api/auth/signup', json={'username': 'hourly_%d' % i, 'password': PASSWORD}, headers={'x-forwarded-for': '172.16.%d.1' % i}).status_code for i in range(5)]
+    assert made == [201, 201, 429, 429, 429], made  # one account was already created above

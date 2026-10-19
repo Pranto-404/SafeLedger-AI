@@ -30,6 +30,8 @@ TEMPLATE = 'public-demo-v3'
 PUBLIC_TEMPLATES = {'public-demo-v2', TEMPLATE}
 HASH_LOCK = threading.BoundedSemaphore(1)
 ACCOUNT_CAP = 5000
+SIGNUP_HOURLY_CAP = 200
+SIGNUP_HOURLY_CAP_WINDOW = 60
 DUMMY_SALT = '0'*32
 
 
@@ -155,7 +157,9 @@ class SignupCredentials(Credentials):
 
 @router.post('/auth/signup',status_code=201)
 def signup(body:SignupCredentials, request:Request, response:Response, db=Depends(db_connection)):
-    browser_origin(request);rate(request,db,'signup',4,20,60)
+    browser_origin(request);rate(request,db,'signup',4,20,30)
+    # Address-independent ceiling: bounds how fast a forged-header caller can fill the account cap.
+    if limiter.failure_total('signup-created',SIGNUP_HOURLY_CAP_WINDOW)>=SIGNUP_HOURLY_CAP:sec.fail(429,'REQUEST_BUDGET_EXCEEDED')
     hashed=password_hash(body.password)
     account=uuid.uuid4().hex;business='workspace-'+uuid.uuid4().hex;user='user-'+uuid.uuid4().hex;code=secrets.token_urlsafe(24)
     try:
@@ -169,6 +173,7 @@ def signup(body:SignupCredentials, request:Request, response:Response, db=Depend
             token=issue(db,user)
             sec.audit(db,sec.authenticate(db,token),'account-'+account,'WORKSPACE_CREATED',{'sample_data':False})
     except sqlite3.IntegrityError:sec.fail(409,'USERNAME_UNAVAILABLE')
+    limiter.add_failure(['signup-created'])
     set_cookie(response,token)
     return dict(identity(db,sec.authenticate(db,token)),recovery_code=code)
 
