@@ -31,6 +31,9 @@ def schema(db):
     CREATE TABLE IF NOT EXISTS account_mfa(account_id TEXT PRIMARY KEY, secret_blob TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 0, last_step INTEGER NOT NULL DEFAULT 0, backup_hashes TEXT NOT NULL DEFAULT '[]');
     CREATE TABLE IF NOT EXISTS mfa_challenges(token_hash TEXT PRIMARY KEY, account_id TEXT NOT NULL, expires_at INTEGER NOT NULL);
     ''')
+    have = {r[1] for r in db.execute('PRAGMA table_info(account_profiles)').fetchall()}
+    if 'display_currency' not in have:db.execute("ALTER TABLE account_profiles ADD COLUMN display_currency TEXT NOT NULL DEFAULT 'USD'")
+    if 'language' not in have:db.execute("ALTER TABLE account_profiles ADD COLUMN language TEXT NOT NULL DEFAULT 'en'")
 
 
 class Exact(Contract):
@@ -93,16 +96,18 @@ def capabilities():
 @router.get('/account/profile')
 def get_profile(actor=Depends(principal), db=Depends(db_connection)):
     account = account_of(db, actor)
-    row = db.execute('SELECT a.username,COALESCE(p.display_name,\'\'),p.photo,COALESCE(p.smart_assist,1) FROM auth_accounts a LEFT JOIN account_profiles p ON p.account_id=a.account_id WHERE a.account_id=?', (account,)).fetchone()
+    row = db.execute("SELECT a.username,COALESCE(p.display_name,''),p.photo,COALESCE(p.smart_assist,1),COALESCE(p.display_currency,'USD'),COALESCE(p.language,'en') FROM auth_accounts a LEFT JOIN account_profiles p ON p.account_id=a.account_id WHERE a.account_id=?", (account,)).fetchone()
     email = db.execute('SELECT email,verified FROM account_emails WHERE account_id=?', (account,)).fetchone()
     enabled = db.execute('SELECT enabled FROM account_mfa WHERE account_id=?', (account,)).fetchone()
-    return dict(username=row[0], display_name=row[1], photo=row[2], smart_assist=bool(row[3]), email=email[0] if email else None,
+    return dict(username=row[0], display_name=row[1], photo=row[2], smart_assist=bool(row[3]), display_currency=row[4], language=row[5], email=email[0] if email else None,
                 email_verified=bool(email and email[1]), two_factor=bool(enabled and enabled[0]), email_service=mailer.configured(), simulation_only=True)
 
 
 class ProfileUpdate(Contract):
     display_name: str | None = Field(default=None, max_length=60)
     smart_assist: StrictBool | None = None
+    display_currency: str | None = Field(default=None, pattern='^[A-Z]{3}$')
+    language: str | None = Field(default=None, max_length=8)
 
 
 @router.post('/account/profile')
@@ -116,6 +121,12 @@ def update_profile(body: ProfileUpdate, actor=Depends(principal), db=Depends(db_
             db.execute('UPDATE account_profiles SET display_name=? WHERE account_id=?', (name, account))
         if body.smart_assist is not None:
             db.execute('UPDATE account_profiles SET smart_assist=? WHERE account_id=?', (int(body.smart_assist), account))
+        if body.display_currency is not None:
+            db.execute('UPDATE account_profiles SET display_currency=? WHERE account_id=?', (body.display_currency, account))
+        if body.language is not None:
+            from api.app.i18n import LANGUAGES
+            if body.language not in LANGUAGES:sec.fail(422, 'LANGUAGE_NOT_SUPPORTED')
+            db.execute('UPDATE account_profiles SET language=? WHERE account_id=?', (body.language, account))
     return dict(simulation_only=True)
 
 

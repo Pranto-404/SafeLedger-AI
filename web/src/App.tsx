@@ -1,3 +1,4 @@
+import {useI18n} from './i18n';
 import {LazyBoundary} from './LazyBoundary';
 import {lazy,Suspense,useEffect,useRef,useState} from 'react';
 import {accountRequest} from './api';
@@ -16,6 +17,7 @@ function takeJoinCode():string{
 }
 
 export default function App() {
+  useI18n();
   const [auth,setAuth]=useState<{session:Session}|null>(null);
   const [recoveryCode,setRecoveryCode]=useState('');
   const [error,setError]=useState('');const [notice,setNotice]=useState('');

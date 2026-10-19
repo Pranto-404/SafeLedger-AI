@@ -1,8 +1,10 @@
+import {Icon} from './Icon';
 import {useRef,useState} from 'react';
 import {currencyDigits,parseMinor} from './api';
 import {slug} from './recordParser';
 import {prettyVendor,todayIso} from './format';
 import type {Draft} from './types';
+import {t} from './i18n';
 
 type Props={draft:Draft;revision:string;request:<T>(path:string,body?:unknown)=>Promise<T>;onSaved:()=>Promise<void>|void;onDiscard:()=>void;compact?:boolean};
 const major=(minor:number,currency:string)=>{const d=currencyDigits(currency);return (minor/10**d).toFixed(d);};
@@ -41,32 +43,32 @@ export function DraftCard({draft,revision,request,onSaved,onDiscard,compact}:Pro
       setBusy(true);
       await request('/workspace/records',{...body,request_id:attempt.current.id});
       setDone(true);await onSaved();
-    }catch(e){setError(e instanceof Error?e.message:'Could not save. Please check the details.');}
+    }catch(e){setError(e instanceof Error?e.message:t('Could not save. Please check the details.'));}
     finally{setBusy(false);}
   }
-  if(done)return <div className="draft-card saved" role="status"><strong>✓ Added to your records.</strong><p className="small muted">It now appears in your balance, forecast and activity.</p></div>;
+  if(done)return <div className="draft-card saved" role="status"><strong><Icon name="check"/> {t('Added to your records.')}</strong><p className="small muted">{t('It now appears in your balance, forecast and activity.')}</p></div>;
   return <div className={'draft-card'+(compact?' compact':'')}>
-    <div className="draft-head"><strong>Check and add this</strong>{draft.confidence!==null&&<span className="badge">{draft.confidence>=0.8?'Looks clear':'Please double-check'}</span>}</div>
+    <div className="draft-head"><strong>{t('Check and add this')}</strong>{draft.confidence!==null&&<span className="badge">{draft.confidence>=0.8?'Looks clear':t('Please double-check')}</span>}</div>
     {draft.warnings.map((w,i)=><p className="notice small" key={i}>{w}</p>)}
-    {draft.currency_mismatch&&<p className="error small" role="alert">This looks like {draft.currency}. Switch to a {draft.currency} workspace, or type the {currency} amount below.</p>}
+    {draft.currency_mismatch&&<p className="error small" role="alert">{t('This looks like {a}. Switch to a {a} workspace, or type the {b} amount below.',{a:draft.currency,b:currency})}</p>}
     <div className="form-grid">
       <label>What is it
-        <select value={kind} onChange={e=>setKind(e.target.value as 'cash'|'invoice')}><option value="cash">Money paid or received</option><option value="invoice">A bill I still have to pay</option></select></label>
-      <label>Amount ({currency})<input inputMode="decimal" value={amount} onChange={e=>setAmount(e.target.value)}/></label>
+        <select value={kind} onChange={e=>setKind(e.target.value as 'cash'|'invoice')}><option value="cash">{t('Money paid or received')}</option><option value="invoice">{t('A bill I still have to pay')}</option></select></label>
+      <label>{t('Amount ({currency})',{currency})}<input inputMode="decimal" value={amount} onChange={e=>setAmount(e.target.value)}/></label>
       {kind==='cash'?<>
-        <label>Money<select value={direction} onChange={e=>setDirection(e.target.value as 'inflow'|'outflow')}><option value="outflow">Paid out</option><option value="inflow">Received</option></select></label>
-        <label>Date<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
-        <label>Status<select value={status} onChange={e=>setStatus(e.target.value as 'cleared'|'scheduled')}><option value="cleared">Already happened</option><option value="scheduled">Planned</option></select></label>
+        <label>{t('Money')}<select value={direction} onChange={e=>setDirection(e.target.value as 'inflow'|'outflow')}><option value="outflow">{t('Paid out')}</option><option value="inflow">{t('Received')}</option></select></label>
+        <label>{t('Date')}<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
+        <label>{t('Status')}<select value={status} onChange={e=>setStatus(e.target.value as 'cleared'|'scheduled')}><option value="cleared">{t('Already happened')}</option><option value="scheduled">{t('Planned')}</option></select></label>
       </>:<>
-        <label>Supplier<input value={vendor} onChange={e=>setVendor(e.target.value)} maxLength={80}/></label>
-        <label>Invoice number<input value={number} onChange={e=>setNumber(e.target.value)} maxLength={80}/></label>
-        <label>Bill date<input type="date" max={today} value={date} onChange={e=>setDate(e.target.value)}/></label>
-        <label>Due date<input type="date" min={date} value={due} onChange={e=>setDue(e.target.value)}/></label>
+        <label>{t('Supplier')}<input value={vendor} onChange={e=>setVendor(e.target.value)} maxLength={80}/></label>
+        <label>{t('Invoice number')}<input value={number} onChange={e=>setNumber(e.target.value)} maxLength={80}/></label>
+        <label>{t('Bill date')}<input type="date" max={today} value={date} onChange={e=>setDate(e.target.value)}/></label>
+        <label>{t('Due date')}<input type="date" min={date} value={due} onChange={e=>setDue(e.target.value)}/></label>
       </>}
     </div>
-    <label>Note<input value={memo} maxLength={200} onChange={e=>setMemo(e.target.value)}/></label>
-    {kind==='invoice'&&<label className="check"><input type="checkbox" checked={allow} onChange={e=>setAllow(e.target.checked)}/>Allow payments to this supplier (a second person must still approve each one).</label>}
+    <label>{t('Note')}<input value={memo} maxLength={200} onChange={e=>setMemo(e.target.value)}/></label>
+    {kind==='invoice'&&<label className="check"><input type="checkbox" checked={allow} onChange={e=>setAllow(e.target.checked)}/>{t('Allow payments to this supplier (a second person must still approve each one).')}</label>}
     {error&&<p className="error" role="alert">{error}</p>}
-    <div className="actions"><button disabled={busy} onClick={()=>void save()}>{busy?'Saving…':'Add to my records'}</button><button className="secondary" disabled={busy} onClick={onDiscard}>Discard</button></div>
+    <div className="actions"><button disabled={busy} onClick={()=>void save()}>{busy?t('Saving…'):t('Add to my records')}</button><button className="secondary" disabled={busy} onClick={onDiscard}>{t('Discard')}</button></div>
   </div>;
 }

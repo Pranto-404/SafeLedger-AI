@@ -1,7 +1,10 @@
 export const prettyVendor=(id:string)=>id.replace(/[-_.:]+/g,' ').replace(/\s+/g,' ').trim().replace(/\b\w/g,c=>c.toUpperCase());
 export const initials=(name:string)=>{const parts=name.trim().split(/\s+/).filter(Boolean);return ((parts[0]?.[0]||'')+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase()||'?';};
-export const formatTime=(ts:number)=>new Date(ts*1000).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});
-export const formatDate=(iso:string)=>{const d=new Date(iso+'T00:00:00');return Number.isNaN(d.getTime())?iso:d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});};
+import {t} from './i18n';
+const locale=()=>{const l=document.documentElement.lang;return l&&l!=='en'?l:undefined;};
+export const workspaceLabel=(name:string)=>name==='My workspace'?t('My workspace'):name;
+export const formatTime=(ts:number)=>new Date(ts*1000).toLocaleString(locale(),{dateStyle:'medium',timeStyle:'short'});
+export const formatDate=(iso:string)=>{const d=new Date(iso+'T00:00:00');return Number.isNaN(d.getTime())?iso:d.toLocaleDateString(locale(),{day:'numeric',month:'short',year:'numeric'});};
 export const todayIso=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 
 async function loadBitmap(file:File):Promise<ImageBitmap>{

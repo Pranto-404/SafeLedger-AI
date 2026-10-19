@@ -16,9 +16,21 @@ def configured():
     except ProviderError:return False
 
 
-def complete(messages, *, max_tokens=600, json_mode=False, timeout=28):
+def complete(messages, *, max_tokens=600, json_mode=False, timeout=28, vision=False):
+    """One bounded call. For photos, SAFELEDGER_VISION_MODEL (a stronger model) is tried first and the normal model is the fallback."""
+    import os
+    preferred = (os.environ.get('SAFELEDGER_VISION_MODEL') or '').strip() if vision else ''
+    if preferred:
+        try:return _complete(messages, max_tokens, json_mode, timeout, preferred)
+        except ProviderError as exc:
+            if exc.code in {'AI_CONFIGURATION_INVALID'}:pass
+            elif exc.code not in {'AI_QUOTA_EXHAUSTED', 'AI_PROVIDER_REJECTED', 'AI_TIMEOUT', 'AI_TIMEOUT_OR_NETWORK_FAILURE', 'AI_INVALID_RESPONSE', 'AI_INCOMPLETE_RESPONSE'}:raise
+    return _complete(messages, max_tokens, json_mode, timeout, None)
+
+
+def _complete(messages, max_tokens, json_mode, timeout, model):
     from api.app.agents.provider import ChatProvider
-    provider = ChatProvider()  # validates host, model, key and free-tier acknowledgement
+    provider = ChatProvider(model=model) if model else ChatProvider()  # validates host, model, key and free-tier acknowledgement
     payload = {'model': provider.model, 'messages': messages, 'max_tokens': max_tokens, 'temperature': 0.2}
     if provider.profile == 'gemini_free':payload['reasoning_effort'] = 'low'
     if json_mode:payload['response_format'] = {'type': 'json_object'}

@@ -193,3 +193,60 @@ def test_assist_endpoints_are_rate_limited(world, model):
     model['reply'] = 'ok'
     codes = [c.post('/api/assist/ask', json={'question': 'hello %d' % i}).status_code for i in range(14)]
     assert codes[:12] == [200] * 12 and set(codes[12:]) == {429}
+
+
+def _scripted(monkeypatch, replies, statuses=None):
+    for key, value in dict(SAFELEDGER_LLM_PROFILE='gemini_free', SAFELEDGER_LLM_BASE_URL='https://generativelanguage.googleapis.com/v1beta/openai', SAFELEDGER_LLM_MODEL='gemini-3.5-flash-lite',
+                           SAFELEDGER_LLM_API_KEY='test-key-not-real-12345', SAFELEDGER_LLM_ALLOWED_HOSTS='generativelanguage.googleapis.com', SAFELEDGER_LLM_FREE_TIER_CONFIRMED='1').items():
+        monkeypatch.setenv(key, value)
+    log = []
+    def handler(request):
+        body = json.loads(request.content)
+        log.append(body)
+        i = len(log) - 1
+        if statuses and i < len(statuses) and statuses[i] != 200:return httpx.Response(statuses[i], json={})
+        reply = replies[min(i - sum(1 for s in (statuses or [])[:i] if s != 200), len(replies) - 1)]
+        return httpx.Response(200, json={'choices': [{'finish_reason': 'stop', 'message': {'content': reply}}], 'usage': {'prompt_tokens': 5, 'completion_tokens': 5}})
+    monkeypatch.setattr(cloud, 'TRANSPORT', httpx.MockTransport(handler))
+    return log
+
+
+def test_scan_checks_a_doubtful_reading_a_second_time_and_uses_the_correction(world, monkeypatch):
+    c, _ = world
+    signup(c, 'scan_second')
+    wrong = '{"kind":"invoice","total":"4500","vendor":"Rahman Logistics","date":"2026-10-15","line_items":[{"name":"Freight","amount":"3000"},{"name":"Packing","amount":"1000"}],"confidence":0.6,"legibility":"fair"}'
+    fixed = '{"kind":"invoice","total":"4000","vendor":"Rahman Logistics","invoice_number":"RL-9","date":"2026-10-15","due_date":"2026-11-14","line_items":[{"name":"Freight","amount":"3000"},{"name":"Packing","amount":"1000"}],"confidence":0.93,"legibility":"good"}'
+    log = _scripted(monkeypatch, [wrong, fixed])
+    d = c.post('/api/assist/scan', json={'image': PNG}).json()['draft']
+    assert len(log) == 2 and d['ok'] and d['amount_minor'] == 400000 and d['invoice_number'] == 'RL-9' and d.get('checked_twice') is True
+    assert 'First reading' in json.dumps(log[1]['messages'][1]['content'])
+    assert not any('add up' in w for w in d['warnings'])
+
+
+def test_scan_warns_when_items_still_do_not_add_up_and_maps_a_paid_slip_to_cash(world, monkeypatch):
+    c, _ = world
+    signup(c, 'scan_paid')
+    bad = '{"kind":"invoice","paid":true,"total":"900","vendor":"Corner Shop","date":"2026-10-15","line_items":[{"name":"Rice","amount":"300"}],"confidence":0.95,"legibility":"good"}'
+    log = _scripted(monkeypatch, [bad])
+    d = c.post('/api/assist/scan', json={'image': PNG}).json()['draft']
+    assert d['ok'] and d['kind'] == 'cash' and d['direction'] == 'outflow' and d['status'] == 'cleared'
+    assert len(log) == 2 and any('add up' in w for w in d['warnings'])  # one extra look, then an honest warning instead of a silent guess
+
+
+def test_confident_reading_costs_a_single_model_call(world, monkeypatch):
+    c, _ = world
+    signup(c, 'scan_single')
+    good = '{"kind":"invoice","total":"1200","vendor":"Dhaka Packaging","invoice_number":"DP-1","date":"2026-10-15","due_date":"2026-11-14","line_items":[{"name":"Boxes","amount":"1200"}],"confidence":0.97,"legibility":"good"}'
+    log = _scripted(monkeypatch, [good])
+    d = c.post('/api/assist/scan', json={'image': PNG}).json()['draft']
+    assert len(log) == 1 and d['ok'] and d['amount_minor'] == 120000 and d['checked_twice'] is False
+
+
+def test_stronger_vision_model_is_tried_first_and_the_normal_model_is_the_fallback(world, monkeypatch):
+    c, _ = world
+    signup(c, 'scan_model')
+    monkeypatch.setenv('SAFELEDGER_VISION_MODEL', 'gemini-3.8-flash')
+    good = '{"kind":"invoice","total":"1200","vendor":"Dhaka Packaging","invoice_number":"DP-1","date":"2026-10-15","due_date":"2026-11-14","confidence":0.97,"legibility":"good"}'
+    log = _scripted(monkeypatch, [good], statuses=[400])
+    d = c.post('/api/assist/scan', json={'image': PNG}).json()['draft']
+    assert [b['model'] for b in log] == ['gemini-3.8-flash', 'gemini-3.5-flash-lite'] and d['ok']
