@@ -11,6 +11,7 @@
 | Financing-option matching methods and worked example | `docs/FINANCING_MATCH_RELEASE.md` |
 | Financial formulas (cash, forecast, duplicates) | `docs/FINANCIAL_METHODS.md` |
 | Local assistant training and AI safeguards | `docs/LOCAL_ASSISTANT_SECURITY_RELEASE.md` |
+| Local assistant held-out evaluation (honest numbers) | `docs/LOCAL_ASSISTANT_EVALUATION.md` |
 | Currency catalog and reference conversion | `docs/CURRENCY_VIEW_RELEASE.md` |
 | Guided tutorial | `docs/GUIDED_TOUR_RELEASE.md` |
 | Judge walkthrough + sample records | `submission/JUDGE_QUICKSTART.md`, `submission/judge_sample_records.json` |

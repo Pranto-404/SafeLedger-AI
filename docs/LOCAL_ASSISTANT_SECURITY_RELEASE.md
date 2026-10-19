@@ -3,7 +3,7 @@
 ## Product behavior
 
 - The assistant first uses an on-device hybrid engine: a trained hashed TF-IDF nearest-centroid intent classifier, high-precision finance slot rules, reviewed bilingual knowledge and deterministic rendering of current workspace facts.
-- Training corpus: 301 public synthetic utterances across 36 intents in English, Bangla and Banglish. Run `python scripts/train_local_assistant.py` to reproduce `web/src/localModel.ts`. No user records, conversations, credentials or web scrapes are training data.
+- Training corpus: 347 public synthetic utterances (301 originally; paraphrases added on 20 Oct, see `docs/LOCAL_ASSISTANT_EVALUATION.md`) across 36 intents in English, Bangla and Banglish. Run `python scripts/train_local_assistant.py` to reproduce `web/src/localModel.ts`. No user records, conversations, credentials or web scrapes are training data.
 - This is not a generative local language model and does not understand every topic. It abstains on uncertain/out-of-domain questions. It cannot trade, approve payments, change permissions or alter the ledger.
 - Current balance, income, expenses, 7/30-day outlook, risk, open/overdue invoices and recent activity use the current workspace snapshot and link source IDs. Amounts retain their ISO currency/minor units. Historical messages show their snapshot date.
 - Local answers do not call a provider. Both the model artifact and online assistant are lazy chunks loaded only when chat is opened. No model download on landing/login, no browser-history training and no financial chat in localStorage.

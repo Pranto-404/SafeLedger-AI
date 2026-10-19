@@ -55,7 +55,7 @@ Trust boundaries: (1) browser → API: identity, tenant and role come only from 
 
 **Audit integrity.** `Hᵢ = SHA256(canonical(eventᵢ ‖ Hᵢ₋₁))`, signed with HMAC-SHA256. Database triggers reject updates and deletes on audit, approvals, postings and ledger rows. The chain is verified before sensitive reads and writes.
 
-**On-device assistant.** Hashed TF-IDF (word uni/bigrams and character trigrams, 768 bins) nearest-centroid classifier over 36 intents trained on 301 synthetic English/Bangla/Banglish utterances, plus high-precision rules and a finance-domain gate. Answers are rendered from the live snapshot with source IDs. Acceptance: 36/36 supported, 22/22 out-of-domain declined, 8/8 security prompts refused, zero network calls.
+**On-device assistant.** Hashed TF-IDF (word uni/bigrams and character trigrams, 768 bins) nearest-centroid classifier over 36 intents trained on 347 synthetic English/Bangla/Banglish utterances, plus high-precision rules and a finance-domain gate. Answers are rendered from the live snapshot with source IDs. Own acceptance suite: 36/36 supported, 22/22 off-topic declined, 8/8 security prompts refused, zero network calls. On a fresh, never-tuned set of 95 unseen prompts it scores 73.7% (off-topic 100%, security prompts recognised 42%); the weaker recognition is safe because every permission is enforced by the server (`docs/LOCAL_ASSISTANT_EVALUATION.md`).
 
 **Online agent (optional).** Stage A: the model selects up to three typed tools (`get_business_snapshot`, `analyze_invoice`, `project_cash_flow`, `propose_payment`); arguments are schema-checked; there is no approve, execute, SQL, HTTP or file tool. Stage B: the model may return only an allowed disposition, reason codes and fact IDs, validated against server facts; text is rendered from templates. Budgets: two provider calls, 90 s deadline, 24 KB request, 600-token completion.
 
@@ -74,6 +74,7 @@ One chat. Questions are answered on the device first. If the local engine cannot
 | Backend tests (`api/tests`, 414) | All pass on GitHub Actions (Linux); the 20 Oct security review added 23 hardening tests and a randomized financing check (`docs/SECURITY_REVIEW_20261020.md`) |
 | Financing tests (`test_financing.py`, 18) | Independent arithmetic, exact amortization, order-independence, authority, no ledger mutation, audit event |
 | Assistant acceptance (`scripts/check_local_assistant.cjs`) | 36/36, 22/22 OOD, 8 security, financing intent, 0 external calls |
+| Assistant held-out evaluation (`scripts/evaluate_local_assistant.cjs`) | Fresh set 73.7% on unseen phrasing; off-topic 100%; dev sets 99.1% / 97.8% after tuning (not independent). Honest limits in `docs/LOCAL_ASSISTANT_EVALUATION.md` |
 | Currency checks | Parsing precision and exact rational conversion pass |
 | Secret scan | Known-pattern history scan passes |
 | Production | `/api/health` reports the deployed version and commit; financing route returns 401 without a session; forged-`X-Forwarded-For` rate-limit bypass found and fixed (see review) |

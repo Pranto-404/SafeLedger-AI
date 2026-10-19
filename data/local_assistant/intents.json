@@ -13,7 +13,14 @@
     "kemon aso",
     "kmn acho",
     "hello assistant",
-    "হাই"
+    "হাই",
+    "yo",
+    "hiya",
+    "howdy",
+    "sup",
+    "morning",
+    "hey you",
+    "hello hello"
   ],
   "wellbeing": [
     "how are you",
@@ -36,7 +43,9 @@
     "তুমি কি করতে পারো",
     "tumi ke",
     "ki ki paro",
-    "what are your capabilities"
+    "what are your capabilities",
+    "introduce yourself",
+    "what are you exactly"
   ],
   "gratitude": [
     "thanks",
@@ -47,7 +56,12 @@
     "অনেক ধন্যবাদ",
     "dhonnobad",
     "onek thanks",
-    "thank u"
+    "thank u",
+    "cheers",
+    "much appreciated",
+    "thx",
+    "thanks a lot",
+    "nice one thanks"
   ],
   "goodbye": [
     "bye",
@@ -58,7 +72,12 @@
     "আবার কথা হবে",
     "আল্লাহ হাফেজ",
     "allah hafez",
-    "pore kotha hobe"
+    "pore kotha hobe",
+    "later",
+    "farewell",
+    "talk to you soon",
+    "see you around",
+    "take care"
   ],
   "balance": [
     "what is my balance",
@@ -72,7 +91,12 @@
     "amar balance koto",
     "koto taka ase",
     "amar account e koto ache",
-    "available balance dekhao"
+    "available balance dekhao",
+    "do I have enough cash",
+    "is there enough money in my account",
+    "how much do I have available",
+    "cash on hand",
+    "what is my cash position today"
   ],
   "income": [
     "how much income is cleared",
@@ -84,7 +108,10 @@
     "amar ay koto",
     "koto taka ashche",
     "income dekhao",
-    "how much did I receive"
+    "how much did I receive",
+    "total revenue received",
+    "how much have customers paid me",
+    "sales total cleared"
   ],
   "expenses": [
     "what are my expenses",
@@ -96,7 +123,11 @@
     "koto khoroch hoise",
     "amar expense dekhao",
     "how much money went out",
-    "what have I spent"
+    "what have I spent",
+    "list my spending",
+    "total outgoings",
+    "what have I paid so far",
+    "how much have I paid out to suppliers"
   ],
   "forecast": [
     "explain my cash outlook",
@@ -188,7 +219,11 @@
     "record add korbo kivabe",
     "taka add korte chai",
     "invoice input dibo",
-    "how to start adding records"
+    "how to start adding records",
+    "how do I log a bill",
+    "where can I put in a new invoice",
+    "how to record opening cash",
+    "add an expense"
   ],
   "approval": [
     "how do approvals work",
@@ -211,7 +246,10 @@
     "একজন অনুমোদনকারী চাই",
     "teammate add korbo",
     "approver invite korbo kivabe",
-    "join team workspace"
+    "join team workspace",
+    "can my accountant view my workspace",
+    "let my bookkeeper review payments",
+    "share access with my partner"
   ],
   "currency": [
     "how to change currency",
@@ -353,7 +391,9 @@
     "why spread investment risk",
     "diversification meaning",
     "বিনিয়োগের ঝুঁকি ভাগ করা",
-    "diversification ki"
+    "diversification ki",
+    "why diversify investments",
+    "do not put all eggs in one basket"
   ],
   "accounting": [
     "what is a balance sheet",
@@ -361,7 +401,10 @@
     "assets and liabilities explained",
     "accounting equation",
     "সম্পদ ও দায় কি",
-    "asset liability ki"
+    "asset liability ki",
+    "what is an asset in accounting",
+    "define equity",
+    "what does liability mean"
   ],
   "limitations": [
     "can you answer everything",
@@ -370,6 +413,9 @@
     "do you know live exchange rates",
     "সব প্রশ্নের উত্তর দিতে পারো",
     "tomar limit ki",
-    "live rate jano"
+    "live rate jano",
+    "what are your limitations",
+    "what cant you help with",
+    "do you have any limits"
   ]
 }
