@@ -71,7 +71,7 @@ New controls
 - **Languages:** `/api/i18n` is public but bounded: allow-listed languages only, only strings from a fixed server-side list are translated, outputs are sanitised (no markup, placeholders preserved), and the work is cached so it runs at most once per language.
 
 Evidence and how to repeat it
-- `python -m pytest api/tests -q`: 467 tests (465 pass on Windows; the other two are a POSIX file-mode check and a CRLF hash check that pass on Linux CI).
+- `python -m pytest api/tests -q`: 468 tests (465 pass on Windows; the other two are a POSIX file-mode check and a CRLF hash check that pass on Linux CI).
 - `python scripts/security_probe.py http://127.0.0.1:8000`: 53 black-box checks (anonymous access, origin enforcement, hostile input on public endpoints, error shape, cookie flags, oversized bodies, session replay and revocation, lockout, cross-account isolation). Local servers only.
 - `python scripts/security_scan.py` (secret scan over the full history), `npm audit --omit=dev` and `pip-audit` on the lock file: clean at the time of writing.
 - Frontend: no inline script or style, no `innerHTML`, `eval` or dynamic code; CSP `default-src 'self'`.

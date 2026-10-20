@@ -2,7 +2,7 @@
 
 - Live at https://capzoryx-copilot.vercel.app; backend `capzoryx-copilot` on Render; repository `Pranto-404/capzoryx-copilot`.
 - Done since the first submission: accounts and settings (profile, photo, password, two-step sign-in, email codes), workspace sharing with invitation links, per-currency clear and restore, live currency conversion with a chosen conversion currency, photo and chat records with a confirm step, PDF reports, 37 interface languages, rebuilt tutorial, animated landing page, phone layout.
-- Tests: 467 backend tests, node checks for the local assistant, record parser and site guide, 53-check security probe, secret scan and dependency audits (see `docs/SECURITY_SELF_ASSESSMENT.md`, section 10).
+- Tests: 468 backend tests, node checks for the local assistant, record parser and site guide, 53-check security probe, secret scan and dependency audits (see `docs/SECURITY_SELF_ASSESSMENT.md`, section 10).
 - Rollback point of the original submission: tag `submission-2026-10-20`.
 
 # Current real-records release — 18 October 2026

@@ -434,3 +434,31 @@ main.welcome>.welcome-story>.scroll-cue{order:8;align-self:flex-start;margin-top
 .soon-note{margin-top:16px;text-align:center}
 .coming-soon{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 0;color:var(--muted)}.coming-soon .soon-badge{margin:0}
 @media(max-width:900px){.soon-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.soon-grid{grid-template-columns:1fr}}
+/* Light theme: the sidebar follows the theme instead of staying dark */
+@media(min-width:761px){
+.shell>aside{padding:22px 14px!important}
+:root:not([data-theme=dark]) .shell>aside{background:#fff!important;border-right:1px solid #e1e8e5!important;color:#193336!important}
+:root:not([data-theme=dark]) .shell>aside .brand{color:#193336}
+:root:not([data-theme=dark]) .shell>aside nav button{color:#3b4f4c;background:transparent}
+:root:not([data-theme=dark]) .shell>aside nav button:hover{background:#f0f5f3}
+:root:not([data-theme=dark]) .shell>aside nav button[aria-current=page]{background:#e3f3ee;color:#0b6b57;box-shadow:inset 3px 0 0 #0f9b7c!important}
+:root:not([data-theme=dark]) .shell>aside .ui-icon{color:inherit}
+:root:not([data-theme=dark]) .shell>aside .identity{border-color:#e1e8e5}
+:root:not([data-theme=dark]) .shell>aside .identity-user strong{color:#193336}
+:root:not([data-theme=dark]) .shell>aside .identity-user small{color:#5d7370}
+:root:not([data-theme=dark]) .shell>aside select{background:#fff;color:#193336;border:1px solid #cfd9d5}
+:root:not([data-theme=dark]) .shell>aside button.secondary{background:#fff;color:#193336;border:1px solid #cfd9d5}
+:root:not([data-theme=dark]) .shell>aside button.secondary:hover{background:#f0f5f3}
+}
+.metric-0 .approx{color:#dbe7ff}
+.dashboard-intro{margin-top:18px}
+.notice+.dashboard-intro,.notice{margin-bottom:6px}
+.soon-badge{color:#7a4f00}
+:root[data-theme=dark] .soon-badge{color:#f0c36a}
+@media(min-width:761px){.shell>aside{height:100vh!important;top:0!important;min-height:100vh}}
+/* Light theme: stronger accent colour for text on pale backgrounds */
+:root:not([data-theme=dark]) .brand-name b,:root:not([data-theme=dark]) .land-brand b,:root:not([data-theme=dark]) .splash-name b,:root:not([data-theme=dark]) .intro-name b{color:#0b7a62}
+:root:not([data-theme=dark]) .hd-badge,:root:not([data-theme=dark]) .hd-add,:root:not([data-theme=dark]) .hd-card em,:root:not([data-theme=dark]) .pv-list b.in,:root:not([data-theme=dark]) .pg-result:not(.bad),:root:not([data-theme=dark]) .stats strong,:root:not([data-theme=dark]) .card-trust .ui-icon,:root:not([data-theme=dark]) .fc .ui-icon,:root:not([data-theme=dark]) .faq summary::after,:root:not([data-theme=dark]) .step-n,:root:not([data-theme=dark]) .il-big{color:#0b7a62;fill:#0b7a62}
+:root:not([data-theme=dark]) .welcome-story h1 em{background-image:linear-gradient(100deg,#0b7a62,#3b5bdb,#0b7a62)}
+:root:not([data-theme=dark]) .pg-result.bad{color:#b3351f}
+.land-signin{background:#0b6b57;border-color:#0b6b57;color:#fff}
