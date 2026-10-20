@@ -86,3 +86,32 @@ def test_language_and_display_currency_are_saved_on_the_account(world):
     assert p['display_currency'] == 'EUR' and p['language'] == 'ja'
     assert c.post('/api/account/profile', json={'display_currency': 'euro'}).status_code == 422
     assert c.post('/api/account/profile', json={'language': 'klingon'}).status_code == 422
+
+
+def test_google_translation_is_used_when_a_key_is_set_and_is_fast(world, monkeypatch):
+    c, _ = world
+    monkeypatch.setenv('SAFELEDGER_GOOGLE_TRANSLATE_KEY', 'test-google-key')
+    seen = []
+    def handler(request):
+        body = json.loads(request.content)
+        seen.append((str(request.url), request.headers.get('x-goog-api-key'), body))
+        rows = [{'translatedText': 'T:' + re.sub(r'</?span[^>]*>', '', q).replace('&', '&amp;')} for q in body['q']]
+        return httpx.Response(200, json={'data': {'translations': rows}})
+    monkeypatch.setattr(i18n, 'GOOGLE_TRANSPORT', httpx.MockTransport(handler))
+    body = c.get('/api/i18n?lang=ja').json()
+    assert body['missing'] == 0 and len(body['strings']) == len(i18n._STRINGS)  # one request cycle fills the whole list
+    assert all(url.startswith('https://translation.googleapis.com/') and key == 'test-google-key' and b['target'] == 'ja' and b['format'] == 'html' for url, key, b in seen)
+    assert len(seen) == -(-len(i18n._STRINGS) // i18n.GOOGLE_BATCH)
+    assert any('translate="no"' in q for _, _, b in seen for q in b['q'])  # placeholders and brand names are fenced off
+    assert body['strings']['Sign in'] == 'T:Sign in'
+    calls = len(seen)
+    c.get('/api/i18n?lang=ja')
+    assert len(seen) == calls  # cached
+
+
+def test_google_failure_falls_back_to_english_without_breaking(world, monkeypatch):
+    c, _ = world
+    monkeypatch.setenv('SAFELEDGER_GOOGLE_TRANSLATE_KEY', 'test-google-key')
+    monkeypatch.setattr(i18n, 'GOOGLE_TRANSPORT', httpx.MockTransport(lambda r: httpx.Response(403, json={})))
+    resp = c.get('/api/i18n?lang=de')
+    assert resp.status_code == 200 and resp.json()['strings'] == {} and resp.json()['missing'] == len(i18n._STRINGS)

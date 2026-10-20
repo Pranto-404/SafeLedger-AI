@@ -50,6 +50,13 @@ export function I18nProvider({children}:{children:ReactNode}){
     void (async()=>{
       setBusy(true);
       try{
+        // Ready-made file from the site itself: instant, no server work. Anything newer is filled in by the server below.
+        if(!cached){
+          try{
+            const f=await fetch('/locales/'+code+'.json',{signal:controller.signal});
+            if(f.ok&&run.current===id){const file=await f.json() as {version:string;strings:Record<string,string>};if(file&&typeof file.strings==='object'){const value={version:file.version,strings:file.strings,missing:1};write(code,value);apply(code,value);}}
+          }catch{/* the server path below still works */}
+        }
         for(let round=0;round<10&&run.current===id;round++){
           const r=await fetch('/api/i18n?lang='+encodeURIComponent(code),{credentials:'same-origin',signal:controller.signal});
           if(!r.ok)break;

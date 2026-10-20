@@ -5,7 +5,7 @@ import {CurrencySelect} from './Currency';
 import {PasswordStrength} from './PasswordStrength';
 import {initials} from './format';
 import {Icon} from './Icon';
-import {Landing,Intro} from './Landing';
+import {Landing} from './Landing';
 import {ThemeButton} from './Theme';
 import type {Session} from './types';
 import {t,LanguagePicker,T} from './i18n';
@@ -44,7 +44,7 @@ export function Auth({onSession,joinCode,notice}:{onSession:(s:Session)=>void;jo
   const useKey=(e:FormEvent)=>{e.preventDefault();void run(async()=>{onSession(await accountRequest<Session>('/auth/recover',{username,password,recovery_code:recoveryKey}));setPassword('');setRecoveryKey('');});};
   const passwordField=(id:string,label:string,autoComplete:string)=><><label htmlFor={id}>{label}</label><div className="password-field"><input id={id} type={show?'text':'password'} autoComplete={autoComplete} minLength={8} maxLength={128} required value={password} onChange={e=>setPassword(e.target.value)} disabled={busy}/><button type="button" className="secondary" aria-label={show?t('Hide password'):t('Show password')} onClick={()=>setShow(!show)}>{show?t('Hide'):t('Show')}</button></div></>;
   const start=()=>{window.scrollTo({top:0,behavior:'smooth'});window.setTimeout(()=>document.getElementById(mode==='forgot'?'reset-email':'username')?.focus({preventScroll:true}),450);};
-  return <><Intro/><main className="welcome">
+  return <><main className="welcome">
     <section className="welcome-story"><Brand/><p className="eyebrow">{t('YOUR BUSINESS MONEY, MADE CLEAR')}</p><h1>{t('See the numbers.')}<br/><em>{t('Trust the decision.')}</em></h1><p className="welcome-copy">{t('Snap a bill, say what you paid, and see your cash flow, loans and payments in one place. Every payment needs a second person’s approval.')}</p><div className="welcome-benefits"><span><Icon name="check"/>{t('Photo and chat entry')}</span><span><Icon name="check"/>{t('Live currency rates')}</span><span><Icon name="check"/>{t('Safe approvals')}</span></div><button type="button" className="scroll-cue" onClick={()=>document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}>{t('See what it does')}<Icon name="arrow"/></button></section>
     <section className="welcome-entry"><div className="panel auth-card"><div className="auth-theme"><LanguagePicker compact id="language-auth"/><ThemeButton/></div>
       {mode!=='forgot'&&<>{joinPending&&invite&&invite!=='bad'&&<div className="invite-card" role="status"><span className="avatar avatar-initials" aria-hidden="true">{initials(invite.invited_by)}</span><div><strong>{t('{name} invited you',{name:invite.invited_by})}</strong><small>{t(invite.role==='approver'?T('to {workspace} · you will approve payments'):T('to {workspace} · you will view the records'),{workspace:invite.workspace_name})}</small></div></div>}{joinPending&&invite==='bad'&&<p className="notice" role="status">{t('This invitation has expired or was already used. Ask for a new link, or create your own workspace below.')}</p>}<h2>{joinPending&&invite&&invite!=='bad'?(mode==='signup'?t('Create your account to join'):t('Sign in to join')):mode==='signup'?t('Create your workspace'):t('Welcome back')}</h2><p className="muted">{joinPending?t('Sign in or create an account to accept your invitation.'):mode==='signup'?t('Free, and it takes a minute.'):t('Sign in to your workspace.')}</p>

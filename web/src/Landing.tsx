@@ -1,6 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {Icon} from './Icon';
-import {t,T} from './i18n';
+import {LANGUAGES,t,T} from './i18n';
+import {Logo} from './Logo';
 
 const features:{icon:string;title:string;text:string}[]=[
  {icon:'camera',title:T('Photo to record'),text:T('Snap a bill or receipt and we read the supplier, date, amount and due date for you.')},
@@ -22,6 +23,22 @@ const trust:{icon:string;title:string;text:string}[]=[
  {icon:'Audit',title:T('History nobody can quietly change'),text:T('Each entry is signed and linked, so edits show up.')},
  {icon:'Settings',title:T('Two-step sign-in'),text:T('Add an authenticator app and backup codes in a minute.')},
  {icon:'check',title:T('Private by default'),text:T('Only people you invite can see your records. You can clear them any time.')},
+];
+const audiences:{icon:string;title:string;text:string}[]=[
+ {icon:'Invoices',title:T('Shops and retailers'),text:T('Track daily cash and supplier bills without a spreadsheet.')},
+ {icon:'Financing',title:T('Wholesalers and distributors'),text:T('Plan payments around customer receipts and compare credit lines.')},
+ {icon:'Data',title:T('Freelancers and services'),text:T('Record what you are owed and what you spent, from your phone.')},
+ {icon:'Approvals',title:T('Accountants and partners'),text:T('Invite a teammate to review or approve, with clear roles.')},
+];
+const faq:{q:string;a:string}[]=[
+ {q:T('Is it free?'),a:T('Yes. You can create a workspace and use every feature at no cost.')},
+ {q:T('Does it move my money?'),a:T('No. It records and plans. Approving a payment writes it in your books; no bank transfer is made.')},
+ {q:T('Who can see my records?'),a:T('Only you and people you invite. You choose whether they can approve payments or only view.')},
+ {q:T('Which currencies are supported?'),a:T('Over 170 currencies, with live exchange rates for converted values.')},
+ {q:T('What if I forget my password?'),a:T('Ask for a code by email, or use the recovery key you saved when you signed up.')},
+];
+const stats:{n:string;label:string}[]=[
+ {n:'37',label:T('languages')},{n:'170+',label:T('currencies with live rates')},{n:'2',label:T('people on every payment')},{n:'30',label:T('days to undo clearing data')},
 ];
 
 function ScanIllustration(){
@@ -48,10 +65,26 @@ function OutlookIllustration(){
     <circle cx="270" cy="120" r="6" className="il-dot"/>
   </svg>;
 }
+/** A small, honest preview of the workspace with sample numbers. Plain HTML so it costs nothing to load. */
+function Preview(){
+  const bars=[46,58,52,70,64,82,76];
+  return <div className="preview" role="img" aria-label={t('Preview of the workspace with sample numbers')}>
+    <div className="pv-top"><span className="pv-dot"/><span className="pv-dot"/><span className="pv-dot"/><b>{t('Financial overview')}</b></div>
+    <div className="pv-cards">
+      <div><small>{t('Available balance')}</small><strong>BDT 146,500</strong><em>≈ USD 1,196</em></div>
+      <div><small>{t('Cleared income')}</small><strong>BDT 150,000</strong></div>
+      <div><small>{t('Cleared expenses')}</small><strong>BDT 3,500</strong></div>
+    </div>
+    <div className="pv-body">
+      <div className="pv-chart" aria-hidden="true">{bars.map((h,i)=><i key={i} className={'pv-bar h'+h}/>)}</div>
+      <ul className="pv-list" aria-hidden="true"><li><span>Dhaka Packaging</span><b>BDT 12,500</b></li><li><span>Rahman Logistics</span><b>BDT 4,500</b></li><li><span>Karim Traders</span><b className="in">+ BDT 20,000</b></li></ul>
+    </div>
+  </div>;
+}
 
 /** Everything a visitor can read before signing in. Plain markup and CSS, so it costs almost nothing to load. */
 export function Landing({onStart}:{onStart:()=>void}){
-  const root=useRef<HTMLDivElement>(null);
+  const root=useRef<HTMLDivElement>(null);const [bar,setBar]=useState(false);
   useEffect(()=>{
     const nodes=root.current?.querySelectorAll('[data-reveal]');
     if(!nodes||!('IntersectionObserver' in window)){nodes?.forEach(n=>n.classList.add('in'));return;}
@@ -59,29 +92,58 @@ export function Landing({onStart}:{onStart:()=>void}){
     nodes.forEach(n=>io.observe(n));
     return()=>io.disconnect();
   },[]);
+  // The slim top bar appears once the visitor has scrolled past the first screen.
+  useEffect(()=>{
+    const onScroll=()=>setBar(window.scrollY>window.innerHeight*.6);
+    onScroll();window.addEventListener('scroll',onScroll,{passive:true});return()=>window.removeEventListener('scroll',onScroll);
+  },[]);
+  const go=(id:string)=>document.getElementById(id)?.scrollIntoView({behavior:'smooth'});
+  const names=LANGUAGES.map(l=>l.name);
   return <div className="landing" ref={root}>
+    <nav className={bar?'land-nav show':'land-nav'} aria-label={t('Page sections')}>
+      <button type="button" className="land-brand" onClick={()=>window.scrollTo({top:0,behavior:'smooth'})} aria-label="Capzoryx Copilot"><Logo size={28}/><span>Capzoryx <b>Copilot</b></span></button>
+      <div className="land-links"><button type="button" className="link" onClick={()=>go('features')}>{t('Features')}</button><button type="button" className="link" onClick={()=>go('preview')}>{t('See it work')}</button><button type="button" className="link" onClick={()=>go('safety')}>{t('Safety')}</button><button type="button" className="link" onClick={()=>go('faq')}>{t('Questions')}</button></div>
+      <button type="button" className="land-signin" onClick={onStart}>{t('Sign in')}</button>
+    </nav>
+    <div className="stats" data-reveal>{stats.map(s=><div key={s.label}><strong>{s.n}</strong><span>{t(s.label)}</span></div>)}</div>
     <section id="features" className="land-section" aria-labelledby="land-features">
       <p className="eyebrow" data-reveal>{t('WHAT YOU GET')}</p>
       <h2 id="land-features" data-reveal>{t('Everything your business money needs, in one place')}</h2>
-      <div className="feature-grid">{features.map((f,i)=><article key={f.title} className="feature" data-reveal style={undefined} data-i={i%4}><span className="feature-icon"><Icon name={f.icon}/></span><h3>{t(f.title)}</h3><p>{t(f.text)}</p></article>)}</div>
+      <div className="feature-grid">{features.map((f,i)=><article key={f.title} className="feature" data-reveal data-i={i%4}><span className="feature-icon"><Icon name={f.icon}/></span><h3>{t(f.title)}</h3><p>{t(f.text)}</p></article>)}</div>
     </section>
-    <section className="land-section land-visuals" aria-labelledby="land-see">
+    <section id="preview" className="land-section land-visuals" aria-labelledby="land-see">
       <p className="eyebrow" data-reveal>{t('SEE IT WORK')}</p>
       <h2 id="land-see" data-reveal>{t('From a photo to a clear picture')}</h2>
       <div className="visual-row">
         <figure data-reveal><ScanIllustration/><figcaption>{t('Photograph a bill. Check what we read. Add it in one tap.')}</figcaption></figure>
         <figure data-reveal><OutlookIllustration/><figcaption>{t('Know if cash will run short before it happens.')}</figcaption></figure>
       </div>
+      <div className="preview-wrap" data-reveal><Preview/><p className="small muted">{t('A preview with sample numbers.')}</p></div>
     </section>
     <section className="land-section" aria-labelledby="land-how">
       <p className="eyebrow" data-reveal>{t('HOW IT WORKS')}</p>
       <h2 id="land-how" data-reveal>{t('Three simple steps')}</h2>
       <ol className="steps">{steps.map((s,i)=><li key={s.title} data-reveal><span className="step-n">{i+1}</span><h3>{t(s.title)}</h3><p>{t(s.text)}</p></li>)}</ol>
     </section>
-    <section className="land-section" aria-labelledby="land-safe">
+    <section className="land-section" aria-labelledby="land-who">
+      <p className="eyebrow" data-reveal>{t('MADE FOR')}</p>
+      <h2 id="land-who" data-reveal>{t('Built for the way small businesses work')}</h2>
+      <div className="feature-grid">{audiences.map(f=><article key={f.title} className="feature" data-reveal><span className="feature-icon"><Icon name={f.icon}/></span><h3>{t(f.title)}</h3><p>{t(f.text)}</p></article>)}</div>
+    </section>
+    <section id="safety" className="land-section" aria-labelledby="land-safe">
       <p className="eyebrow" data-reveal>{t('BUILT TO BE SAFE')}</p>
       <h2 id="land-safe" data-reveal>{t('Your money, your control')}</h2>
       <div className="trust-grid">{trust.map(x=><article key={x.title} data-reveal><span className="feature-icon"><Icon name={x.icon}/></span><div><h3>{t(x.title)}</h3><p>{t(x.text)}</p></div></article>)}</div>
+    </section>
+    <section className="land-section land-langs" aria-labelledby="land-lang" data-reveal>
+      <p className="eyebrow">{t('FOR EVERYONE')}</p>
+      <h2 id="land-lang">{t('Use it in your own language')}</h2>
+      <div className="marquee" aria-hidden="true"><div className="marquee-track">{[...names,...names].map((n,i)=><span key={i}>{n}</span>)}</div></div>
+    </section>
+    <section id="faq" className="land-section" aria-labelledby="land-faq">
+      <p className="eyebrow" data-reveal>{t('QUESTIONS')}</p>
+      <h2 id="land-faq" data-reveal>{t('Good to know')}</h2>
+      <div className="faq" data-reveal>{faq.map(x=><details key={x.q}><summary>{t(x.q)}</summary><p>{t(x.a)}</p></details>)}</div>
     </section>
     <section className="land-cta" data-reveal>
       <h2>{t('Ready to see your numbers clearly?')}</h2>
@@ -90,13 +152,4 @@ export function Landing({onStart}:{onStart:()=>void}){
     </section>
     <p className="land-foot">{t('Capzoryx Copilot · Your records · A second person approves every payment · Nothing leaves your control')}</p>
   </div>;
-}
-
-/** Big logo first, then it settles into the corner while the page comes in. Shown once per visit; skipped for reduced motion. */
-export function Intro(){
-  const seen=(()=>{try{return sessionStorage.getItem('capzoryx-intro')==='1'||matchMedia('(prefers-reduced-motion: reduce)').matches;}catch{return true;}})();
-  const [gone,setGone]=useState(seen);
-  useEffect(()=>{try{sessionStorage.setItem('capzoryx-intro','1');}catch{/* optional */}const id=window.setTimeout(()=>setGone(true),2000);return()=>window.clearTimeout(id);},[]);
-  if(gone)return null;
-  return <div className="intro" aria-hidden="true"><svg className="intro-logo" viewBox="0 0 40 40" width="132" height="132"><defs><linearGradient id="cz-intro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#0f9b7c"/><stop offset="1" stopColor="#132a4a"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#cz-intro)"/><path d="M27.5 13.2A9.6 9.6 0 1 0 27.5 26.8" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round"/><path className="intro-rise" d="M16.5 24.5l4-4.2 3 2.4 6-7.4" fill="none" stroke="#8cebd0" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/></svg><span className="intro-name">Capzoryx <b>Copilot</b></span></div>;
 }
