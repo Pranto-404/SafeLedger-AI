@@ -111,7 +111,7 @@ def interface_text(lang: str, db=Depends(db_connection)):
     use_google = google_configured()
     if missing and (use_google or cloud.configured()) and _LOCKS[lang].acquire(blocking=False):
         try:
-            sec.budgets(db, [('i18n-translate-all', 60 if use_google else 12)])
+            sec.budgets(db, [('i18n-translate-all', 60 if use_google else 30)])
             if use_google:
                 found = {}
                 started = time.monotonic()
