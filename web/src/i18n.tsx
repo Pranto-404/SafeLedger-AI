@@ -24,6 +24,8 @@ export function t(text:string,vars?:Record<string,string|number>):string{
 }
 
 type Cache={version:string;strings:Record<string,string>;missing:number};
+/** Server answers add to what the browser already has (static file or earlier visit); an empty or partial server answer never erases it. */
+export const mergeStrings=(have:Record<string,string>,incoming:Record<string,string>):Record<string,string>=>({...have,...incoming});
 const read=(code:string):Cache|null=>{try{const raw=localStorage.getItem('capzoryx-i18n-'+code);return raw?JSON.parse(raw) as Cache:null;}catch{return null;}};
 const write=(code:string,value:Cache)=>{try{localStorage.setItem('capzoryx-i18n-'+code,JSON.stringify(value));}catch{/* optional */}};
 export const hasChosenLanguage=()=>{try{return !!localStorage.getItem(STORE);}catch{return false;}};
@@ -65,20 +67,24 @@ export function I18nProvider({children}:{children:ReactNode}){
       setBusy(true);
       try{
         // Ready-made file from the site itself: instant, no server work. Anything newer is filled in by the server below.
-        if(!cached){
+        if(!cached||Object.keys(cached.strings).length===0){
           try{
             const f=await fetch('/locales/'+code+'.json',{signal:controller.signal});
             if(f.ok&&run.current===id){const file=await f.json() as {version:string;strings:Record<string,string>};if(file&&typeof file.strings==='object'){const value={version:file.version,strings:file.strings,missing:1};write(code,value);apply(code,value);}}
           }catch{/* the server path below still works */}
         }
+        let last=-1;
         for(let round=0;round<10&&run.current===id;round++){
           const r=await fetch('/api/i18n?lang='+encodeURIComponent(code),{credentials:'same-origin',signal:controller.signal});
           if(!r.ok)break;
           const body=await r.json() as {strings:Record<string,string>;missing:number;version:string};
           if(run.current!==id)return;
-          const value={version:body.version,strings:body.strings,missing:body.missing};
+          const merged=mergeStrings(read(code)?.strings||{},body.strings);
+          const value={version:body.version,strings:merged,missing:body.missing};
           write(code,value);apply(code,value);setPartial(body.missing>0);
-          if(body.missing===0)break;
+          const size=Object.keys(body.strings).length;
+          if(body.missing===0||size===last)break;  // done, or the server made no progress this round
+          last=size;
           await new Promise(res=>setTimeout(res,1500));
         }
       }catch{/* offline or aborted: keep what we have */}

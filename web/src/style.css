@@ -171,7 +171,7 @@ h3 .ui-icon,.welcome-benefits .ui-icon,.draft-card .ui-icon,.actions .ui-icon,.c
 .shell>aside{position:static;padding:12px 16px 6px;min-height:0}
 .shell>aside .brand{margin-bottom:8px;font-size:19px}
 .shell>aside nav{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;flex-wrap:nowrap;gap:2px;overflow-x:auto;padding:6px 6px calc(6px + env(safe-area-inset-bottom));background:var(--surface,#0d1729);border-top:1px solid var(--line,#25334b);box-shadow:0 -8px 24px #0004;margin:0}
-.shell>aside nav button{flex:0 0 auto;min-width:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:7px 8px;font-size:10.5px;min-height:54px;text-align:center;border-radius:12px;border-left:0;white-space:nowrap}
+.shell>aside nav button{color:var(--muted);flex:0 0 auto;min-width:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:7px 8px;font-size:10.5px;min-height:54px;text-align:center;border-radius:12px;border-left:0;white-space:nowrap}
 .shell>aside nav button .ui-icon{width:21px;height:21px}
 .shell>aside nav button[aria-current=page]{background:#3fd2b41f;color:var(--brand,#0f9b7c)}
 #workspace{padding-bottom:108px}
@@ -374,8 +374,8 @@ nav.land-nav .land-brand{white-space:nowrap}
 /* story: sticky visual while the steps scroll */
 .story{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:40px;align-items:start}
 .story-steps{list-style:none;margin:0;padding:0;display:grid;gap:0}
-.story-steps li{min-height:62vh;display:flex;flex-direction:column;justify-content:center;opacity:.45;transition:opacity .4s ease}
-.story-steps li.active{opacity:1}
+.story-steps li{min-height:62vh;display:flex;flex-direction:column;justify-content:center;filter:grayscale(.6);transition:filter .4s ease}
+.story-steps li.active{filter:none}
 .story-steps h3{font-size:clamp(24px,3vw,34px);letter-spacing:-.03em;margin:12px 0 8px}.story-steps p{font-size:16px;color:var(--muted);max-width:420px;line-height:1.6;margin:0}
 .story-inline{display:none}
 .story-visual{position:sticky;top:12vh;height:min(460px,70vh);display:grid;place-items:center}

@@ -19,7 +19,7 @@ const faq:{q:string;a:string}[]=[
  {q:T('Is it free?'),a:T('Yes. You can create a workspace and use every feature at no cost.')},
  {q:T('Does it move my money?'),a:T('No. It records and plans. Approving a payment writes it in your books; no bank transfer is made.')},
  {q:T('Who can see my records?'),a:T('Only you and people you invite. You choose whether they can approve payments or only view.')},
- {q:T('Which currencies are supported?'),a:T('Over 170 currencies, with live exchange rates for converted values.')},
+ {q:T('Which currencies are supported?'),a:T('Over 150 currencies, with live exchange rates for converted values.')},
  {q:T('What if I forget my password?'),a:T('Ask for a code by email, or use the recovery key you saved when you signed up.')},
 ];
 const soon:{icon:string;title:string;text:string}[]=[
@@ -29,7 +29,7 @@ const soon:{icon:string;title:string;text:string}[]=[
  {icon:'Invoices',title:T('Bill reminders'),text:T('Get a nudge before a bill is due, by email.')},
 ];
 const stats:{n:number;suffix:string;label:string}[]=[
- {n:37,suffix:'',label:T('languages')},{n:170,suffix:'+',label:T('currencies with live rates')},{n:2,suffix:'',label:T('people on every payment')},{n:30,suffix:'',label:T('days to undo clearing data')},
+ {n:37,suffix:'',label:T('languages')},{n:150,suffix:'+',label:T('currencies with live rates')},{n:2,suffix:'',label:T('people on every payment')},{n:30,suffix:'',label:T('days to undo clearing data')},
 ];
 const story:{title:string;text:string}[]=[
  {title:T('Add'),text:T('Photograph a bill or type what happened. Check it, then confirm.')},
