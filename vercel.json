@@ -83,5 +83,18 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "safeledger-ai.vercel.app"
+        }
+      ],
+      "destination": "https://capzoryx-copilot.vercel.app/$1",
+      "permanent": true
+    }
   ]
 }

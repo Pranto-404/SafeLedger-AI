@@ -17,7 +17,7 @@ jobs:
       - name: Wake the API through the public site
         run: |
           for attempt in 1 2 3; do
-            code=$(curl -s -o /tmp/health.json -w '%{http_code}' --max-time 75 https://safeledger-ai.vercel.app/api/health || true)
+            code=$(curl -s -o /tmp/health.json -w '%{http_code}' --max-time 75 https://capzoryx-copilot.vercel.app/api/health || true)
             if [ "$code" = "200" ]; then cat /tmp/health.json; echo; exit 0; fi
             echo "attempt $attempt returned HTTP $code"; sleep 15
           done

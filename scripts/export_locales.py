@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'web' / 'public' / 'locales'
-BASE = sys.argv[1].rstrip('/') if len(sys.argv) > 1 else 'https://safeledger-ai.vercel.app'
+BASE = sys.argv[1].rstrip('/') if len(sys.argv) > 1 else 'https://capzoryx-copilot.vercel.app'
 ALL = ['bn', 'zh-CN', 'zh-TW', 'ja', 'ko', 'hi', 'ur', 'ar', 'fa', 'he', 'es', 'fr', 'pt', 'de', 'it', 'ru', 'tr', 'id', 'ms', 'th', 'vi', 'ta', 'te', 'mr', 'pa', 'gu', 'kn', 'ml', 'ne', 'si', 'nl', 'pl', 'uk', 'el', 'sw', 'fil']
 wanted = sys.argv[2:] or ALL
 

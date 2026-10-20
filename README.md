@@ -19,7 +19,7 @@
 
 Documentation map: `docs/INDEX.md`. Technical documentation: `submission/TECHNICAL_REPORT.md`. Security: `docs/SECURITY_SELF_ASSESSMENT.md`.
 
-Private financial recordkeeping at https://safeledger-ai.vercel.app. Create a username/password account: every workspace starts with BDT0, no invoices and no cash events. Add your own cash activity and invoices in **Data**, or import your own conforming records JSON into an empty workspace. No demo, guest example or fictional lender offers are exposed by the product; financing comparisons use only quotes the user enters.
+Private financial recordkeeping at https://capzoryx-copilot.vercel.app. Create a username/password account: every workspace starts with BDT0, no invoices and no cash events. Add your own cash activity and invoices in **Data**, or import your own conforming records JSON into an empty workspace. No demo, guest example or fictional lender offers are exposed by the product; financing comparisons use only quotes the user enters.
 
 Passwords accept 8–128 exact characters and have a strength indicator. Sessions use Secure HttpOnly cookies on the deployed site; no token needs to be pasted. Save the one-time recovery code securely. A password reset rotates the code and revokes all sessions. Losing both the password and recovery code prevents self-service recovery; no email service is configured.
 
