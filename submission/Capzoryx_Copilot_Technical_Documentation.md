@@ -1,3 +1,5 @@
+<img src="figures/logo.svg" alt="Capzoryx Copilot logo" width="96" height="96">
+
 # Capzoryx Copilot
 
 ## Technical Documentation
