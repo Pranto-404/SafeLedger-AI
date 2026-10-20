@@ -43,7 +43,7 @@ Frontend production deployment and a persistent Python backend are not configure
 Read PROJECT_STATUS.md, NEXT_STEPS.md, docs/REQUIREMENTS.md and `git log -5 --oneline`. Do not re-read the PDFs unless a requirement is missing or changes. Verify the current test suite before editing. Source hashes are in docs/SOURCE_MANIFEST.json; attachments contain no implementation evidence.
 
 ## Safety and ownership
-No real banking integrations. Never commit real financial data, IDs, passports, credentials or `.env` files. The owner authorized Pranto-404/SafeLedger-AI. Registration remains pending and the owner is handling it. Dependency licenses and a project license need an owner decision before public release. No compliance certification is claimed.
+No real banking integrations. Never commit real financial data, IDs, passports, credentials or `.env` files. The owner authorized Pranto-404/capzoryx-copilot. Registration remains pending and the owner is handling it. Dependency licenses and a project license need an owner decision before public release. No compliance certification is claimed.
 
 
 ## M1 reproducible financial demo

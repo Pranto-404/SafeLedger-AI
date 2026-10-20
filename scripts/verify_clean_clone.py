@@ -19,7 +19,7 @@ def main():
     if len(args.commit)!=40 or any(c not in '0123456789abcdef' for c in args.commit):parser.error('Use a full published commit SHA.')
     out=Path(args.output).resolve();out.mkdir(parents=True,exist_ok=True)
     if (out/'result.json').exists():raise SystemExit('Use a fresh evidence output directory;prior results are preserved.')
-    result={'source_commit':args.commit,'repository':'https://github.com/Pranto-404/SafeLedger-AI','started_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'checks':[],'status':'running','scope':'Fresh remote checkout,Python venv and npm ci. Existing OS/Python/Node and optional Chromium binary reused;not a pristine VM/browser-install proof.'}
+    result={'source_commit':args.commit,'repository':'https://github.com/Pranto-404/capzoryx-copilot','started_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'checks':[],'status':'running','scope':'Fresh remote checkout,Python venv and npm ci. Existing OS/Python/Node and optional Chromium binary reused;not a pristine VM/browser-install proof.'}
     env=dict(os.environ)
     for key in list(env):
         if key.startswith('SAFELEDGER_LLM_') or key in {'SAFELEDGER_DB','SAFELEDGER_SIGNING_KEY','SAFELEDGER_PLAYWRIGHT_MODULE'}:env.pop(key)

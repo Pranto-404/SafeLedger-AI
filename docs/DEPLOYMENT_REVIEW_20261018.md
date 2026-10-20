@@ -1,6 +1,6 @@
 # Capzoryx Copilot deployment review — 18 October 2026
 
-The user's GitHub changes were retained. This review starts from Pranto-404/SafeLedger-AI commit f606f9f, not the older 842edbf checkout. Uploaded source matches fetched main after ignoring CRLF, except its fixture manifest. The original ZIP and old worktree were not overwritten.
+The user's GitHub changes were retained. This review starts from Pranto-404/capzoryx-copilot commit f606f9f, not the older 842edbf checkout. Uploaded source matches fetched main after ignoring CRLF, except its fixture manifest. The original ZIP and old worktree were not overwritten.
 
 ## What works
 

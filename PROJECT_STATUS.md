@@ -66,7 +66,7 @@ VERIFIED: 298 pytest tests passed (2 known warnings), frontend production build 
 
 OPEN: Render production still uses ephemeral local SQLite. Enabling Turso requires preserving/migrating current synthetic ledger and using the same signing identity; do not silently replace it with a previously seeded cloud demo. Vercel and Render dashboards both requested sign-in in the currently available browser; the user's local extension control was not exposed. Public authenticated financial workflow, deployed source/auto-update and persistence are not verified by health checks.
 
-Publication dry-run was rejected by automatic approval review as outside inspection authorization. No push or deployment performed. Prepare concrete patch/package and obtain explicit approval to publish to Pranto-404/SafeLedger-AI before any retry. Credentials are excluded from packages and commits. Budget remains BDT0; no paid service or billing change.
+Publication dry-run was rejected by automatic approval review as outside inspection authorization. No push or deployment performed. Prepare concrete patch/package and obtain explicit approval to publish to Pranto-404/capzoryx-copilot before any retry. Credentials are excluded from packages and commits. Budget remains BDT0; no paid service or billing change.
 
 ## Historical checkpoint (superseded where stated above)
 
@@ -79,7 +79,7 @@ VERIFIED:273pytest passed,0failed/skipped,2known warnings;18new free-profile tes
 NEXT:privately create/configure Gemini project showing Free tier,billing disabled,key +confirmation;run --live --free-tier with max14calls. Do not ask for paid budget or keys in chat. M3 live and M6 release remain open. Hosting/Postgres support is a separate future milestone,not implemented by this extension.
 
 ## Preserved prior verified source
-M0/M1/M2 finance/security,M3 bounded agent implementation,M4 UI,M5 local QA,M6 local reproduction/submission preparation preserved. Latest extension:finite real-model evaluation runner +safe provider metadata/accounting. Source `6a9c2bd9bdbedfabeec333f07cf1c03b459c2f46`,tree`3c10ad4808eca29836b47f919fedbeb28a422d89`. GitHub:Pranto-404/SafeLedger-AI. M3 LIVE and M6 RELEASE remain OPEN.
+M0/M1/M2 finance/security,M3 bounded agent implementation,M4 UI,M5 local QA,M6 local reproduction/submission preparation preserved. Latest extension:finite real-model evaluation runner +safe provider metadata/accounting. Source `6a9c2bd9bdbedfabeec333f07cf1c03b459c2f46`,tree`3c10ad4808eca29836b47f919fedbeb28a422d89`. GitHub:Pranto-404/capzoryx-copilot. M3 LIVE and M6 RELEASE remain OPEN.
 
 ## VERIFIED / latest
 255 pytest passed,0failed/skipped,2 known warnings.29 new evaluator/provider tests explicitly use mocks/MockTransport. Tests cover5task/2attack/1viewer-policy scoring,wrong money/source,actual unexpected signed synthetic posting detection,no orphan proposals,call/estimated-spend stops,strict usage/model/decimal checks,refusal accounting,zero-network preflight and mock refusal. Initial3 stop-handling failures retained and fixed. Actual HTTP4concurrent approvals/retry/process-restart regression passed:one posting,reconciled12000000→8500000 balance/forecast,audit verified. compileall,pip check,formatting passed.

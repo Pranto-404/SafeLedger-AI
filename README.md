@@ -1,6 +1,6 @@
 # Capzoryx Copilot
 
-[![CI](https://github.com/Pranto-404/SafeLedger-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/Pranto-404/SafeLedger-AI/actions/workflows/ci.yml)
+[![CI](https://github.com/Pranto-404/capzoryx-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/Pranto-404/capzoryx-copilot/actions/workflows/ci.yml)
 
 **SME Finance Copilot (Topic E, Shenzhen International FinTechathon 2026).** AI that does real financial work (cash-flow forecasting with alerts, financing-option matching and payment preparation) without ever holding authority over money. Every figure is computed exactly from the owner's records and linked to its source; every payment needs a separate human approver and leaves a signed audit trail.
 

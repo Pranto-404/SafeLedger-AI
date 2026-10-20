@@ -1,6 +1,6 @@
 # Global currency and workspace chat release
 
-Target: Pranto-404/SafeLedger-AI, existing safeledger-ai production project.
+Target: Pranto-404/capzoryx-copilot, existing safeledger-ai production project.
 
 Changes:
 - Remove the landing-page preloaded-data sales box and redundant empty-account banner.

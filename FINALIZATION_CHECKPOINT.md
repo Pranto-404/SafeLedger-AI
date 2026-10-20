@@ -18,7 +18,7 @@ Prepared secret-free backend-only candidate generator scripts/prepare_vercel_bac
 
 ## Safe continuation
 
-Active worktree /workspace/scratch/1afbddeb34fe/safeledger-review, GitHub Pranto-404/SafeLedger-AI. Original safeledger-ai and uploaded ZIP preserved. Backup branches retain earlier local commits. Git connector publication uses expected current main and no force; CLI push has no credentials. Secrets stay ignored .private and never enter Git/package/logs. Final source ZIP must exclude secrets, local databases, runtime dependencies and browser screenshots.
+Active worktree /workspace/scratch/1afbddeb34fe/safeledger-review, GitHub Pranto-404/capzoryx-copilot. Original safeledger-ai and uploaded ZIP preserved. Backup branches retain earlier local commits. Git connector publication uses expected current main and no force; CLI push has no credentials. Secrets stay ignored .private and never enter Git/package/logs. Final source ZIP must exclude secrets, local databases, runtime dependencies and browser screenshots.
 
 Public financial simulation only; no real transfers/bank verification, password recovery, independent security certification or physical-device qualification. Records are append-only; corrected scenarios use a new workspace. Free hosting/model quotas remain. Competition report/deck/video refresh, registration/eligibility/license/final submission are separate owner/deliverable work, not implied complete by website publication.
 
