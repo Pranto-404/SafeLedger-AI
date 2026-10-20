@@ -2,7 +2,7 @@
 
 Shenzhen International FinTechathon 2026, International Track. Topic E: SME Finance Copilot. Theme: AI as a Financial Participant.
 
-- Live application: https://safeledger-ai.vercel.app
+- Live application: https://capzoryx-copilot.vercel.app
 - Source: https://github.com/Pranto-404/SafeLedger-AI (release 0.4.1, the tagged submission commit)
 - CI: GitHub Actions runs the backend suite, a secret scan, the type-checked production build and the assistant/currency acceptance checks on every push.
 

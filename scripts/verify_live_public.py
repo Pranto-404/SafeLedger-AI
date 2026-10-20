@@ -8,7 +8,7 @@ import time
 import urllib.error
 import urllib.request
 
-BASE='https://safeledger-ai.vercel.app'
+BASE='https://capzoryx-copilot.vercel.app'
 ROOT=Path(__file__).resolve().parents[1]
 class Client:
  def __init__(self):

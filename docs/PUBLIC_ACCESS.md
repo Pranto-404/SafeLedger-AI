@@ -10,7 +10,7 @@ Passwords require8–128 exact characters (spaces preserved), server scrypt and 
 
 # Public access and testing
 
-Public frontend: https://safeledger-ai.vercel.app. Backend: https://safeledger-ai.onrender.com.
+Public frontend: https://capzoryx-copilot.vercel.app. Backend: https://safeledger-ai.onrender.com.
 
 - **Explore the demo** opens a read-only example without asking for credentials. Visitors can inspect invoices, forecasts, fictional financing and audit. Guest sessions cannot create proposals, approve, import or use the model quota.
 - **Create account** uses a username (3–32 letters, numbers or underscores) and a unique passphrase (8–128 characters). No email service is required. A new isolated personal workspace starts at zero; practice sample data is explicitly optional and isolated. No password recovery is currently provided; the entry screen discloses this.

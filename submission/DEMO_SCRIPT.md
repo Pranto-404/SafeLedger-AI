@@ -1,6 +1,6 @@
 # Demo video script (≤ 5 minutes): current release 0.4.0
 
-Record against https://safeledger-ai.vercel.app at commit `30ecef8` or later. **Open the site 2 minutes before recording** so the free Render backend is warm. Use two fresh accounts you create for the video (owner and approver). Enter only made-up business figures. Never show passwords, recovery codes, browser dev tools or URLs containing tokens. Do not cut a failed step into a fake success: re-record instead.
+Record against https://capzoryx-copilot.vercel.app at commit `30ecef8` or later. **Open the site 2 minutes before recording** so the free Render backend is warm. Use two fresh accounts you create for the video (owner and approver). Enter only made-up business figures. Never show passwords, recovery codes, browser dev tools or URLs containing tokens. Do not cut a failed step into a fake success: re-record instead.
 
 Prepare before recording (off camera): the owner account with these records added on the **Data** page (dates relative to today):
 

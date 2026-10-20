@@ -29,7 +29,7 @@ def run(base_url=None):
         for role in ['owner','approver','viewer']:
             tokens[role]=sec.provision_session(db,business+'-'+role,business,role,ttl_seconds=3600)
         tokens['other']=sec.provision_session(db,business+'-other',business+'-other','owner',ttl_seconds=3600)
-    if base_url and base_url!='https://safeledger-ai.vercel.app':raise ValueError('Only the authorized public target is supported')
+    if base_url and base_url!='https://capzoryx-copilot.vercel.app':raise ValueError('Only the authorized public target is supported')
     client=httpx.Client(base_url=base_url,timeout=30,follow_redirects=False) if base_url else TestClient(app)
     with client:
         def request(role,method,path,**kwargs):
