@@ -1,3 +1,11 @@
+# Next steps (upcoming features)
+
+1. Import from bank or wallet messages (bKash, Nagad, Rocket, bank SMS) and from statement files (CSV): propose drafts, de-duplicate by transaction ID, owner confirms.
+2. Live payment feed for businesses that take online payments through a gateway (needs the merchant's own credentials and webhooks).
+3. Install on a phone (home-screen app) and share a message into the app.
+4. Bill reminders by email.
+5. Real-photo accuracy review with a small set of real invoices, then tune the reading prompt.
+
 # Current finalization status — 18 October 2026
 
 Phase one is published and publicly verified: zero-start personal accounts, separate optional demos, own cash/invoice/JSON input, explicit payee permission,8-character passwords/strength meter, lightweight futuristic UI and easier assistant.312backend tests and34actual public acceptance checks passed; old accounts/ledger preserved and live AI answered from manual data. Final app4a4bbd7 is live on both hosts; same manual account/balance/one posting/audit survived actual redeployment.16 browser scenarios/6 axe scans passed. See FINALIZATION_CHECKPOINT.md and evidence/finalization/.

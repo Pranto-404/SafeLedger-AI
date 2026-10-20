@@ -57,6 +57,7 @@ export function QuickAdd({request,revision,onSaved,profile,cloudAvailable}:Props
         <button disabled={busy!==''||!text.trim()} onClick={()=>void read()}>{busy==='text'?t('Reading…'):t('Read it')}</button>
       </div>
     </div>
+    <p className="coming-soon small"><span className="soon-badge">{t('Coming soon')}</span>{t('Import from a bank or wallet message, or from a statement file.')}</p>
     {error&&<p className="error" role="alert">{error}</p>}
     {draft&&<div className={preview?'scan-compare has-photo':'scan-compare'}>{preview&&<figure className="scan-photo"><img src={preview} alt={t('Your photo')}/><figcaption className="small muted">{t('Compare with your photo before adding')}</figcaption></figure>}<DraftCard key={JSON.stringify(draft)} draft={draft} revision={revision} request={request} onDiscard={()=>{setDraft(null);setPreview('');}} onSaved={async()=>{await onSaved();setText('');setPreview('');}}/></div>}
   </section>;

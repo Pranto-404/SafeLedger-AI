@@ -1,6 +1,6 @@
 # Security self-assessment: permission tiers and known-risk register
 
-Release 0.4.1 (financing match + security hardening), 20 October 2026. This is an internal assessment by the team, not an independent penetration test or certification. Evidence: `api/tests/` (414 backend tests plus a 14,000-scenario randomized check of the financing engine (see `docs/SECURITY_REVIEW_20261020.md`)), `.github/workflows/ci.yml`, `scripts/security_scan.py` and the release notes in `docs/`.
+Release 0.7.x (accounts, languages, photo reading, landing page), 20 October 2026. Earlier text describes the 0.4.1 baseline; section 10 lists what changed. This is an internal assessment by the team, not an independent penetration test or certification. Evidence: `api/tests/` (414 backend tests plus a 14,000-scenario randomized check of the financing engine (see `docs/SECURITY_REVIEW_20261020.md`)), `.github/workflows/ci.yml`, `scripts/security_scan.py` and the release notes in `docs/`.
 
 ## 1. Design principle: the AI is never the authority for money
 
@@ -58,3 +58,26 @@ Roles come from authenticated server state, never from a request body. Invitatio
 ## 5. What we will not claim
 
 We do not describe Capzoryx Copilot as bank-grade, breach-proof, certified, compliant with a specific regulator, or an autonomous payment agent. It is a tested competition prototype with server-enforced controls and disclosed limits.
+
+## 10. Changes in release 0.5 to 0.7
+
+New controls
+- **Two-step sign-in:** TOTP (RFC 6238) with replay protection, hashed one-time backup codes and a sealed secret; enabling and disabling need the password. Reset by email also asks for the second factor when it is on.
+- **Email codes:** six digits, HMAC-hashed, ten-minute expiry, five attempts; replies for unknown addresses are identical to known ones. Mail goes through a relay that checks a shared secret; failures never log addresses.
+- **Sessions:** logout ends the server session; a password change signs every other device out; per-account failure lockouts and address-independent request budgets.
+- **Sharing:** roles are enforced on the server; invitation links are single use, expire, and the public preview reveals only the workspace name, role and inviter name for a valid link.
+- **Clearing data:** owner-only, soft archive with a 30-day restore (the ledger itself stays append-only).
+- **Photo and chat records:** model output is only a draft; amounts, currencies, dates and names are re-validated on the server and saved only through the owner-only, idempotent records API after confirmation. Images are size-limited and checked by magic bytes.
+- **Languages:** `/api/i18n` is public but bounded: allow-listed languages only, only strings from a fixed server-side list are translated, outputs are sanitised (no markup, placeholders preserved), and the work is cached so it runs at most once per language.
+
+Evidence and how to repeat it
+- `python -m pytest api/tests -q`: 467 tests (465 pass on Windows; the other two are a POSIX file-mode check and a CRLF hash check that pass on Linux CI).
+- `python scripts/security_probe.py http://127.0.0.1:8000`: 53 black-box checks (anonymous access, origin enforcement, hostile input on public endpoints, error shape, cookie flags, oversized bodies, session replay and revocation, lockout, cross-account isolation). Local servers only.
+- `python scripts/security_scan.py` (secret scan over the full history), `npm audit --omit=dev` and `pip-audit` on the lock file: clean at the time of writing.
+- Frontend: no inline script or style, no `innerHTML`, `eval` or dynamic code; CSP `default-src 'self'`.
+
+Known limits, unchanged or new
+- Client addresses are forgeable on the free hosting tier, so limits are per account and global, not per address.
+- Email delivery depends on a Gmail account through Apps Script (about 100 recipients a day for a personal account).
+- Translations and photo reading use a cloud model; a wrong reading is caught by the confirm step, not by the model.
+- Nothing connects to a bank or wallet; planned import features would only create drafts for the owner to confirm.

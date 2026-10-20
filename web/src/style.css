@@ -425,3 +425,12 @@ main.welcome>.welcome-story>.scroll-cue{order:8;align-self:flex-start;margin-top
 @keyframes floaty{0%,100%{margin-top:0}50%{margin-top:-10px}}
 @media(prefers-reduced-motion:reduce){.auth-card button.full-width::after,.fc{animation:none}}
 @media(min-width:1000px){.fc2{top:64%!important;right:-44px!important}.fc1{top:-14px!important}}
+.soon-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.soon-card{position:relative;overflow:hidden;background:var(--surface);border:1px dashed var(--line);border-radius:18px;padding:22px 20px;transition:transform .25s ease,border-color .25s ease}
+.soon-card:hover{transform:translateY(-4px);border-color:#e0a23a}
+.soon-card h3{font-size:16px;margin:14px 0 6px}.soon-card p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.55}
+.soon-badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:3px 9px;border-radius:99px;background:#e0a23a22;color:#c98a1b;margin-bottom:12px}
+.soon-card .soon-badge{position:absolute;top:14px;inset-inline-end:14px;margin:0}
+.soon-note{margin-top:16px;text-align:center}
+.coming-soon{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 0;color:var(--muted)}.coming-soon .soon-badge{margin:0}
+@media(max-width:900px){.soon-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.soon-grid{grid-template-columns:1fr}}

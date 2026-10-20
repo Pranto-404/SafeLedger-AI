@@ -83,6 +83,23 @@ check('health reveals no secrets', 'key' not in r.text.lower() and 'secret' not 
 check('nosniff header present', r.headers.get('x-content-type-options', '').lower() == 'nosniff', dict(r.headers))
 cors = httpx.options(BASE + '/api/workspace', headers={'Origin': 'https://evil.example', 'Access-Control-Request-Method': 'GET'}, timeout=30)
 check('CORS does not allow a foreign origin', cors.headers.get('access-control-allow-origin') in (None, ORIGIN), cors.headers.get('access-control-allow-origin'))
+# 9. Sessions: logout really ends a session, a password change signs other devices out, repeated wrong passwords lock the account.
+d1 = client()
+d1.post('/api/auth/signup', json={'username': 'probe_s_' + RUN, 'password': 'Zq7-long-unique-pass-43', 'currency': 'BDT'})
+stolen = d1.cookies.get('safeledger_session')
+d1.post('/api/auth/logout', json={})
+replay = httpx.Client(base_url=BASE, headers=H, cookies={'safeledger_session': stolen}, timeout=30)
+check('a logged-out session cannot be replayed', replay.get('/api/workspace').status_code == 401)
+d2 = client(); d3 = client()
+d2.post('/api/auth/login', json={'username': 'probe_s_' + RUN, 'password': 'Zq7-long-unique-pass-43'})
+d3.post('/api/auth/login', json={'username': 'probe_s_' + RUN, 'password': 'Zq7-long-unique-pass-43'})
+changed = d2.post('/api/account/password', json={'current_password': 'Zq7-long-unique-pass-43', 'new_password': 'Zq7-long-unique-pass-44'})
+check('password change works', changed.status_code == 200, changed.text[:100])
+check('password change signs other devices out', d3.get('/api/workspace').status_code == 401 and d2.get('/api/workspace').status_code == 200)
+codes = [client().post('/api/auth/login', json={'username': 'probe_o_' + RUN, 'password': 'wrong-pass-%d-xx' % i}).status_code for i in range(12)]
+check('repeated wrong passwords are slowed or locked', any(c in (423, 429) for c in codes), codes)
+right = client().post('/api/auth/login', json={'username': 'probe_o_' + RUN, 'password': 'Zq7-long-unique-pass-41'})
+check('a locked account does not accept even the right password during the lock', right.status_code in (423, 429), right.status_code)
 failed = [n for n, ok, _ in results if not ok]
 print(f'\n{len(results) - len(failed)} of {len(results)} checks passed')
 if failed:

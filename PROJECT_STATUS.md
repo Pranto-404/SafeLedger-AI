@@ -1,3 +1,10 @@
+# Current status (release 0.7.x, 20 October 2026)
+
+- Live at https://capzoryx-copilot.vercel.app; backend `capzoryx-copilot` on Render; repository `Pranto-404/capzoryx-copilot`.
+- Done since the first submission: accounts and settings (profile, photo, password, two-step sign-in, email codes), workspace sharing with invitation links, per-currency clear and restore, live currency conversion with a chosen conversion currency, photo and chat records with a confirm step, PDF reports, 37 interface languages, rebuilt tutorial, animated landing page, phone layout.
+- Tests: 467 backend tests, node checks for the local assistant, record parser and site guide, 53-check security probe, secret scan and dependency audits (see `docs/SECURITY_SELF_ASSESSMENT.md`, section 10).
+- Rollback point of the original submission: tag `submission-2026-10-20`.
+
 # Current real-records release — 18 October 2026
 
 Current scope supersedes every demo instruction below: no public examples, no preloaded figures or fictional financing. Personal records preserved; archived sample access withdrawn without deletion. Empty signup, manual inputs/history, exact money, independent approval, signed audit, private export, one-time recovery and deferred optional AI are implemented. Explicit sharing consent is mandatory for external AI; no real provider is contacted by the new acceptance suite.

@@ -2,47 +2,66 @@
 
 [![CI](https://github.com/Pranto-404/capzoryx-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/Pranto-404/capzoryx-copilot/actions/workflows/ci.yml)
 
-**SME Finance Copilot (Topic E, Shenzhen International FinTechathon 2026).** AI that does real financial work (cash-flow forecasting with alerts, financing-option matching and payment preparation) without ever holding authority over money. Every figure is computed exactly from the owner's records and linked to its source; every payment needs a separate human approver and leaves a signed audit trail.
+**SME Finance Copilot** by team Capzoryx (Topic E, 2026 Shenzhen International FinTechathon). A free, multilingual web app that helps small businesses record bills and payments, see their cash outlook, compare loan offers and keep payments safe with a second approver. It never holds a bank credential and never moves money.
 
-| Page | What it does |
+Live: https://capzoryx-copilot.vercel.app (the older `safeledger-ai.vercel.app` address has been retired).
+
+## What it does
+
+| Area | What it does |
 | --- | --- |
-| Overview | Verified cash position, 7/30-day outlook, open invoices, pending approvals, audit status |
-| Data | Add cash activity and supplier invoices (append-only, idempotent), or import a records JSON |
-| Invoices | Search, allow payees, start a payment review; duplicate-risk invoices are blocked |
-| Cash flow | Deterministic daily forecast, reserve-breach alert, receipt-delay what-if |
-| **Financing** | Enter real lender quotes; get exact schedules, effective annual rate, cash-flow fit and a ranked best match (`docs/FINANCING_MATCH_RELEASE.md`) |
-| Assistant | One chat: answers on the device first; asks permission before anything goes to the online model |
-| Approvals | Independent approver reviews the exact payee, amount and action hash; one posting only |
-| Audit | Tenant hash chain with HMAC signatures; export |
+| Add records | Photograph a bill or receipt, type it like a message ("I paid Rahman 5000 for freight yesterday"), or fill in a form. You always check a draft before it is saved. |
+| Overview | Balance, money received and spent, open bills, pending approvals, an approximate value in your chosen conversion currency (USD by default). |
+| Invoices, Cash flow | Unpaid bills and due dates; a deterministic 7/30-day outlook with a safety reserve and what-if scenarios. |
+| Loans | Enter real lender offers; exact schedules, effective annual rate, cash-flow fit and a ranked best match. |
+| Approvals | A different person approves each payment; approving records it in the books and never sends a bank transfer. |
+| Activity | Plain-language history backed by a signed, linked audit chain. |
+| Settings | Profile and photo, password change, two-step sign-in (authenticator app and backup codes), email verification and reset codes, workspace sharing with roles, per-currency clear data with 30-day restore, language, conversion currency. |
+| Assistant | Answers on the device first (balance, bills, how the site works); smart assist, when on, helps with the rest and reads photos. |
+| Reports | A PDF report with balance, bills, cash activity and payment decisions; a full backup file in Settings. |
 
-**Judges:** see `submission/JUDGE_QUICKSTART.md` for a 4-minute walkthrough using a sample records file.
+Interface languages: 37, including Chinese, Japanese, Hindi, Urdu, Arabic and Bangla (right-to-left layouts supported). Over 170 currencies with live exchange rates.
 
-Documentation map: `docs/INDEX.md`. Technical documentation: `submission/TECHNICAL_REPORT.md`. Security: `docs/SECURITY_SELF_ASSESSMENT.md`.
+**Coming soon:** import from bank or wallet messages and statement files, a live payment feed for businesses, install on a phone, and bill reminders. Nothing connects to a bank today.
 
-Private financial recordkeeping at https://capzoryx-copilot.vercel.app. Create a username/password account: every workspace starts with BDT0, no invoices and no cash events. Add your own cash activity and invoices in **Data**, or import your own conforming records JSON into an empty workspace. No demo, guest example or fictional lender offers are exposed by the product; financing comparisons use only quotes the user enters.
+## Architecture
 
-Passwords accept 8–128 exact characters and have a strength indicator. Sessions use Secure HttpOnly cookies on the deployed site; no token needs to be pasted. Save the one-time recovery code securely. A password reset rotates the code and revokes all sessions. Losing both the password and recovery code prevents self-service recovery; no email service is configured.
+- **Frontend:** React 19 + TypeScript + Vite on Vercel. Strict CSP (`default-src 'self'`, no inline script or style). `/api` is proxied to the backend.
+- **Backend:** FastAPI on Render (free tier) with Turso (libSQL over HTTPS) as the database; SQLite locally.
+- **Money and approvals:** integer minor units, exact decimals, independent approval, append-only ledger, signed audit chain.
+- **Accounts:** scrypt password hashes, server-side sessions in HttpOnly cookies, TOTP two-step sign-in, email codes through a Google Apps Script relay (Render's free tier blocks SMTP), per-account lockouts and address-independent rate limits.
+- **Translations:** English is the source. A fixed list of interface strings is translated once (Google Translate when `SAFELEDGER_GOOGLE_TRANSLATE_KEY` is set, otherwise the cloud model), cached in the database and exported as static files in `web/public/locales/`.
 
-Cash amounts use integer poysha and exact decimal validation. An unpaid invoice affects the forecast, not cleared cash. Owners explicitly allow a payee and create a proposal; a separately registered, invited approver reviews it. Approval creates a ledger record once, with signed audit evidence. **No bank connection, bank verification or bank transfer is provided.** Record accuracy depends on the records you enter.
+## Configuration (environment variables on the backend)
 
-Export records privately with **Export records**. Existing personal accounts, cash records, postings and signed history are retained. Older sample workspaces are access-disabled and archived without deletion; accounts with only an old example receive a new empty personal workspace on password login.
-
-The landing page, workspace and optional Assistant load separately. No external model is contacted on startup or when opening the Assistant. A request needs explicit consent to share non-confidential details. The free provider may use submissions to improve its services: do not submit confidential, sensitive or personal information. The deterministic dashboard, forecasts and approval controls work without AI. There is no paid fallback.
+| Variable | Purpose |
+| --- | --- |
+| `SAFELEDGER_SIGNING_KEY` | 64-hex key for signatures and sealed secrets (required in production; never rotate casually). |
+| `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` | Persistent database in production. |
+| `SAFELEDGER_LLM_*` | Cloud model for smart assist and photo reading (see `docs/FREE_AI_SETUP.md`). |
+| `SAFELEDGER_VISION_MODEL` | Optional stronger model for photos; the normal model is the fallback. |
+| `SAFELEDGER_MAIL_RELAY_URL`, `SAFELEDGER_MAIL_RELAY_SECRET` | Google Apps Script web app that sends email through your Gmail. |
+| `SAFELEDGER_BREVO_API_KEY` / `SAFELEDGER_RESEND_API_KEY` / `SAFELEDGER_SMTP_*` | Alternative mail providers. |
+| `SAFELEDGER_MAIL_FROM`, `SAFELEDGER_PUBLIC_URL` | Sender name and the public address used in invitation emails. |
+| `SAFELEDGER_GOOGLE_TRANSLATE_KEY` | Optional: Google Cloud Translation for instant new-language translation. |
 
 ## Run and verify locally
 
-Use Python3.12 and Node22. Install `api/requirements.txt`, `api/requirements-dev.txt` and `npm ci --prefix web`. Set a private `SAFELEDGER_DB_PATH` and `SAFELEDGER_SIGNING_KEY` (see `.env.example`); never publish secrets. Run `python -m uvicorn api.app.main:app`, then `npm run dev --prefix web`. New databases start empty. Keep the signing identity and persistent database together across deployments.
+Python 3.12 and Node 22. Install `api/requirements.txt`, `api/requirements-dev.txt` and `npm ci --prefix web`. Copy `.env.example` and set a private `SAFELEDGER_DB` and `SAFELEDGER_SIGNING_KEY`; never commit secrets.
 
 ```sh
 python -m pytest api/tests -q
 npm run build --prefix web
-SAFELEDGER_BROWSER_SCRIPT=scripts/real_records_browser.cjs python scripts/run_finalization_browser.py
+node scripts/check_local_assistant.cjs && node scripts/check_site_guide.cjs && node scripts/check_record_parser.cjs
+node scripts/extract_ui_strings.cjs --check          # keeps the translatable string list in sync
+python scripts/security_probe.py http://127.0.0.1:8000   # 53 black-box checks, local servers only
+python scripts/security_scan.py                       # secret scan over the full git history
 ```
 
-The finite browser suite uses isolated test records and does not call a real model. It needs a Playwright Chromium installation; `SAFELEDGER_CHROMIUM_MODULE` can select an installed serverless Chromium runtime. Current evidence is in `evidence/real-data/` and release status in `REAL_DATA_CHECKPOINT.md`.
+Two tests are Windows-only failures (POSIX file mode and CRLF line endings) and pass on Linux CI.
 
-## Hosting and limits
+## Security
 
-Vercel serves the frontend; Render Free currently handles the API with persistent Turso storage. No paid service is enabled. Render cold starts and free quotas remain. Native Vercel FastAPI preparation is in `scripts/prepare_vercel_backend.py`; the generated candidate excludes development fixtures. Backend cutover requires a successful authenticated preview and persistence qualification before changing the working production route.
+See `docs/SECURITY_SELF_ASSESSMENT.md` for controls and limits, and `docs/SECURITY_REVIEW_20261020.md` for the last review. Never run load or probe scripts against the live site; use a local server.
 
-This is an application release, not an independent security certification, bank service or guaranteed availability contract. Historical competition documents, videos, sample fixtures and reports remain under their original paths for provenance; their demo/token instructions are superseded. See `docs/HISTORICAL_README.md` for those development-only instructions.
+Documentation map: `docs/INDEX.md`. Judges: `submission/JUDGE_QUICKSTART.md`.
