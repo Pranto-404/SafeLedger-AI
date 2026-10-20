@@ -63,7 +63,7 @@ def archive_legacy_examples(db):
 def browser_origin(request):
     origin = request.headers.get('origin','')
     allowed = {o.strip().rstrip('/') for o in os.environ.get('SAFELEDGER_CORS_ORIGINS','').split(',') if o.strip()}
-    allowed.update({'https://safeledger-ai.vercel.app','https://safeledger-ai.onrender.com'})
+    allowed.update({'https://safeledger-ai.vercel.app','https://capzoryx-copilot.vercel.app','https://safeledger-ai.onrender.com'})
     if not os.environ.get('RENDER') and not os.environ.get('VERCEL'):
         allowed.update({'http://127.0.0.1:5173','http://localhost:5173','http://127.0.0.1:4173','http://127.0.0.1:8000','http://localhost:8000','http://testserver'})
     if origin not in allowed or request.headers.get('X-SafeLedger-Client') != 'web':

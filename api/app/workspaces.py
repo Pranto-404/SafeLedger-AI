@@ -83,7 +83,7 @@ def invite(body: InviteRequest, actor=Depends(principal), db=Depends(db_connecti
     emailed = False
     if email and mailer.configured():
         import os
-        base = os.environ.get('SAFELEDGER_PUBLIC_URL', 'https://safeledger-ai.vercel.app').rstrip('/')
+        base = os.environ.get('SAFELEDGER_PUBLIC_URL', 'https://capzoryx-copilot.vercel.app').rstrip('/')
         name = db.execute("SELECT COALESCE(NULLIF(p.display_name,''),a.username) FROM auth_accounts a LEFT JOIN account_profiles p ON p.account_id=a.account_id WHERE a.account_id=?", (account,)).fetchone()[0]
         role_text = 'approve payments' if body.role == 'approver' else 'view the records'
         emailed = mailer.send(email, f'{name} invited you to a Capzoryx Copilot workspace', f'{name} invited you to {role_text} in their Capzoryx Copilot workspace.\n\nOpen this link, sign in or create a free account, and you will be added:\n{base}/?join={code}\n\nThe invitation expires in {body.hours} hours and works once.')
