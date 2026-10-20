@@ -1,34 +1,19 @@
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useMemo,useRef,useState,type PointerEvent as RPointerEvent} from 'react';
 import {Icon} from './Icon';
 import {LANGUAGES,t,T} from './i18n';
 import {Logo} from './Logo';
 
-const features:{icon:string;title:string;text:string}[]=[
- {icon:'camera',title:T('Photo to record'),text:T('Snap a bill or receipt and we read the supplier, date, amount and due date for you.')},
- {icon:'pen',title:T('Just say it'),text:T('Type what you paid or received, like a message, and it becomes a record.')},
- {icon:'Cash flow',title:T('Cash outlook'),text:T('See your balance for the next 7 and 30 days and test what-if cases.')},
- {icon:'Invoices',title:T('Bills and due dates'),text:T('Every unpaid bill in one list, so nothing is paid late or twice.')},
- {icon:'Approvals',title:T('Safe payments'),text:T('A second person approves each payment before it is recorded.')},
- {icon:'Financing',title:T('Compare loan offers'),text:T('Find the true yearly cost and the offer your cash flow can carry.')},
- {icon:'globe',title:T('Your language, any currency'),text:T('Use it in your language and see amounts at live exchange rates.')},
- {icon:'Audit',title:T('Reports and history'),text:T('Download a PDF report and see a clear, tamper-evident history.')},
-];
-const steps:{title:string;text:string}[]=[
- {title:T('Add'),text:T('Photograph a bill or type what happened. Check it, then confirm.')},
- {title:T('Understand'),text:T('See your balance, bills and the weeks ahead in plain words.')},
- {title:T('Decide'),text:T('Prepare payments, share with your accountant, compare loans.')},
+const audiences:{icon:string;title:string;text:string}[]=[
+ {icon:'Invoices',title:T('Shops and retailers'),text:T('Track daily cash and supplier bills without a spreadsheet.')},
+ {icon:'Financing',title:T('Wholesalers and distributors'),text:T('Plan payments around customer receipts and compare credit lines.')},
+ {icon:'Data',title:T('Freelancers and services'),text:T('Record what you are owed and what you spent, from your phone.')},
+ {icon:'Approvals',title:T('Accountants and partners'),text:T('Invite a teammate to review or approve, with clear roles.')},
 ];
 const trust:{icon:string;title:string;text:string}[]=[
  {icon:'Approvals',title:T('Two people for every payment'),text:T('The person who prepares a payment can never approve it.')},
  {icon:'Audit',title:T('History nobody can quietly change'),text:T('Each entry is signed and linked, so edits show up.')},
  {icon:'Settings',title:T('Two-step sign-in'),text:T('Add an authenticator app and backup codes in a minute.')},
  {icon:'check',title:T('Private by default'),text:T('Only people you invite can see your records. You can clear them any time.')},
-];
-const audiences:{icon:string;title:string;text:string}[]=[
- {icon:'Invoices',title:T('Shops and retailers'),text:T('Track daily cash and supplier bills without a spreadsheet.')},
- {icon:'Financing',title:T('Wholesalers and distributors'),text:T('Plan payments around customer receipts and compare credit lines.')},
- {icon:'Data',title:T('Freelancers and services'),text:T('Record what you are owed and what you spent, from your phone.')},
- {icon:'Approvals',title:T('Accountants and partners'),text:T('Invite a teammate to review or approve, with clear roles.')},
 ];
 const faq:{q:string;a:string}[]=[
  {q:T('Is it free?'),a:T('Yes. You can create a workspace and use every feature at no cost.')},
@@ -37,9 +22,54 @@ const faq:{q:string;a:string}[]=[
  {q:T('Which currencies are supported?'),a:T('Over 170 currencies, with live exchange rates for converted values.')},
  {q:T('What if I forget my password?'),a:T('Ask for a code by email, or use the recovery key you saved when you signed up.')},
 ];
-const stats:{n:string;label:string}[]=[
- {n:'37',label:T('languages')},{n:'170+',label:T('currencies with live rates')},{n:'2',label:T('people on every payment')},{n:'30',label:T('days to undo clearing data')},
+const stats:{n:number;suffix:string;label:string}[]=[
+ {n:37,suffix:'',label:T('languages')},{n:170,suffix:'+',label:T('currencies with live rates')},{n:2,suffix:'',label:T('people on every payment')},{n:30,suffix:'',label:T('days to undo clearing data')},
 ];
+const story:{title:string;text:string}[]=[
+ {title:T('Add'),text:T('Photograph a bill or type what happened. Check it, then confirm.')},
+ {title:T('Understand'),text:T('See your balance, bills and the weeks ahead in plain words.')},
+ {title:T('Decide'),text:T('Prepare payments, share with your accountant, compare loans.')},
+];
+const reduced=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch{return false;}};
+
+/** Counts up once when it scrolls into view. */
+function Counter({to,suffix}:{to:number;suffix:string}){
+  const ref=useRef<HTMLElement>(null);const [v,setV]=useState(reduced()?to:0);
+  useEffect(()=>{
+    if(reduced()){setV(to);return;}
+    const el=ref.current;if(!el||!('IntersectionObserver' in window)){setV(to);return;}
+    let raf=0;
+    const io=new IntersectionObserver(es=>{if(!es[0].isIntersecting)return;io.disconnect();const t0=performance.now();const tick=(now:number)=>{const p=Math.min(1,(now-t0)/1100);setV(Math.round(to*(1-Math.pow(1-p,3))));if(p<1)raf=requestAnimationFrame(tick);};raf=requestAnimationFrame(tick);});
+    io.observe(el);return()=>{io.disconnect();cancelAnimationFrame(raf);};
+  },[to]);
+  return <strong ref={ref}>{v}{suffix}</strong>;
+}
+
+/** Types a sentence, then shows the record it becomes. Loops quietly; static for reduced motion. */
+const demos:{say:string;who:string;what:string;amount:string;kind:string}[]=[
+ {say:'I paid Rahman 5000 for freight yesterday',who:'Rahman',what:'Freight',amount:'BDT 5,000',kind:T('Money out')},
+ {say:'Received 20,000 from Karim Traders',who:'Karim Traders',what:'Payment',amount:'+ BDT 20,000',kind:T('Money in')},
+ {say:'Bill from Dhaka Packaging 12000 due in 10 days',who:'Dhaka Packaging',what:'Bill',amount:'BDT 12,000',kind:T('Unpaid supplier invoice')},
+];
+export function HeroDemo(){
+  const [i,setI]=useState(0);const [n,setN]=useState(reduced()?999:0);const [done,setDone]=useState(reduced());
+  const d=demos[i];
+  useEffect(()=>{
+    if(reduced())return;
+    let id=0;
+    if(n<d.say.length){id=window.setTimeout(()=>setN(n+1),n===0?500:38);}
+    else if(!done){id=window.setTimeout(()=>setDone(true),350);}
+    else{id=window.setTimeout(()=>{setDone(false);setN(0);setI((i+1)%demos.length);},3200);}
+    return()=>window.clearTimeout(id);
+  },[n,done,d.say.length,i]);
+  return <div className="hero-demo" aria-hidden="true">
+    <div className="hd-bar"><span className="hd-dot"/><span className="hd-dot"/><span className="hd-dot"/><b>{t('Assistant')}</b></div>
+    <div className="hd-body">
+      <p className="hd-user">{d.say.slice(0,n)}<span className="hd-caret"/></p>
+      <div className={done?'hd-card show':'hd-card'}><span className="hd-badge">{t(d.kind)}</span><strong>{d.who}</strong><small>{d.what}</small><em>{d.amount}</em><span className="hd-add"><Icon name="check"/>{t('Add to my records')}</span></div>
+    </div>
+  </div>;
+}
 
 function ScanIllustration(){
   return <svg className="illus" viewBox="0 0 420 260" role="img" aria-label={t('A photographed bill turning into a record')}>
@@ -55,17 +85,6 @@ function ScanIllustration(){
     <text x="268" y="178" className="il-label">{t('Due')}</text><text x="268" y="196" className="il-value">5 Nov 2026</text>
   </svg>;
 }
-function OutlookIllustration(){
-  return <svg className="illus" viewBox="0 0 420 260" role="img" aria-label={t('A cash outlook chart')}>
-    <rect x="10" y="10" width="400" height="240" rx="18" className="il-card"/>
-    <path d="M40 200h340" className="il-axis"/><path d="M40 60v140" className="il-axis"/>
-    <path d="M40 170 C90 150 120 120 160 128 S230 170 270 120 S340 70 380 82 L380 200 L40 200Z" className="il-area"/>
-    <path d="M40 170 C90 150 120 120 160 128 S230 170 270 120 S340 70 380 82" className="il-line" fill="none"/>
-    <path d="M40 150h340" className="il-reserve"/>
-    <circle cx="270" cy="120" r="6" className="il-dot"/>
-  </svg>;
-}
-/** A small, honest preview of the workspace with sample numbers. Plain HTML so it costs nothing to load. */
 function Preview(){
   const bars=[46,58,52,70,64,82,76];
   return <div className="preview" role="img" aria-label={t('Preview of the workspace with sample numbers')}>
@@ -81,10 +100,57 @@ function Preview(){
     </div>
   </div>;
 }
+function ApprovalMock(){
+  return <div className="approve-mock" role="img" aria-label={t('A payment waiting for a second person to approve')}>
+    <div className="am-head"><b>{t('Pay supplier')}</b><span className="hd-badge">{t('Waiting')}</span></div>
+    <div className="am-row"><span>Dhaka Packaging</span><strong>BDT 12,500</strong></div>
+    <div className="am-steps">
+      <div className="am-step done"><span><Icon name="check"/></span>{t('Prepared by you')}</div>
+      <div className="am-line"/>
+      <div className="am-step wait"><span/>{t('Approved by a second person')}</div>
+      <div className="am-line"/>
+      <div className="am-step"><span/>{t('Recorded in your books')}</div>
+    </div>
+  </div>;
+}
 
-/** Everything a visitor can read before signing in. Plain markup and CSS, so it costs almost nothing to load. */
+/** Drag the slider: a late customer payment moves the whole outlook, and the page says whether cash runs short. */
+function OutlookPlayground(){
+  const [late,setLate]=useState(0);
+  const reserve=30000;
+  const model=useMemo(()=>{
+    const days=22;const bal:number[]=[];let b=150000;
+    for(let d=0;d<days;d++){
+      if(d===3)b-=35000;
+      if(d===6+late)b+=40000;
+      if(d===9)b-=60000;
+      if(d===13)b-=45000;
+      if(d===18+Math.min(late,3))b+=30000;
+      bal.push(b);
+    }
+    const low=Math.min(...bal);const first=bal.findIndex(x=>x<reserve);
+    return {bal,low,first};
+  },[late]);
+  const W=420,H=190,pad=24;const max=Math.max(...model.bal,180000),min=Math.min(...model.bal,0);
+  const x=(i:number)=>pad+i*(W-pad*2)/(model.bal.length-1);const y=(v:number)=>H-pad-((v-min)/(max-min))*(H-pad*2);
+  const line=model.bal.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ');
+  const area=line+` L${x(model.bal.length-1)} ${H-pad} L${x(0)} ${H-pad}Z`;
+  const short=model.first>=0;
+  return <div className="playground">
+    <svg viewBox={`0 0 ${W} ${H}`} className="pg-chart" role="img" aria-label={t('A cash outlook chart')}>
+      <path d={area} className={short?'pg-area bad':'pg-area'}/><path d={line} className={short?'pg-line bad':'pg-line'} fill="none"/>
+      <line x1={pad} x2={W-pad} y1={y(reserve)} y2={y(reserve)} className="pg-reserve"/>
+      {short&&<circle cx={x(model.first)} cy={y(model.bal[model.first])} r="6" className="pg-dot"/>}
+    </svg>
+    <label htmlFor="pg-late" className="pg-label">{t('A customer pays {n} days late',{n:late})}</label>
+    <input id="pg-late" className="pg-range" type="range" min="0" max="12" step="1" value={late} onChange={e=>setLate(Number(e.target.value))}/>
+    <p className={short?'pg-result bad':'pg-result'} role="status">{short?t('Cash runs below your safety reserve on day {n}.',{n:model.first+1}):t('Your cash stays above your safety reserve.')}</p>
+  </div>;
+}
+
+/** The slim top bar, a thin scroll progress line, and the spotlight that follows the pointer on cards. */
 export function Landing({onStart}:{onStart:()=>void}){
-  const root=useRef<HTMLDivElement>(null);const [bar,setBar]=useState(false);
+  const root=useRef<HTMLDivElement>(null);const bar=useRef<HTMLDivElement>(null);const [nav,setNav]=useState(false);const [step,setStep]=useState(0);
   useEffect(()=>{
     const nodes=root.current?.querySelectorAll('[data-reveal]');
     if(!nodes||!('IntersectionObserver' in window)){nodes?.forEach(n=>n.classList.add('in'));return;}
@@ -92,48 +158,68 @@ export function Landing({onStart}:{onStart:()=>void}){
     nodes.forEach(n=>io.observe(n));
     return()=>io.disconnect();
   },[]);
-  // The slim top bar appears once the visitor has scrolled past the first screen.
   useEffect(()=>{
-    const onScroll=()=>setBar(window.scrollY>window.innerHeight*.6);
-    onScroll();window.addEventListener('scroll',onScroll,{passive:true});return()=>window.removeEventListener('scroll',onScroll);
+    let raf=0;
+    const update=()=>{raf=0;const h=document.documentElement.scrollHeight-window.innerHeight;if(bar.current)bar.current.style.transform=`scaleX(${h>0?Math.min(1,window.scrollY/h):0})`;setNav(window.scrollY>window.innerHeight*.5);};
+    const onScroll=()=>{if(!raf)raf=requestAnimationFrame(update);};
+    update();window.addEventListener('scroll',onScroll,{passive:true});return()=>{window.removeEventListener('scroll',onScroll);cancelAnimationFrame(raf);};
   },[]);
+  // Which story step is on screen decides which picture the sticky phone shows.
+  useEffect(()=>{
+    const els=root.current?.querySelectorAll<HTMLElement>('[data-step]');if(!els||!('IntersectionObserver' in window))return;
+    const io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting)setStep(Number((e.target as HTMLElement).dataset.step));},{rootMargin:'-45% 0px -45% 0px'});
+    els.forEach(n=>io.observe(n));return()=>io.disconnect();
+  },[]);
+  const spot=(e:RPointerEvent<HTMLElement>)=>{const r=e.currentTarget.getBoundingClientRect();e.currentTarget.style.setProperty('--mx',(e.clientX-r.left)+'px');e.currentTarget.style.setProperty('--my',(e.clientY-r.top)+'px');};
   const go=(id:string)=>document.getElementById(id)?.scrollIntoView({behavior:'smooth'});
   const names=LANGUAGES.map(l=>l.name);
   return <div className="landing" ref={root}>
-    <nav className={bar?'land-nav show':'land-nav'} aria-label={t('Page sections')}>
+    <div className="scroll-progress" ref={bar} aria-hidden="true"/>
+    <nav className={nav?'land-nav show':'land-nav'} aria-label={t('Page sections')}>
       <button type="button" className="land-brand" onClick={()=>window.scrollTo({top:0,behavior:'smooth'})} aria-label="Capzoryx Copilot"><Logo size={28}/><span>Capzoryx <b>Copilot</b></span></button>
       <div className="land-links"><button type="button" className="link" onClick={()=>go('features')}>{t('Features')}</button><button type="button" className="link" onClick={()=>go('preview')}>{t('See it work')}</button><button type="button" className="link" onClick={()=>go('safety')}>{t('Safety')}</button><button type="button" className="link" onClick={()=>go('faq')}>{t('Questions')}</button></div>
       <button type="button" className="land-signin" onClick={onStart}>{t('Sign in')}</button>
     </nav>
-    <div className="stats" data-reveal>{stats.map(s=><div key={s.label}><strong>{s.n}</strong><span>{t(s.label)}</span></div>)}</div>
+    <div className="stats" data-reveal>{stats.map(s=><div key={s.label}><Counter to={s.n} suffix={s.suffix}/><span>{t(s.label)}</span></div>)}</div>
+
     <section id="features" className="land-section" aria-labelledby="land-features">
       <p className="eyebrow" data-reveal>{t('WHAT YOU GET')}</p>
       <h2 id="land-features" data-reveal>{t('Everything your business money needs, in one place')}</h2>
-      <div className="feature-grid">{features.map((f,i)=><article key={f.title} className="feature" data-reveal data-i={i%4}><span className="feature-icon"><Icon name={f.icon}/></span><h3>{t(f.title)}</h3><p>{t(f.text)}</p></article>)}</div>
-    </section>
-    <section id="preview" className="land-section land-visuals" aria-labelledby="land-see">
-      <p className="eyebrow" data-reveal>{t('SEE IT WORK')}</p>
-      <h2 id="land-see" data-reveal>{t('From a photo to a clear picture')}</h2>
-      <div className="visual-row">
-        <figure data-reveal><ScanIllustration/><figcaption>{t('Photograph a bill. Check what we read. Add it in one tap.')}</figcaption></figure>
-        <figure data-reveal><OutlookIllustration/><figcaption>{t('Know if cash will run short before it happens.')}</figcaption></figure>
+      <div className="bento">
+        <article className="tile tile-wide spot" data-reveal onPointerMove={spot}><div><span className="feature-icon"><Icon name="camera"/></span><h3>{t('Photo to record')}</h3><p>{t('Snap a bill or receipt and we read the supplier, date, amount and due date for you.')}</p></div><ScanIllustration/></article>
+        <article className="tile spot" data-reveal onPointerMove={spot}><span className="feature-icon"><Icon name="pen"/></span><h3>{t('Just say it')}</h3><p>{t('Type what you paid or received, like a message, and it becomes a record.')}</p></article>
+        <article className="tile spot" data-reveal onPointerMove={spot}><span className="feature-icon"><Icon name="Invoices"/></span><h3>{t('Bills and due dates')}</h3><p>{t('Every unpaid bill in one list, so nothing is paid late or twice.')}</p></article>
+        <article className="tile tile-wide spot" data-reveal onPointerMove={spot}><div><span className="feature-icon"><Icon name="Approvals"/></span><h3>{t('Safe payments')}</h3><p>{t('A second person approves each payment before it is recorded.')}</p></div><ApprovalMock/></article>
+        <article className="tile spot" data-reveal onPointerMove={spot}><span className="feature-icon"><Icon name="Financing"/></span><h3>{t('Compare loan offers')}</h3><p>{t('Find the true yearly cost and the offer your cash flow can carry.')}</p></article>
+        <article className="tile spot" data-reveal onPointerMove={spot}><span className="feature-icon"><Icon name="globe"/></span><h3>{t('Your language, any currency')}</h3><p>{t('Use it in your language and see amounts at live exchange rates.')}</p></article>
+        <article className="tile tile-half spot" data-reveal onPointerMove={spot}><span className="feature-icon"><Icon name="Audit"/></span><h3>{t('Reports and history')}</h3><p>{t('Download a PDF report and see a clear, tamper-evident history.')}</p></article><article className="tile tile-half spot" data-reveal onPointerMove={spot}><span className="feature-icon"><Icon name="Settings"/></span><h3>{t('Work with your team')}</h3><p>{t('Invite your accountant or a partner and choose what they can do.')}</p></article>
       </div>
-      <div className="preview-wrap" data-reveal><Preview/><p className="small muted">{t('A preview with sample numbers.')}</p></div>
     </section>
-    <section className="land-section" aria-labelledby="land-how">
+
+    <section className="land-section" aria-labelledby="land-play">
+      <p className="eyebrow" data-reveal>{t('TRY IT')}</p>
+      <h2 id="land-play" data-reveal>{t('Will your cash last? Move the slider.')}</h2>
+      <div className="play-wrap" data-reveal><OutlookPlayground/><p className="small muted">{t('Sample numbers. Your own outlook uses your records.')}</p></div>
+    </section>
+
+    <section id="preview" className="land-section" aria-labelledby="land-how">
       <p className="eyebrow" data-reveal>{t('HOW IT WORKS')}</p>
       <h2 id="land-how" data-reveal>{t('Three simple steps')}</h2>
-      <ol className="steps">{steps.map((s,i)=><li key={s.title} data-reveal><span className="step-n">{i+1}</span><h3>{t(s.title)}</h3><p>{t(s.text)}</p></li>)}</ol>
+      <div className="story">
+        <ol className="story-steps">{story.map((s,i)=><li key={s.title} data-step={i} className={step===i?'active':''}><span className="step-n">{i+1}</span><h3>{t(s.title)}</h3><p>{t(s.text)}</p><div className="story-inline">{i===0?<ScanIllustration/>:i===1?<Preview/>:<ApprovalMock/>}</div></li>)}</ol>
+        <div className="story-visual" aria-hidden="true"><div className={'sv sv0'+(step===0?' on':'')}><ScanIllustration/></div><div className={'sv sv1'+(step===1?' on':'')}><Preview/></div><div className={'sv sv2'+(step===2?' on':'')}><ApprovalMock/></div></div>
+      </div>
     </section>
+
     <section className="land-section" aria-labelledby="land-who">
       <p className="eyebrow" data-reveal>{t('MADE FOR')}</p>
       <h2 id="land-who" data-reveal>{t('Built for the way small businesses work')}</h2>
-      <div className="feature-grid">{audiences.map(f=><article key={f.title} className="feature" data-reveal><span className="feature-icon"><Icon name={f.icon}/></span><h3>{t(f.title)}</h3><p>{t(f.text)}</p></article>)}</div>
+      <div className="feature-grid">{audiences.map(f=><article key={f.title} className="feature spot" data-reveal onPointerMove={spot}><span className="feature-icon"><Icon name={f.icon}/></span><h3>{t(f.title)}</h3><p>{t(f.text)}</p></article>)}</div>
     </section>
     <section id="safety" className="land-section" aria-labelledby="land-safe">
       <p className="eyebrow" data-reveal>{t('BUILT TO BE SAFE')}</p>
       <h2 id="land-safe" data-reveal>{t('Your money, your control')}</h2>
-      <div className="trust-grid">{trust.map(x=><article key={x.title} data-reveal><span className="feature-icon"><Icon name={x.icon}/></span><div><h3>{t(x.title)}</h3><p>{t(x.text)}</p></div></article>)}</div>
+      <div className="trust-grid">{trust.map(x=><article key={x.title} className="spot" data-reveal onPointerMove={spot}><span className="feature-icon"><Icon name={x.icon}/></span><div><h3>{t(x.title)}</h3><p>{t(x.text)}</p></div></article>)}</div>
     </section>
     <section className="land-section land-langs" aria-labelledby="land-lang" data-reveal>
       <p className="eyebrow">{t('FOR EVERYONE')}</p>
