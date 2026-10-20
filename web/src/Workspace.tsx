@@ -16,6 +16,7 @@ import {QuickAdd} from './QuickAdd';
 import {Avatar} from './Avatar';
 import {formatDate,formatTime,prettyVendor,workspaceLabel} from './format';
 import {t,T,LanguagePicker,useI18n,hasChosenLanguage} from './i18n';
+import './serverText';
 
 const Settings=lazy(()=>import('./Settings'));
 const Assistant=lazy(()=>import('./Assistant'));
@@ -25,7 +26,7 @@ const tabLabel:Record<Tab,string>={Overview:T('Overview'),Data:T('Add records'),
 const pageTitle:Record<Tab,string>={Overview:T('Financial overview'),Data:T('Add your records'),Invoices:T('Invoices'),'Cash flow':T('Cash flow'),Financing:T('Loan offers'),Assistant:T('Assistant'),Approvals:T('Payment approvals'),Audit:T('Activity'),Settings:T('Settings')};
 
 function Basis({count}:{count:number}){return <p className="small muted">{t('Based on {count} of your records.',{count})}</p>;}
-function Notes({values}:{values:string[]}){return <ul className="notes">{values.map((v,i)=><li key={i}>{v}</li>)}</ul>;}
+function Notes({values}:{values:string[]}){return <ul className="notes">{values.map((v,i)=><li key={i}>{t(v)}</li>)}</ul>;}
 function Metric({label,value,hint}:{label:string;value:number;hint?:string}){const {money}=useCurrency();return <article className="metric"><p>{label}</p><strong className={value<0?'negative':''}>{money(value)}</strong>{hint&&<small>{hint}</small>}</article>;}
 function Panel({title,children}:{title:string;children:ReactNode}){return <section className="panel"><h2>{title}</h2>{children}</section>;}
 
@@ -161,7 +162,7 @@ function WorkspaceContent({token,session,logout,expired,changeSession,setCurrenc
           <div className="table-wrap"><table><caption>{t('Next 30 days')}</caption><thead><tr><th>{t('Date')}</th><th>{t('In')}</th><th>{t('Out')}</th><th>{t('Balance')}</th></tr></thead><tbody>{forecast.days.map(d=><tr key={d.date}><td>{formatDate(d.date)}</td><td>{money(d.inflow_minor)}</td><td>{money(d.outflow_minor)}</td><td className={d.projected_balance_minor<0?'negative':''}>{money(d.projected_balance_minor)}</td></tr>)}</tbody></table></div></Panel>}</>}
       {tab==='Financing'&&<Financing snapshot={snapshot} forecast={baselineMonth} session={session} request={request}/>}
       {tab==='Approvals'&&<Panel title={t('Approve payments')}>
-        <p>A second person approves each payment you prepare. Approving records the payment in your books; no money moves from a bank. Proposals expire after 15 minutes.</p>
+        <p>{t('A second person approves each payment you prepare. Approving records the payment in your books; no money moves from a bank. Proposals expire after 15 minutes.')}</p>
         {selected&&<ProposalDetails proposal={selected} number={number(selected.details.invoice_id)}/>}
         {!proposals.length&&<p>{t('Nothing to approve yet. Open')} <button className="link" onClick={()=>setTab('Invoices')}>{t('Invoices')}</button> {t('and choose Prepare payment.')}</p>}
         <div className="proposal-list">{proposals.map(p=><article key={p.proposal_id} className="proposal"><div><span className="badge">{p.state==='AWAITING_APPROVAL'?t('Waiting'):p.state==='EXECUTED'?'Paid':p.state==='REJECTED'?t('Rejected'):p.state==='EXPIRED'?t('Expired'):p.state}</span><h3>{prettyVendor(p.details.vendor_id)} · {nativeMoney(p.details.amount_minor)}</h3><p>{number(p.details.invoice_id)&&`Invoice ${number(p.details.invoice_id)} · `}{t('Prepared by')} {p.details.proposer_id===session.user_id?t('you'):'a teammate'}</p>{p.state==='AWAITING_APPROVAL'&&<small>{t('Expires {time}',{time:formatTime(p.details.expires_at)})}</small>}</div>
@@ -171,7 +172,7 @@ function WorkspaceContent({token,session,logout,expired,changeSession,setCurrenc
         {audit?<><p className={audit.chain_verified?'success':'error'}>{audit.chain_verified?t('History verified: nothing has been changed or removed.'):t('History could not be verified. Contact support.')}</p>
           {!audit.events.length&&<p>{t('No activity yet.')}</p>}
           <ol className="audit-list">{audit.events.slice().reverse().map(event=>{const p=(event.payload||{}) as Record<string,unknown>;const who=event.actor_id===session.user_id?'You':t('A teammate');return <li key={event.event_id}><strong>{t(AUDIT_TEXT[event.kind]||'')||event.kind.replaceAll('_',' ').toLowerCase()}</strong><small>{formatTime(event.created_at)} · {who}{typeof p.note==='string'&&p.note?` · ${p.note}`:''}{event.kind==='EXECUTED'&&typeof p.cash_delta_minor==='number'?` · ${nativeMoney(Math.abs(p.cash_delta_minor))}`:''}{event.kind==='DENIED'?' · blocked by a safety rule':''}</small></li>;})}</ol>
-          <details className="advanced"><summary>{t('For auditors')}</summary><p className="muted small">{t('Each entry is linked to the one before it and signed by the server, so any later change is detectable.')} This is not a claim of protection from the system administrator.</p><button className="secondary" onClick={()=>save(new Blob([JSON.stringify(audit,null,2)],{type:'application/json'}),'capzoryx-activity-log.json')}>{t('Download the full signed log')}</button></details></>:<p>{t('Activity is unavailable. Refresh to try again.')}</p>}</Panel>}
+          <details className="advanced"><summary>{t('For auditors')}</summary><p className="muted small">{t('Each entry is linked to the one before it and signed by the server, so any later change is detectable.')} {t('This is not a claim of protection from the system administrator.')}</p><button className="secondary" onClick={()=>save(new Blob([JSON.stringify(audit,null,2)],{type:'application/json'}),'capzoryx-activity-log.json')}>{t('Download the full signed log')}</button></details></>:<p>{t('Activity is unavailable. Refresh to try again.')}</p>}</Panel>}
       {tab==='Data'&&<>
         <QuickAdd request={request} revision={revision} profile={profile} cloudAvailable={cloudAvailable} onSaved={async()=>{await refresh();}}/>
         <DataEntry events={events} session={session} revision={revision} snapshot={snapshot} busy={busy} submit={async body=>{let saved=false;await run(async()=>{await request('/workspace/records',body);saved=true;await refresh();setMessage(t('Record saved. Your balance, forecast and activity are updated.'));});if(!saved)throw new Error(t('The record was not saved. Check the message above and try again.'));}}/>

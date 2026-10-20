@@ -63,7 +63,7 @@ function ProfileTab({session,profile,request,reloadProfile,cloudAvailable}:Setti
         <label htmlFor="email-code">{t('6-digit code')}</label><input id="email-code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,''))}/><button disabled={busy||code.length!==6}>{t('Verify email')}</button></form>}
       <Notice m={mail.message}/>
     </Section>
-    <Section title={t('Smart assist')} hint={t('When the assistant cannot answer on your device, it can ask a cloud AI. It also reads photos of bills and receipts. Only your question or photo and a short summary of your figures are sent; nothing is stored by us for training.')}>
+    <Section title={t('Smart assist')} hint={t('When the assistant cannot answer on your device, it can look further online. It also reads photos of bills and receipts. Only your question or photo and a short summary of your figures are sent, and nothing is kept for training.')}>
       <label className="check"><input type="checkbox" checked={profile?.smart_assist??true} disabled={busy||!cloudAvailable} onChange={e=>void run(async()=>{await request('/account/profile',{smart_assist:e.target.checked});},info,e.target.checked?t('Smart assist is on.'):t('Smart assist is off.'))}/>{t('Use smart assist for answers and for reading photos')}</label>
       {!cloudAvailable&&<p className="small muted">{t('Smart assist is not available on this site right now.')}</p>}
     </Section>

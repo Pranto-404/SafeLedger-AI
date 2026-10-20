@@ -72,7 +72,7 @@ export default function Assistant({snapshot,forecast,week,events,invoices,sessio
   return <section className="panel chat-panel" aria-label={t('Assistant')}>
     <div className="chat-heading"><div className="assistant-orb" aria-hidden="true"><Icon name="spark"/></div><div><h2>{t('Assistant')}</h2><p>{t('Ask a question, or tell me what you paid or received')}</p></div>{onClose&&<button className="secondary chat-close" onClick={onClose} aria-label={t('Minimize assistant')}>×</button>}</div>
     <div className="chat-log" ref={log} role="log" aria-label={t('Conversation')} aria-live="polite">
-      {!messages.length&&<div className="chat-welcome"><span aria-hidden="true"><Icon name="spark"/></span><h3>{t('How can I help?')}</h3><p>{t('Speak or type in English, বাংলা or Banglish. I can add records for you, explain your numbers and compare loan offers.')}</p><div className="chat-suggestions">{hints.filter(h=>owner||!/^I paid/.test(h)).map(h=><button key={h} className="secondary" onClick={()=>void ask(h)}>{t(h)}</button>)}</div></div>}
+      {!messages.length&&<div className="chat-welcome"><span aria-hidden="true"><Icon name="spark"/></span><h3>{t('How can I help?')}</h3><p>{t('Ask a question, or tell me what you paid or received. I can add records for you, explain your numbers and compare loan offers.')}</p><div className="chat-suggestions">{hints.filter(h=>owner||!/^I paid/.test(h)).map(h=><button key={h} className="secondary" onClick={()=>void ask(h)}>{t(h)}</button>)}</div></div>}
       {messages.map(m=><article className={'chat-message '+m.role} key={m.id}>
         {m.role==='assistant'&&<small>{m.kind==='smart'?t('Smart answer'):'Assistant'}</small>}
         {m.text.split('\n\n').map((para,i)=><p key={i}>{para}</p>)}
@@ -82,13 +82,13 @@ export default function Assistant({snapshot,forecast,week,events,invoices,sessio
         {m.retry&&<div className="chat-actions"><button className="secondary" disabled={busy} onClick={()=>void ask(m.retry!)}>{t('Try again')}</button></div>}
         {m.agent?.proposal&&<button onClick={()=>void onProposal()}>{t('Open payment approval')}</button>}
         {m.agent&&!!m.agent.limitations.length&&<details><summary>{t('Good to know')}</summary>{m.agent.limitations.map((v,i)=><p key={i}>{v}</p>)}</details>}
-        {m.kind==='smart'&&!m.draft&&!m.agent&&<small className="muted">{t('AI-written. Please double-check important decisions.')}</small>}
+        {m.kind==='smart'&&!m.draft&&!m.agent&&<small className="muted">{t('Please double-check important decisions.')}</small>}
       </article>)}
       {busy&&<p role="status" className="chat-thinking">{t('Thinking')}<span aria-hidden="true">…</span></p>}
     </div>
     {picking&&<div className="chat-pick"><label htmlFor="agent-bill">{t('Which bill?')}</label><select id="agent-bill" value={target} onChange={e=>setTarget(e.target.value)}><option value="">{t('Choose a bill')}</option>{openBills.map(i=><option key={i.invoice_id} value={i.invoice_id}>{prettyVendor(i.vendor_id)} · {i.invoice_number} · {money(i.amount_minor)} · due {formatDate(i.due_on)}</option>)}</select><div className="actions"><button disabled={!target||busy} onClick={()=>void prepare()}>{t('Prepare for approval')}</button><button className="secondary" onClick={()=>setPicking(false)}>{t('Cancel')}</button></div></div>}
     {owner&&!!openBills.length&&smart&&!picking&&<div className="chat-chips"><button className="secondary small" disabled={busy} onClick={()=>setPicking(true)}>{t('Prepare a payment…')}</button></div>}
     <form className="chat-compose" onSubmit={(e:FormEvent)=>{e.preventDefault();void ask(task);}}><label htmlFor="agent-task" className="sr-only">{t('Message the assistant')}</label><textarea ref={input} id="agent-task" rows={2} placeholder={t('Ask, or say what you paid…')} maxLength={800} value={task} disabled={busy} onChange={e=>setTask(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();e.currentTarget.form?.requestSubmit();}}}/><button disabled={busy||!task.trim()} aria-label={t('Send message')}>{busy?'…':<Icon name="send"/>}</button></form>
-    <p className="chat-footnote">{smart?'Smart assist is on · simple questions are answered on your device':t('Answers on your device · turn on smart assist in Settings for more')}</p>
+    <p className="chat-footnote">{smart?t('Smart assist is on · simple questions are answered on your device'):t('Answers on your device · turn on smart assist in Settings for more')}</p>
   </section>;
 }
