@@ -54,7 +54,7 @@ python -m pytest api/tests -q
 npm run build --prefix web
 node scripts/check_local_assistant.cjs && node scripts/check_site_guide.cjs && node scripts/check_record_parser.cjs
 node scripts/extract_ui_strings.cjs --check          # keeps the translatable string list in sync
-python scripts/security_probe.py http://127.0.0.1:8000   # 57 black-box checks, local servers only
+python scripts/security_probe.py http://127.0.0.1:8000   # 60 black-box checks, local servers only
 python scripts/security_scan.py                       # secret scan over the full git history
 ```
 

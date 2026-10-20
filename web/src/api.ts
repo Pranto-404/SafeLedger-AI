@@ -83,6 +83,7 @@ const friendly: Record<string,string> = {
   WORKSPACE_OWNER_REQUIRED: 'Only the owner of a workspace can do this.',
   RESTORE_WINDOW_ENDED: 'This data was cleared more than 30 days ago and can no longer be restored.',
   SMART_ASSIST_OFF: 'Smart assist is turned off. Turn it on in Settings to use this.',
+  WORKSPACE_OWNER_SMART_ASSIST_OFF: 'The owner of this workspace has turned smart assist off for their records.',
   AI_NOT_CONFIGURED: 'Smart assist is not available right now.',
   FX_UNAVAILABLE: 'Live exchange rates are not reachable right now. Try again shortly, or enter a rate yourself.',
   FX_PAIR_UNAVAILABLE: 'No live rate is available for that currency pair.',

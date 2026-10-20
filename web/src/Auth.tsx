@@ -8,7 +8,7 @@ import {Icon} from './Icon';
 import {Landing,HeroDemo} from './Landing';
 import {ThemeButton} from './Theme';
 import type {Session} from './types';
-import {t,LanguagePicker,T} from './i18n';
+import {t,LanguagePicker,T,useI18n,defaultCurrency} from './i18n';
 
 type Mode='signup'|'login'|'forgot';
 type Forgot='choose'|'email'|'code'|'key'|'done';
@@ -46,7 +46,7 @@ export function Auth({onSession,joinCode,notice}:{onSession:(s:Session)=>void;jo
   const joinPending=!!joinCode;
   const [mode,setMode]=useState<Mode>(()=>!joinCode&&stored(LAST_USER)?'login':'signup');
   const [username,setUsername]=useState(()=>stored(LAST_USER));const [keep,setKeep]=useState(()=>stored(KEEP)==='1');
-  const [wait,setWait]=useState(0);const [slow,setSlow]=useState(false);const [waking,setWaking]=useState(false);const [capsSlow,setCapsSlow]=useState(false);const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [show,setShow]=useState(false);const [currency,setCurrency]=useState('BDT');
+  const [wait,setWait]=useState(0);const [slow,setSlow]=useState(false);const [waking,setWaking]=useState(false);const [capsSlow,setCapsSlow]=useState(false);const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [show,setShow]=useState(false);const {code:language}=useI18n();const [currency,setCurrency]=useState(()=>defaultCurrency(language));
   const [challenge,setChallenge]=useState('');const [code,setCode]=useState('');
   const [forgot,setForgot]=useState<Forgot>('choose');const [resetCode,setResetCode]=useState('');const [second,setSecond]=useState('');const [needSecond,setNeedSecond]=useState(false);const [recoveryKey,setRecoveryKey]=useState('');
   const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [info,setInfo]=useState('');
@@ -87,7 +87,11 @@ export function Auth({onSession,joinCode,notice}:{onSession:(s:Session)=>void;jo
     try{await accountRequest('/auth/reset/confirm',{email,code:resetCode,new_password:password,...(second?{second_factor:second}:{})});}
     catch(err){if(err instanceof Error&&/two-factor/i.test(err.message))setNeedSecond(true);throw err;}
     setForgot('done');setPassword('');setResetCode('');setSecond('');setNeedSecond(false);setInfo('Your password was changed. Sign in with the new one.');});};
-  const useKey=(e:FormEvent)=>{e.preventDefault();void run(async()=>{onSession(await accountRequest<Session>('/auth/recover',{username,password,recovery_code:recoveryKey}));setPassword('');setRecoveryKey('');});};
+  const useKey=(e:FormEvent)=>{e.preventDefault();void run(async()=>{
+    let done:Session;
+    try{done=await accountRequest<Session>('/auth/recover',{username,password,recovery_code:recoveryKey,...(second?{second_factor:second}:{})});}
+    catch(err){if(err instanceof AuthError&&err.code==='SECOND_FACTOR_REQUIRED')setNeedSecond(true);throw err;}
+    onSession(done);setPassword('');setRecoveryKey('');setSecond('');setNeedSecond(false);});};
   const passwordField=(id:string,label:string,autoComplete:string)=><><label htmlFor={id}>{label}</label><div className="password-field"><input id={id} name={autoComplete==='current-password'?'password':'new-password'} type={show?'text':'password'} autoComplete={autoComplete} autoCapitalize="none" autoCorrect="off" spellCheck={false} minLength={8} maxLength={128} required value={password} onChange={e=>setPassword(e.target.value)} disabled={busy}/><button type="button" className="secondary" aria-label={show?t('Hide password'):t('Show password')} onClick={()=>setShow(!show)}>{show?t('Hide'):t('Show')}</button></div></>;
   // Gentle pointer parallax for the floating chips (large screens only, and only while the page is in view).
   useEffect(()=>{
@@ -121,7 +125,7 @@ export function Auth({onSession,joinCode,notice}:{onSession:(s:Session)=>void;jo
           {needSecond&&<><label htmlFor="reset-second">{t('Authenticator or backup code')}</label><input id="reset-second" required value={second} onChange={e=>setSecond(e.target.value)} disabled={busy}/></>}
           {passwordField('reset-password',t('New password'),'new-password')}<PasswordStrength password={password} username=""/>{error&&<p role="alert" className="error">{error}</p>}<button className="full-width" disabled={busy||resetCode.length!==6}>{busy?t('Please wait…'):t('Change my password')}</button>
           <button type="button" className="link" onClick={()=>{setForgot('email');setError('');}}>{t('Send a new code')}</button></form>}
-        {forgot==='key'&&<form onSubmit={useKey}><p className="muted">{t('Enter the recovery key you saved when you created your account.')}</p><label htmlFor="rk-user">{t('Username')}</label><input id="rk-user" autoComplete="username" autoCapitalize="none" required value={username} onChange={e=>setUsername(e.target.value)} disabled={busy}/><label htmlFor="rk-code">{t('Recovery key')}</label><input id="rk-code" autoComplete="off" required minLength={20} maxLength={100} value={recoveryKey} onChange={e=>setRecoveryKey(e.target.value)} disabled={busy}/>{passwordField('rk-password',t('New password'),'new-password')}<PasswordStrength password={password} username={username}/>{error&&<p role="alert" className="error">{error}</p>}<button className="full-width" disabled={busy}>{busy?t('Please wait…'):t('Reset and sign in')}</button></form>}
+        {forgot==='key'&&<form onSubmit={useKey}><p className="muted">{t('Enter the recovery key you saved when you created your account.')}</p><label htmlFor="rk-user">{t('Username')}</label><input id="rk-user" autoComplete="username" autoCapitalize="none" required value={username} onChange={e=>setUsername(e.target.value)} disabled={busy}/><label htmlFor="rk-code">{t('Recovery key')}</label><input id="rk-code" autoComplete="off" required minLength={20} maxLength={100} value={recoveryKey} onChange={e=>setRecoveryKey(e.target.value)} disabled={busy}/>{passwordField('rk-password',t('New password'),'new-password')}{needSecond&&<><label htmlFor="rk-second">{t('Authenticator or backup code')}</label><input id="rk-second" autoComplete="one-time-code" required value={second} onChange={e=>setSecond(e.target.value)} disabled={busy}/></>}<PasswordStrength password={password} username={username}/>{error&&<p role="alert" className="error">{error}</p>}<button className="full-width" disabled={busy}>{busy?t('Please wait…'):t('Reset and sign in')}</button></form>}
         {forgot==='done'&&<><p className="success" role="status">{info}</p><button className="full-width" onClick={()=>go('login')}>{t('Go to sign in')}</button></>}
         {forgot!=='done'&&<button type="button" className="link recovery-link" disabled={busy} onClick={()=>go('login')}>{t('Back to sign in')}</button>}</>}
     </div><ul className="card-trust"><li><Icon name="check"/>{t('Free to start')}</li><li><Icon name="check"/>{t('No bank connection')}</li><li><Icon name="check"/>{t('Private by default')}</li></ul></section></main><Landing onStart={start}/></>;

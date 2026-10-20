@@ -81,7 +81,7 @@ def invite(body: InviteRequest, actor=Depends(principal), db=Depends(db_connecti
         db.execute('INSERT INTO workspace_invites(code_hash,business_id,role,created_by,expires_at,used_by,created_at) VALUES (?,?,?,?,?,NULL,?)', (hashlib.sha256(code.encode()).hexdigest(), actor.business_id, body.role, actor.user_id, expires, sec.now()))
         sec.audit(db, actor, 'invite-' + uuid.uuid4().hex, 'INVITATION_CREATED', {'role': body.role, 'expires_in_hours': body.hours, 'emailed': bool(email)})
     emailed = False
-    if email and mailer.configured():
+    if email and mailer.configured() and mailer.reserve(email):
         import os
         base = os.environ.get('SAFELEDGER_PUBLIC_URL', 'https://capzoryx-copilot.vercel.app').rstrip('/')
         name = db.execute("SELECT COALESCE(NULLIF(p.display_name,''),a.username) FROM auth_accounts a LEFT JOIN account_profiles p ON p.account_id=a.account_id WHERE a.account_id=?", (account,)).fetchone()[0]

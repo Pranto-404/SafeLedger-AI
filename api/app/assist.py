@@ -29,8 +29,16 @@ def smart_enabled(db, actor):
     return bool(row[0]) if row else True
 
 
+def owner_allows_cloud(db, business):
+    """The workspace owner's records are what leaves for the cloud model, so the owner's smart-assist switch also governs
+    what an invited approver or viewer can send from that workspace."""
+    row = db.execute("SELECT COALESCE(p.smart_assist,1) FROM security_users u JOIN account_members m ON m.user_id=u.user_id LEFT JOIN account_profiles p ON p.account_id=m.account_id WHERE u.business_id=? AND u.role='owner' AND u.active=1", (business,)).fetchone()
+    return bool(row[0]) if row else True
+
+
 def require_smart(db, actor):
     if not smart_enabled(db, actor):sec.fail(403, 'SMART_ASSIST_OFF')
+    if actor.role != 'owner' and not owner_allows_cloud(db, actor.business_id):sec.fail(403, 'WORKSPACE_OWNER_SMART_ASSIST_OFF')
     if not cloud.configured():sec.fail(503, 'AI_NOT_CONFIGURED')
 
 

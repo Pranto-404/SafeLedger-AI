@@ -15,6 +15,7 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from api.app import cloud, security as sec
 from api.app.agents.errors import ProviderError
+from api.app.ratelimit import limiter
 from api.app.routes import db_connection
 
 router = APIRouter(prefix='/api')
@@ -33,6 +34,7 @@ LANGUAGES = {
     'el': ('Greek', 'Ελληνικά', False), 'sw': ('Swahili', 'Kiswahili', False), 'fil': ('Filipino', 'Filipino', False),
 }
 BATCH = 60
+STALL_SECONDS = 300  # after a translation attempt that gained nothing (or failed), leave the cloud model alone for a while
 GOOGLE_BATCH = 100
 GOOGLE_URL = 'https://translation.googleapis.com/language/translate/v2'
 GOOGLE_TRANSPORT = None  # tests inject an httpx.MockTransport
@@ -109,7 +111,8 @@ def interface_text(lang: str, db=Depends(db_connection)):
     have = {key: text for key, text in db.execute('SELECT key_hash,text FROM i18n_text WHERE lang=?', (lang,)).fetchall()}
     missing = [s for s in _STRINGS if _key(s) not in have]
     use_google = google_configured()
-    if missing and (use_google or cloud.configured()) and _LOCKS[lang].acquire(blocking=False):
+    stall = 'i18n-stall:' + lang
+    if missing and (use_google or cloud.configured()) and not limiter.held(stall) and _LOCKS[lang].acquire(blocking=False):
         try:
             sec.budgets(db, [('i18n-translate-all', 60 if use_google else 30)])
             if use_google:
@@ -120,6 +123,7 @@ def interface_text(lang: str, db=Depends(db_connection)):
                     if time.monotonic() - started > 20:break
             else:
                 found = _translate_batch(english, missing[:BATCH])
+            if not found:limiter.hold(stall, STALL_SECONDS)
             if found:
                 with sec.transaction(db):
                     for source, text in found.items():
@@ -127,7 +131,7 @@ def interface_text(lang: str, db=Depends(db_connection)):
                 have.update({_key(s): t for s, t in found.items()})
                 missing = [s for s in _STRINGS if _key(s) not in have]
         except (ProviderError, HTTPException):
-            pass  # strings stay in English until the next attempt; nothing is broken
+            limiter.hold(stall, STALL_SECONDS)  # strings stay in English until a later attempt; nothing is broken
         finally:
             _LOCKS[lang].release()
     strings = {s: have[_key(s)] for s in _STRINGS if _key(s) in have}

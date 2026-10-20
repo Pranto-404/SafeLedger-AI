@@ -27,7 +27,21 @@ type Cache={version:string;strings:Record<string,string>;missing:number};
 const read=(code:string):Cache|null=>{try{const raw=localStorage.getItem('capzoryx-i18n-'+code);return raw?JSON.parse(raw) as Cache:null;}catch{return null;}};
 const write=(code:string,value:Cache)=>{try{localStorage.setItem('capzoryx-i18n-'+code,JSON.stringify(value));}catch{/* optional */}};
 export const hasChosenLanguage=()=>{try{return !!localStorage.getItem(STORE);}catch{return false;}};
-const remembered=()=>{try{const c=localStorage.getItem(STORE);return c&&LANGUAGES.some(l=>l.code===c)?c:'en';}catch{return 'en';}};
+/** First visit only: pick the language the browser asks for (Chinese, Bangla, Arabic… ), never overriding an explicit choice. */
+export function detectLanguage(tags:readonly string[]):string{
+  for(const raw of tags){
+    const tag=raw.toLowerCase().replace('_','-');const base=tag.split('-')[0];
+    if(base==='en')return 'en';
+    if(base==='zh')return /(^|-)(tw|hk|mo|hant)(-|$)/.test(tag)?'zh-TW':'zh-CN';
+    const alias=({tl:'fil',iw:'he'} as Record<string,string>)[base];
+    const code=LANGUAGES.find(l=>l.code.toLowerCase()===tag)?.code||LANGUAGES.find(l=>l.code.toLowerCase()===(alias||base))?.code;
+    if(code)return code;
+  }
+  return 'en';
+}
+/** The currency a new account most likely wants for the interface language it opened in (only when there is a clear match). */
+export const defaultCurrency=(code:string):string=>({'zh-CN':'CNY','zh-TW':'TWD',ja:'JPY',ko:'KRW',hi:'INR',ur:'PKR'} as Record<string,string>)[code]||'BDT';
+const remembered=()=>{try{const c=localStorage.getItem(STORE);if(c&&LANGUAGES.some(l=>l.code===c))return c;}catch{/* private mode */}try{return detectLanguage(navigator.languages?.length?navigator.languages:[navigator.language||'en']);}catch{return 'en';}};
 
 type Ctx={code:string;busy:boolean;partial:boolean;rev:number;setLanguage:(code:string)=>void};
 const I18nContext=createContext<Ctx>({code:'en',busy:false,partial:false,rev:0,setLanguage:()=>{}});

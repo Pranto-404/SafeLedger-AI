@@ -42,6 +42,50 @@ This is an internal review, not an independent penetration test.
 - An administrator holding both the database and signing key can rewrite history; no external anchor yet.
 - No MFA, no email-based recovery, no independent penetration test, no physical-device or screen-reader audit.
 
+## Full review (release 0.7.6)
+
+Second pass on 20 October 2026, after releases 0.5 to 0.7.5 added accounts, sharing, two-step sign-in, email codes, photo reading and 36 languages. Scope: every route in `api/app` (authentication, sessions, recovery and reset, two-step sign-in, workspaces, sharing, clearing, records, proposals and approvals, assistant, scan, language, exchange rate, agent), the mail relay, the public endpoints, rate limiting, CORS and CSRF, headers (both `vercel.json` copies and the live site, read-only), the front end (rendering of user text, PDF, storage, third-party requests), dependencies and repository history. Method: source review, new regression tests, `scripts/security_probe.py` against a local server, a local browser session. **No accounts were created and no load, fuzz or probe traffic was sent to the live site**; only `GET /api/health`, the home page headers and `/docs` on the API origin were requested. Internal review, not an independent penetration test.
+
+### Found and fixed in 0.7.6
+
+| # | Severity | Finding | Evidence | Fix |
+| --- | --- | --- | --- | --- |
+| A | **Medium** | The recovery key bypassed two-step sign-in. `POST /api/auth/recover` reset the password and issued a session from the username and the static recovery key alone. | Source review of `accounts.recover`; `test_recovery_key_needs_the_second_step_when_two_step_is_on`; probe checks 58 and 59. | Recovery now needs an authenticator or backup code when two-step is on, checked before the key is spent; the sign-in page asks for it. |
+| B | **Medium** (abuse, availability) | The site could be used as an open mailer. Signup with an email, "add email" and invitation emails had no per-recipient or site-wide ceiling, so a free account could flood any address and exhaust the relay's daily quota (about 100 a day on a personal Gmail), which would switch off email codes for everyone during judging. | Source review of `mailer`, `profile.set_email`, `workspaces.invite`, `accounts.signup`; tests for each path. | Every message passes `mailer.reserve()`: 5 an hour per recipient, 40 an hour site-wide (verification and invitations), 90 a day in total. The address is never logged. |
+| C | Low to medium (cost) | `GET /api/i18n` is public. A language that could not be completed made every request call the cloud model again, up to the 30 a minute global budget (about 43,000 a day), draining the free quota that photo reading and the assistant share. | Source review; `test_failed_translation_attempts_back_off`. | A translation attempt that gains nothing or fails pauses further attempts for that language for 5 minutes. A language that is making progress is not slowed. |
+| D | Low | `POST /api/auth/reset/confirm` answered differently for registered and unregistered emails ("password too weak" and "second factor required" appeared only for real accounts), allowing probing of which emails have accounts and which use two-step. | Source review; `test_reset_confirm_answers_alike_for_known_and_unknown_addresses`. | Identical answers until a correct emailed code is presented; asking for the second factor no longer burns the code. |
+| E | Low (privacy) | The owner's "smart assist off" switch did not apply to invited viewers or approvers: their questions, sentences and the agent planner sent the owner's cash facts to the cloud model under the teammate's own setting. | Source review; `test_teammates_cannot_send_owner_records_to_the_model_when_the_owner_turned_it_off`. | The owner's switch also governs teammates' requests in that workspace (`WORKSPACE_OWNER_SMART_ASSIST_OFF`). |
+| F | Low (functional) | A member the owner removed (or who left) could never be invited again: joining answered "already a member". | `test_a_removed_member_can_be_invited_again`. | The old seat is reactivated with the newly invited role; an owner's own seat can never be changed this way. |
+| G | Low (hardening) | Email codes were hashed with an all-zero key if `SAFELEDGER_SIGNING_KEY` was missing. Production always has the key, so this was not exploitable there. | Source review. | The server refuses (`SIGNING_KEY_NOT_CONFIGURED`). |
+| H | Low (quality) | The first load of the workspace raced with its own cancellation (visible with `npm run dev`, where React mounts twice): "signal is aborted without reason" and a stuck "Loading your verified financial overview". Production builds mount once. | Reproduced in a local browser, then verified fixed. | Each load belongs to its own mount. |
+
+Documentation fixed: invitation expiry (owner-chosen, default 72 hours, at most 168; the text said one hour) and the stale "no MFA" statements.
+
+### Checked and sound (no change needed)
+
+- **Authorization on every route.** Business scope always comes from the session (`principal`); object identifiers (proposal, trace, member, invitation, workspace) are filtered by tenant or by the caller's own account; owner-only, approver-only and viewer rules are rechecked inside the write transaction; viewers cannot add records, propose, approve or manage people; owners cannot approve; an approver cannot approve their own proposal; roles in request bodies are rejected (`extra=forbid`). Concurrent and replayed approvals post exactly once (existing tests).
+- **CSRF.** Session cookies are HttpOnly, SameSite=Lax and Secure on hosted platforms; every state-changing request with a cookie needs an exact allowed Origin plus `X-SafeLedger-Client`, and every POST must be `application/json`. No GET changes state apart from the public language cache.
+- **Injection.** All SQL is parameterised (no string-built statements); JSON bodies reject duplicate keys and non-finite numbers; photo and scan uploads are checked by size, base64 validity and magic bytes (SVG refused); model output (sentences, photos, translations, agent plans) is parsed into typed drafts or fixed codes and never saved without the owner confirming through the records API.
+- **Mail relay.** Recipients pass a strict address pattern (no line breaks); subject and text are fixed templates; the relay URL must be a `https://script.google.com/` address; the secret is read from the environment only and never logged.
+- **Transport and headers.** Live home page and API through Vercel: CSP `default-src 'self'` without inline script or style, HSTS, frame denial, nosniff, no-referrer, permissions policy; the API origin refuses `/docs`. Both `vercel.json` files carry the same security headers (the root copy adds caching rules and the old-address redirect).
+- **Supply chain.** The built site makes no third-party request (no CDN scripts, no web fonts; the PDF library mentions a CDN address in a function the site never calls, and the CSP would block it). `npm audit --omit=dev`: 0 vulnerabilities. `pip-audit` on the lock file: none. Secret scan over 75 commits: clean.
+- **Errors and logs.** Errors are short codes; database failures log only the exception type; mail failures log no address or body; no stack trace reaches a client (probe checks).
+
+### Remaining risks, most important first
+
+1. **Sign-in can be slowed for a known username.** After 40 recent failures against one username, sign-ins for it are limited to one attempt every 20 seconds, so an attacker who keeps trying can starve the real owner. The alternative (a hard lock) is worse. Client addresses are forgeable on this hosting, so per-address limits cannot help; a CAPTCHA or an edge firewall would.
+2. **One password-hashing slot.** Hashing is serialised (one scrypt at a time, 8 second wait). A flood of junk sign-in or sign-up requests with forged addresses, up to the global caps (300 a minute for sign-in), can keep that slot busy and delay everyone's sign-in. Existing sessions are unaffected. Not tested live, by rule.
+3. **Rate limits and lockouts live in memory.** They reset when the free server restarts and would not be shared across instances.
+4. **"Two people approve" is per account, not per person.** One person can register two accounts. Without identity checks this cannot be solved; it is stated in the known-risk list.
+5. **Invitation codes travel in the link** (`?join=`). They can appear in hosting logs until used or expired (default 72 hours; owners can pick 1 hour). A URL fragment would avoid server logs.
+6. **Mail depends on one Gmail relay** with a small daily quota; the new ceilings protect it but do not enlarge it.
+7. **Dependency hygiene.** The production lock file also installs the test runner (`pytest`, `pluggy`, `iniconfig`, `Pygments`); harmless at runtime but unnecessary. GitHub Actions are pinned to major tags, not commit hashes.
+8. **No account deletion or data-erasure flow;** clearing hides data for 30 days and the signed history is append-only by design.
+9. **The cookie name has no `__Host-` prefix;** the cookie is already Secure, HttpOnly, SameSite=Lax and path-scoped.
+10. Administrator trust, no independent penetration test, no screen-reader or device lab: unchanged (see the self-assessment).
+
+Result of the final run on release 0.7.6: `python -m pytest api/tests -q` gives 487 passed, 1 skipped and the two known Windows-only failures; `scripts/security_probe.py` against a local server passes 60 of 60 checks; `npm run build` and `node scripts/extract_ui_strings.cjs --check` pass.
+
 ## How to repeat
 
 ```bash

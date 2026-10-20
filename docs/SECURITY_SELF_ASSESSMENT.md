@@ -1,6 +1,6 @@
 # Security self-assessment: permission tiers and known-risk register
 
-Release 0.7.x (accounts, languages, photo reading, landing page), 20 October 2026. Earlier text describes the 0.4.1 baseline; section 10 lists what changed. This is an internal assessment by the team, not an independent penetration test or certification. Evidence: `api/tests/` (414 backend tests plus a 14,000-scenario randomized check of the financing engine (see `docs/SECURITY_REVIEW_20261020.md`)), `.github/workflows/ci.yml`, `scripts/security_scan.py` and the release notes in `docs/`.
+Release 0.7.6 (accounts, languages, photo reading, landing page), 20 October 2026. Earlier text describes the 0.4.1 baseline; section 10 lists what changed and section 11 the full review of 20 October. This is an internal assessment by the team, not an independent penetration test or certification. Evidence: `api/tests/` (414 backend tests plus a 14,000-scenario randomized check of the financing engine (see `docs/SECURITY_REVIEW_20261020.md`)), `.github/workflows/ci.yml`, `scripts/security_scan.py` and the release notes in `docs/`.
 
 ## 1. Design principle: the AI is never the authority for money
 
@@ -21,13 +21,13 @@ Capzoryx Copilot treats the language model, the browser and every user-supplied 
 | Invite teammate | Yes (approver or viewer only) | No | No | No | No |
 | Export workspace records | Yes | Yes | Yes | No | No |
 
-Roles come from authenticated server state, never from a request body. Invitations are one-time, hashed and expire after one hour; they can grant only approver or viewer. Hiding a button in the UI is never the control: every route rechecks the role inside the transaction.
+Roles come from authenticated server state, never from a request body. Invitations are one-time, hashed and expire after the time the owner chooses (default 72 hours, at most 168); they can grant only approver or viewer. Hiding a button in the UI is never the control: every route rechecks the role inside the transaction.
 
 ## 3. Threats, controls and residual risk
 
 | Threat | Implemented control | Evidence / residual risk |
 | --- | --- | --- |
-| Password guessing | Salted scrypt (N=32768, r=8, p=3), 8–128 exact characters, common-password and username-as-password rejection at signup/recovery, rolling 15-minute failed-attempt lockouts per account (40) plus per account+address (8) and per address (40), checked before any hashing, bounded hashing concurrency | Tests for hashing, lockouts, forged-header resistance and timing-equalized unknown users. Per-address limits can be forged by a direct caller of the API origin (the platform exposes no trustworthy address), so the per-account lockout is the binding control. No MFA. |
+| Password guessing | Salted scrypt (N=32768, r=8, p=3), 8–128 exact characters, common-password and username-as-password rejection at signup/recovery, rolling 15-minute failed-attempt lockouts per account (40) plus per account+address (8) and per address (40), checked before any hashing, bounded hashing concurrency | Tests for hashing, lockouts, forged-header resistance and timing-equalized unknown users. Per-address limits can be forged by a direct caller of the API origin (the platform exposes no trustworthy address), so the per-account lockout is the binding control. Optional TOTP two-step sign-in (section 10); the recovery key and the email reset both ask for it when it is on. |
 | Session theft / CSRF | Secure HttpOnly SameSite=Lax cookie, 24 h expiry, server-side revocation, exact Origin plus `X-SafeLedger-Client` header on every mutation | CSRF and logout tests. A compromised device remains out of scope. |
 | Tenant escape / IDOR | Business scope from session; membership-checked switching; object IDs filtered by tenant | Cross-tenant read/write tests return 403/404 with no leak. |
 | Self-approval / role escalation | Distinct approver required; proposer can never execute; invitations limited to approver/viewer | Adversarial tests for self-approval, forged role fields and invitation reuse. |
@@ -52,7 +52,7 @@ Roles come from authenticated server state, never from a request body. Invitatio
 4. **Financing match depends on quote accuracy.** Capzoryx Copilot does not verify lenders, eligibility or regulatory disclosures.
 5. **Duplicate detection is heuristic.**
 6. **Administrator trust.** Whoever controls the database and the signing key could rewrite history; external anchoring and key rotation are future work.
-7. **No MFA, no email recovery service** (one-time recovery code only).
+7. **Two-step sign-in is optional** (off until a person turns it on). Recovery is by a one-time recovery key or, when the site's mail relay is configured, by an emailed code; with two-step on, both also need an authenticator or backup code, so losing the phone *and* the backup codes means losing the account.
 8. **Testing is finite.** No independent penetration test, physical iOS/Android device lab or full WCAG audit has been performed.
 
 ## 5. What we will not claim
@@ -72,8 +72,8 @@ New controls
 - **Languages:** `/api/i18n` is public but bounded: allow-listed languages only, only strings from a fixed server-side list are translated, outputs are sanitised (no markup, placeholders preserved), and the work is cached so it runs at most once per language.
 
 Evidence and how to repeat it
-- `python -m pytest api/tests -q`: 479 tests (477 pass on Windows and one is skipped; the remaining failure is a POSIX file-mode check, and a CRLF hash check can also fail on Windows; both pass on Linux CI).
-- `python scripts/security_probe.py http://127.0.0.1:8000`: 57 black-box checks (anonymous access, origin enforcement, hostile input on public endpoints, error shape, cookie flags, oversized bodies, session replay and revocation, lockout, cross-account isolation). Local servers only.
+- `python -m pytest api/tests -q`: 490 tests (487 pass on Windows and one is skipped; the two Windows-only failures are a POSIX file-mode check and a CRLF fixture-hash check, both of which pass on Linux CI).
+- `python scripts/security_probe.py http://127.0.0.1:8000`: 60 black-box checks (anonymous access, origin enforcement, hostile input on public endpoints, error shape, cookie flags, oversized bodies, session replay and revocation, lockout, cross-account isolation). Local servers only.
 - `python scripts/security_scan.py` (secret scan over the full history), `npm audit --omit=dev` and `pip-audit` on the lock file: clean at the time of writing.
 - Frontend: no inline script or style, no `innerHTML`, `eval` or dynamic code; CSP `default-src 'self'`.
 
@@ -82,3 +82,19 @@ Known limits, unchanged or new
 - Email delivery depends on a Gmail account through Apps Script (about 100 recipients a day for a personal account).
 - Translations and photo reading use a cloud model; a wrong reading is caught by the confirm step, not by the model.
 - Nothing connects to a bank or wallet; planned import features would only create drafts for the owner to confirm.
+
+## 11. Full security review of 20 October 2026 (release 0.7.6)
+
+An internal white-box and local black-box review of every route, the mail relay, the public endpoints, rate limiting, headers, dependencies and the front end. Details, evidence and the ranked list of remaining risks: `docs/SECURITY_REVIEW_20261020.md`, section "Full review (release 0.7.6)". Fixed, each with a regression test in `api/tests/test_security_review_20261020.py`:
+
+- **Recovery key bypassed two-step sign-in** (medium): with two-step on, the recovery key plus the username reset the password and signed in without the second step. It now needs an authenticator or backup code, like the emailed reset.
+- **Mail sender abuse** (medium, availability): anyone with a free account could make the site email any address (signup, add-email, invitations), flooding a victim and burning the daily quota of the Gmail relay. Now at most 5 messages an hour per recipient, 40 an hour site-wide for verification and invitation mail, and 90 a day in total (`SAFELEDGER_MAIL_DAILY_CAP`); password-reset mail is exempt only from the hourly site-wide ceiling.
+- **Language endpoint quota drain** (low to medium, cost): a language that could never be completed made every public request call the cloud model again (up to the 30 a minute global budget). An attempt that gains nothing or fails now pauses further attempts for that language for 5 minutes.
+- **Reset confirmation revealed account existence** (low): "password too weak" and "second factor required" answers differed between registered and unregistered emails. Answers are now identical until a correct emailed code is presented.
+- **Owner's smart-assist switch did not protect teammates' requests** (low, privacy): an invited viewer or approver could send the owner's records to the cloud model while the owner had smart assist off. The owner's switch now governs every teammate's request in that workspace.
+- **A removed member could never be invited again** (functional): the old seat is now reactivated with the new role.
+- **Email codes could be hashed with a public all-zero key** if the signing key were missing (hardening): the server now refuses instead.
+- Front end (not a security issue): a race in the first workspace load, visible in the development server as "signal is aborted without reason" and a stuck overview.
+- Documentation corrected: invitation expiry (owner-chosen, default 72 hours) and the optional two-step sign-in.
+
+Remaining limits, in plain terms: a determined attacker who knows a username can still slow that account's sign-in (one attempt every 20 seconds once 40 recent attempts failed) and can keep the single password-hashing slot busy, delaying everyone's sign-in; this is the cost of free hosting with forgeable client addresses and no CAPTCHA or WAF. Independent approval is per account, not per person (one person can register two accounts). Rate-limit counters are in memory and reset when the server restarts. Invitation links carry the code in the web address, so it can appear in hosting logs until it expires or is used.

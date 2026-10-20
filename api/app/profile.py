@@ -63,7 +63,9 @@ def check_password(db, account, password):
 
 # ---------- email codes ----------
 def _code_hash(purpose, subject, code):
-    key = bytes.fromhex(os.environ.get('SAFELEDGER_SIGNING_KEY', '0' * 64))
+    raw = os.environ.get('SAFELEDGER_SIGNING_KEY', '')
+    if len(raw) != 64:sec.fail(503, 'SIGNING_KEY_NOT_CONFIGURED')  # never fall back to a publicly known key
+    key = bytes.fromhex(raw)
     return hmac.new(key, f'{purpose}:{subject}:{code}'.encode(), hashlib.sha256).hexdigest()
 
 
@@ -76,15 +78,22 @@ def issue_code(db, purpose, subject):
     return code
 
 
-def check_code(db, purpose, subject, code):
+def check_code(db, purpose, subject, code, consume=True):
+    """True if the code is right. A wrong guess always counts against the code's five tries; a right one is spent unless consume=False."""
     code = ''.join(ch for ch in str(code) if ch.isdigit())
     if len(code) != 6:return False
     with sec.transaction(db):
         row = db.execute('SELECT code_id,code_hash,expires_at,attempts FROM email_codes WHERE purpose=? AND subject=? AND used=0 ORDER BY created_at DESC LIMIT 1', (purpose, subject)).fetchone()
         if not row or row[2] < sec.now() or row[3] >= 5:return False
         ok = hmac.compare_digest(row[1], _code_hash(purpose, subject, code))
-        db.execute('UPDATE email_codes SET used=1 WHERE code_id=?' if ok else 'UPDATE email_codes SET attempts=attempts+1 WHERE code_id=?', (row[0],))
+        if not ok:db.execute('UPDATE email_codes SET attempts=attempts+1 WHERE code_id=?', (row[0],))
+        elif consume:db.execute('UPDATE email_codes SET used=1 WHERE code_id=?', (row[0],))
     return ok
+
+
+def spend_code(db, purpose, subject):
+    with sec.transaction(db):
+        db.execute('UPDATE email_codes SET used=1 WHERE purpose=? AND subject=? AND used=0', (purpose, subject))
 
 
 # ---------- profile ----------
@@ -195,7 +204,7 @@ def set_email(body: EmailSet, actor=Depends(principal), db=Depends(db_connection
         if current and current[0] == email and current[1]:return dict(already_verified=True, email_service=mailer.configured(), simulation_only=True)
         db.execute('INSERT INTO account_emails VALUES (?,?,0) ON CONFLICT(account_id) DO UPDATE SET email=excluded.email, verified=0', (account, email))
     sent = False
-    if mailer.configured():
+    if mailer.configured() and mailer.reserve(email):
         code = issue_code(db, 'verify', account + ':' + email)
         sent = mailer.send(email, *mailer.code_message('verify', code))
     return dict(sent=sent, email_service=mailer.configured(), simulation_only=True)
@@ -344,7 +353,7 @@ def reset_request(body: ResetRequest, request: Request, db=Depends(db_connection
     answer = dict(sent=True, simulation_only=True)  # identical whether or not the address is registered
     if limiter.failure_total(scope) >= 3:return answer
     limiter.add_failure([scope])
-    if db.execute('SELECT 1 FROM account_emails WHERE email=? AND verified=1', (email,)).fetchone():
+    if db.execute('SELECT 1 FROM account_emails WHERE email=? AND verified=1', (email,)).fetchone() and mailer.reserve(email, bulk=False):
         mailer.send(email, *mailer.code_message('reset', issue_code(db, 'reset', email)))
     return answer
 
@@ -365,19 +374,23 @@ def reset_confirm(body: ResetConfirm, request: Request, db=Depends(db_connection
     scopes = failure_scopes('reset-confirm', email, edge, 5, 15, 30)
     locked_out(db, scopes)
     row = db.execute('SELECT a.account_id,a.username FROM account_emails e JOIN auth_accounts a ON a.account_id=e.account_id WHERE e.email=? AND e.verified=1', (email,)).fetchone()
+    # Every answer before a correct emailed code is the same for registered and unregistered addresses (no account probing).
+    try:reject_weak_password(body.new_password, row[1] if row else '')
+    except ValueError:sec.fail(422, 'PASSWORD_TOO_WEAK')
     if not row:
         record_failure(db, scopes)
         sec.fail(401, 'INVALID_RESET_CODE')
-    account, username = row
-    try:reject_weak_password(body.new_password, username)
-    except ValueError:sec.fail(422, 'PASSWORD_TOO_WEAK')
-    if mfa_enabled(db, account) and not body.second_factor:sec.fail(401, 'SECOND_FACTOR_REQUIRED')
-    if not check_code(db, 'reset', email, body.code):
+    account = row[0]
+    two_step = mfa_enabled(db, account)
+    if not check_code(db, 'reset', email, body.code, consume=not two_step):
         record_failure(db, scopes)
         sec.fail(401, 'INVALID_RESET_CODE')
-    if mfa_enabled(db, account) and not check_second_factor(db, account, body.second_factor):
-        record_failure(db, scopes)
-        sec.fail(401, 'INVALID_CODE')
+    if two_step:
+        if not body.second_factor:sec.fail(401, 'SECOND_FACTOR_REQUIRED')  # only someone holding a valid code learns that
+        if not check_second_factor(db, account, body.second_factor):
+            record_failure(db, scopes)
+            sec.fail(401, 'INVALID_CODE')
+        spend_code(db, 'reset', email)
     hashed = password_hash(body.new_password)
     with sec.transaction(db):
         db.execute('UPDATE auth_accounts SET password_hash=? WHERE account_id=?', (hashed, account))

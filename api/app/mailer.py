@@ -8,16 +8,48 @@ Nothing is sent unless a provider is configured in the environment (never in cod
   SAFELEDGER_MAIL_FROM                sender address, e.g. "Capzoryx Copilot <you@example.com>"
 Failures never raise and never log recipient addresses or message bodies.
 """
+import hashlib
 import json
 import logging
 import os
 import smtplib
 import ssl
+import threading
+import time
 from email.message import EmailMessage
 from email.utils import parseaddr
 import httpx
+from api.app.ratelimit import limiter
 
 log = logging.getLogger('safeledger.mail')
+
+# Anyone can create a free account and ask the site to email an address, so the mailbox is a shared, abusable resource
+# (a free Gmail relay also has a small daily quota). Every outgoing message must first pass reserve().
+PER_RECIPIENT_HOURLY = 5
+BULK_HOURLY = 40       # verification and invitation mail for the whole site; password-reset mail is exempt from this one
+try:DAILY_CAP = max(1, int(os.environ.get('SAFELEDGER_MAIL_DAILY_CAP', '90')))
+except ValueError:DAILY_CAP = 90
+_daily = {'day': None, 'count': 0}
+_daily_lock = threading.Lock()
+
+
+def reset_budget():
+    with _daily_lock:_daily.update(day=None, count=0)
+
+
+def reserve(to, *, bulk=True):
+    """Count one outgoing message against the per-recipient, site-wide hourly and daily ceilings. False means do not send.
+    Counters are process-local (see ratelimit.py). Never logs the address."""
+    who = 'mail-to:' + hashlib.sha256(str(to).strip().lower().encode()).hexdigest()[:32]
+    with _daily_lock:
+        today = time.strftime('%Y-%m-%d', time.gmtime())
+        if _daily['day'] != today:_daily.update(day=today, count=0)
+        if _daily['count'] >= DAILY_CAP or limiter.failure_total(who, 60) >= PER_RECIPIENT_HOURLY or (bulk and limiter.failure_total('mail-bulk', 60) >= BULK_HOURLY):
+            log.warning('Email not sent: a sending ceiling was reached')
+            return False
+        _daily['count'] += 1
+        limiter.add_failure([who] + (['mail-bulk'] if bulk else []))
+    return True
 
 
 def provider():

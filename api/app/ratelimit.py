@@ -91,6 +91,17 @@ class RateLimiter:
             self._spaced[scope] = now + seconds
             return 0
 
+    def hold(self, scope, seconds):
+        """Start a cool-down for this scope (cleared by reset())."""
+        with self._lock:self._spaced[scope] = self._clock() + seconds
+
+    def held(self, scope):
+        """Seconds left on a cool-down started by hold(), or 0."""
+        now = self._clock()
+        with self._lock:
+            until = self._spaced.get(scope, 0)
+            return max(1, int(until - now) + 1) if until > now else 0
+
     def add_failure(self, scopes):
         minute = self._minute()
         with self._lock:

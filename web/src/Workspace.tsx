@@ -10,6 +10,7 @@ import {lazy,Suspense,useEffect,useRef,useState,useCallback,type ReactNode,type 
 import {ApiError,client,accountRequest,currencyDigits,fxRate} from './api';
 import type {Audit,Forecast,Invoice,Profile,Proposal,Session,Snapshot,CashEvent,WorkspaceItem} from './types';
 import {ImportEvidence} from './ImportEvidence';
+import {sampleBusiness} from './sampleBusiness';
 import {DataEntry} from './DataEntry';
 import {Financing} from './Financing';
 import {QuickAdd} from './QuickAdd';
@@ -71,31 +72,34 @@ function WorkspaceContent({token,session,logout,expired,changeSession,setCurrenc
   async function reloadProfile(){try{const p=await request<Profile>('/account/profile');if(!scope.current.signal.aborted)setProfile(p);}catch{/* The profile is optional for viewing records. */}}
   async function reloadLists(){try{const l=await request<{workspaces:WorkspaceItem[];cleared:WorkspaceItem[]}>('/account/workspaces');if(!scope.current.signal.aborted)setLists(l);}catch{/* The workspace menu falls back to the current workspace. */}}
   async function refresh(){
+    const mine=scope.current;  // this call belongs to one mount: a newer mount must not make an aborted call look current
     try{
       const data=await request<{dataset_revision:string;snapshot:Snapshot;invoices:Invoice[];events:CashEvent[];proposals:Proposal[];audit:Audit;week:Forecast;month:Forecast;policy:{reserve_minor:number;payment_limit_minor:number}}>('/workspace');
-      if(scope.current.signal.aborted)return;
+      if(mine.signal.aborted)return;
       setRevision(data.dataset_revision);setSnapshot(data.snapshot);setCurrency(data.snapshot.currency);setInvoices(data.invoices);setEvents(data.events);setProposals(data.proposals);setAudit(data.audit);
       setWeek(data.week);setForecast(data.month);setBaselineMonth(data.month);
       setReserve(String(data.policy.reserve_minor/10**currencyDigits(data.snapshot.currency)));setDelay('0');setMissing(false);
     }catch(e){
-      if(scope.current.signal.aborted)return;
+      if(mine.signal.aborted)return;
       setSnapshot(null);setInvoices([]);setEvents([]);setProposals([]);setAudit(null);setWeek(null);setForecast(null);setBaselineMonth(null);
       const noData=e instanceof ApiError&&e.code==='DATASET_NOT_FOUND';setMissing(noData);if(!noData)report(e);
     }
   }
   async function run(action:()=>Promise<void>){
     if(actionLock.current)return;actionLock.current=true;setBusy(true);setError('');setMessage('');
-    try{await action();}catch(e){report(e);}finally{actionLock.current=false;if(!scope.current.signal.aborted)setBusy(false);}
+    const mine=scope.current;
+    try{await action();}catch(e){if(!mine.signal.aborted)report(e);}finally{if(mine===scope.current){actionLock.current=false;if(!mine.signal.aborted)setBusy(false);}}
   }
   useEffect(()=>{
     // StrictMode remounts effects in development; each mount gets its own cancellation scope.
-    const controller=new AbortController();scope.current=controller;
+    const controller=new AbortController();scope.current=controller;actionLock.current=false;
     void run(refresh);void reloadProfile();void reloadLists();
     void accountRequest<{cloud_assist:boolean}>('/auth/capabilities',undefined,controller.signal).then(c=>setCloudAvailable(c.cloud_assist)).catch(()=>{});
     return()=>controller.abort();
     // The workspace is keyed by session. It cannot reuse another session's financial state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
+  async function importRaw(raw:string){let saved=false;await run(async()=>{const r=await fetch('/api/workspace/import',{method:'POST',credentials:'same-origin',headers:{...(token?{Authorization:`Bearer ${token}`}:{}),'Content-Type':'application/json','X-SafeLedger-Client':'web'},body:raw,signal:AbortSignal.any([scope.current.signal,AbortSignal.timeout(90000)])});const data=await r.json();if(r.status===401)expired();if(!r.ok)throw new Error(data?.error?.fields?.map((x:{field:string;message:string})=>`${x.field}: ${x.message}`).join('; ')||data?.error?.code||'Import failed.');if(data.simulation_only!==true)throw new Error('Invalid server response.');saved=true;await refresh();setMessage('Records imported. Allow each supplier before preparing payments.');});if(!saved)throw new Error('The import was not completed. See the message above.');}
   async function propose(invoiceId:string){
     const proposal=await request<Proposal>('/proposals',{invoice_id:invoiceId});
     setSelected(proposal);await refresh();setTab('Approvals');setMessage(t('Payment prepared. Nothing is paid yet: a second person must approve it.'));
@@ -139,7 +143,7 @@ function WorkspaceContent({token,session,logout,expired,changeSession,setCurrenc
       {profile&&profile.email&&!profile.email_verified&&profile.email_service&&tab!=='Settings'&&<p className="notice">{t('Verify your email so you can reset your password with a code.')} <button className="link" onClick={()=>setTab('Settings')}>{t('Verify now')}</button></p>}
       {profile&&!profile.email&&tab==='Overview'&&<p className="notice">{t('Add an email address to reset your password with a code if you ever forget it.')} <button className="link" onClick={()=>setTab('Settings')}>{t('Add email')}</button></p>}
       {missing&&<p className="notice">Nothing here yet. {session.role==='owner'?<button className="link" onClick={()=>setTab('Data')}>{t('Add your first record')}</button>:t('Ask the owner to add records.')}</p>}
-      {tab==='Overview'&&<Dashboard snapshot={snapshot} week={week} month={baselineMonth} invoices={invoices} events={events} proposals={proposals} audit={audit} navigate={t=>setTab(t as Tab)} openAssistant={()=>{setChatLoaded(true);setChatOpen(true);}}/>}
+      {tab==='Overview'&&<Dashboard snapshot={snapshot} week={week} month={baselineMonth} invoices={invoices} events={events} proposals={proposals} audit={audit} navigate={t=>setTab(t as Tab)} openAssistant={()=>{setChatLoaded(true);setChatOpen(true);}} onSample={session.role==='owner'&&!!snapshot&&snapshot.opening_balance_minor===0&&snapshot.income_minor===0&&snapshot.expenses_minor===0&&invoices.length===0&&proposals.length===0?()=>void importRaw(sampleBusiness(snapshot.currency)).catch(e=>report(e)):undefined}/>}
       {tab==='Invoices'&&<Panel title={t('Invoices')}>
         <label htmlFor="invoice-search">{t('Search by supplier or invoice number')}</label><input id="invoice-search" type="search" value={query} onChange={e=>setQuery(e.target.value)}/>
         <p className="muted">{visible.length} {visible.length===1?'invoice':'invoices'}. A possible duplicate pauses payment until you review it.</p>
@@ -176,7 +180,7 @@ function WorkspaceContent({token,session,logout,expired,changeSession,setCurrenc
       {tab==='Data'&&<>
         <QuickAdd request={request} revision={revision} profile={profile} cloudAvailable={cloudAvailable} onSaved={async()=>{await refresh();}}/>
         <DataEntry events={events} session={session} revision={revision} snapshot={snapshot} busy={busy} submit={async body=>{let saved=false;await run(async()=>{await request('/workspace/records',body);saved=true;await refresh();setMessage(t('Record saved. Your balance, forecast and activity are updated.'));});if(!saved)throw new Error(t('The record was not saved. Check the message above and try again.'));}}/>
-        {session.role==='owner'&&<ImportEvidence busy={busy} enabled={!!snapshot&&snapshot.opening_balance_minor===0&&snapshot.income_minor===0&&snapshot.expenses_minor===0&&invoices.length===0&&proposals.length===0} upload={async raw=>{let saved=false;await run(async()=>{const r=await fetch('/api/workspace/import',{method:'POST',credentials:'same-origin',headers:{...(token?{Authorization:`Bearer ${token}`}:{}),'Content-Type':'application/json','X-SafeLedger-Client':'web'},body:raw,signal:AbortSignal.any([scope.current.signal,AbortSignal.timeout(90000)])});const data=await r.json();if(r.status===401)expired();if(!r.ok)throw new Error(data?.error?.fields?.map((x:{field:string;message:string})=>`${x.field}: ${x.message}`).join('; ')||data?.error?.code||'Import failed.');if(data.simulation_only!==true)throw new Error('Invalid server response.');saved=true;await refresh();setMessage('Records imported. Allow each supplier before preparing payments.');});if(!saved)throw new Error('The import was not completed. See the message above.');}}/>}</>}
+        {session.role==='owner'&&<ImportEvidence busy={busy} enabled={!!snapshot&&snapshot.opening_balance_minor===0&&snapshot.income_minor===0&&snapshot.expenses_minor===0&&invoices.length===0&&proposals.length===0} upload={importRaw}/>}</>}
       {tab==='Settings'&&<LazyBoundary><Suspense fallback={<section className="panel" role="status">{t('Opening settings…')}</section>}><Settings session={session} profile={profile} request={request} reloadProfile={reloadProfile} changeSession={changeSession} lists={lists} reloadLists={reloadLists} onExportPdf={exportPdf} onExportJson={exportJson} exporting={exporting} cloudAvailable={cloudAvailable}/></Suspense></LazyBoundary>}
       {chatLoaded&&<div id="workspace-assistant" hidden={tab!=='Assistant'&&!chatOpen} className={tab==='Assistant'?'assistant-page':'chat-float'} onKeyDown={(e:KeyboardEvent)=>{if(e.key==='Escape'&&tab!=='Assistant')closeChat();}}><LazyBoundary><Suspense fallback={<section className="panel" role="status">{t('Opening assistant…')}</section>}><Assistant visible={tab==='Assistant'||chatOpen} snapshot={snapshot} forecast={baselineMonth} week={week} events={events} invoices={invoices} session={session} profile={profile} cloudAvailable={cloudAvailable} revision={revision} request={request} onSaved={refresh} onNavigate={action=>{setTab(action);closeChat();}} onProposal={async()=>{await refresh();setTab('Approvals');closeChat();}} onClose={tab==='Assistant'?undefined:closeChat}/></Suspense></LazyBoundary></div>}
       {tab!=='Assistant'&&<button ref={chatButton} className="chat-launcher" aria-label={chatOpen?t('Close assistant'):t('Open assistant')} aria-expanded={chatOpen} aria-controls="workspace-assistant" onClick={()=>{setChatLoaded(true);setChatOpen(!chatOpen);}}><Icon name="spark"/> <span>{chatOpen?t('Close'):t('Assistant')}</span></button>}

@@ -2,10 +2,10 @@
 
 The product ships with no preloaded money, by design. To see a full scenario quickly:
 
-1. Open https://safeledger-ai.vercel.app. The first request can take up to a minute while the free backend wakes up.
+1. Open https://capzoryx-copilot.vercel.app. The first request can take up to a minute while the free backend wakes up.
 2. **Create account** with any username and an 8+ character password. Save the recovery code shown once.
-3. Go to **Data → Import records JSON** and upload [`judge_sample_records.json`](judge_sample_records.json) (a fictional Dhaka exporter, BDT).
-4. **Cash flow:** the balance is BDT 150,000 today, but a BDT 420,000 material payment on 25 Oct creates a reserve breach. The lowest projected balance is −BDT 360,000.
+3. On the **Overview**, press **Try a sample business**: it fills your empty workspace with a fictional Dhaka exporter in one click (dates are relative to today, amounts are in your workspace currency; the figures below are for a BDT workspace). Prefer a file? Use **Data → Advanced: import many records from a file** with [`judge_sample_records.json`](judge_sample_records.json) (BDT).
+4. **Cash flow:** the balance is BDT 150,000 today, but a BDT 420,000 material payment six days from now (25 Oct if you load the sample on 19 Oct) creates a reserve breach. The lowest projected balance is −BDT 360,000.
 5. **Financing:** add these three quotes (quote date 2026-10-19), then press **Match quotes to my cash flow**.
 
    | Lender | Amount | Fees | Rate | Basis | Term |

@@ -67,7 +67,7 @@ check('keep me signed in lasts 30 days and stays HttpOnly', kept.status_code == 
 brief = client().post('/api/auth/login', json={'username': 'probe_o_' + RUN, 'password': 'Zq7-long-unique-pass-41'})
 check('a normal sign-in lasts 24 hours', 'max-age=86400' in brief.headers.get('set-cookie', '').lower())
 reset = client().post('/api/auth/reset/request', json={'email': 'nobody@example.com'})
-check('password reset request is the same for unknown emails', reset.status_code in (200, 202) and 'nobody' not in reset.text)
+check('password reset request is the same for unknown emails (or email codes are not switched on)', (reset.status_code in (200, 202) or reset.json().get('error', {}).get('code') == 'EMAIL_NOT_CONFIGURED') and 'nobody' not in reset.text)
 # 5. A second account cannot see or change the first one's data.
 b = client()
 b.post('/api/auth/signup', json={'username': 'probe_x_' + RUN, 'password': 'Zq7-long-unique-pass-42', 'currency': 'BDT'})
@@ -108,6 +108,27 @@ check('repeated wrong passwords are slowed or locked', any(c in (423, 429) for c
 right = client().post('/api/auth/login', json={'username': 'probe_o_' + RUN, 'password': 'Zq7-long-unique-pass-41'})
 check('a lockout says how long to wait', right.headers.get('Retry-After', '').isdigit() and right.json().get('error', {}).get('retry_after', 0) > 0, right.headers.get('Retry-After'))
 check('a locked account does not accept even the right password during the lock', right.status_code in (423, 429), right.status_code)
+# 10. The recovery key must not be a way around two-step sign-in (found in the 20 Oct 2026 full review).
+import base64, hashlib, hmac, struct, time
+
+
+def totp(secret, offset=0):
+    key = base64.b32decode(secret + '=' * (-len(secret) % 8), casefold=True)
+    digest = hmac.new(key, struct.pack('>Q', int(time.time() // 30) + offset), hashlib.sha1).digest()
+    o = digest[-1] & 15
+    return '%06d' % ((struct.unpack('>I', digest[o:o + 4])[0] & 0x7FFFFFFF) % 10**6)
+
+
+m = client()
+made = m.post('/api/auth/signup', json={'username': 'probe_m_' + RUN, 'password': 'Zq7-long-unique-pass-51', 'currency': 'BDT'}).json()
+setup = m.post('/api/account/2fa/setup', json={'password': 'Zq7-long-unique-pass-51'}).json()
+enabled = m.post('/api/account/2fa/enable', json={'code': totp(setup['secret'])})
+check('two-step sign-in can be switched on', enabled.status_code == 200, enabled.text[:100])
+other = httpx.Client(base_url=BASE, headers={**H, 'X-Forwarded-For': '203.0.113.' + str(int(RUN, 16) % 200 + 1)}, timeout=30)  # a fresh per-address budget
+bare = other.post('/api/auth/recover', json={'username': 'probe_m_' + RUN, 'password': 'Zq7-long-unique-pass-52', 'recovery_code': made['recovery_code']})
+check('the recovery key alone cannot bypass two-step sign-in', bare.status_code == 401 and bare.json()['error']['code'] == 'SECOND_FACTOR_REQUIRED', bare.text[:120])
+still = other.post('/api/auth/login', json={'username': 'probe_m_' + RUN, 'password': 'Zq7-long-unique-pass-51'})
+check('the password was not changed by the refused recovery', still.status_code == 200 and still.json().get('mfa_required') is True, still.text[:120])
 failed = [n for n, ok, _ in results if not ok]
 print(f'\n{len(results) - len(failed)} of {len(results)} checks passed')
 if failed:

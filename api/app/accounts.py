@@ -238,7 +238,7 @@ def signup(body:SignupCredentials, request:Request, response:Response, db=Depend
     verification_sent=False
     if body.email:
         from api.app import mailer,profile
-        if mailer.configured():verification_sent=mailer.send(body.email,*mailer.code_message('verify',profile.issue_code(db,'verify',account+':'+body.email)))
+        if mailer.configured() and mailer.reserve(body.email):verification_sent=mailer.send(body.email,*mailer.code_message('verify',profile.issue_code(db,'verify',account+':'+body.email)))
     return dict(identity(db,sec.authenticate(db,token)),recovery_code=code,email_verification_sent=verification_sent)
 
 
@@ -325,12 +325,18 @@ def join(body:AcceptRequest,request:Request,response:Response,actor=Depends(prin
     with sec.transaction(db):
         invitation=db.execute('SELECT business_id,role,created_by FROM workspace_invites WHERE code_hash=? AND expires_at>? AND used_by IS NULL',(hashlib.sha256(body.code.encode()).hexdigest(),sec.now())).fetchone()
         if not invitation or not db.execute("SELECT 1 FROM workspace_meta WHERE business_id=? AND kind='personal' AND archived_at IS NULL",(invitation[0],)).fetchone():sec.fail(409,'INVITATION_INVALID_OR_EXPIRED')
-        if db.execute('SELECT 1 FROM account_members WHERE account_id=? AND business_id=?',(member[0],invitation[0])).fetchone():sec.fail(409,'ALREADY_A_WORKSPACE_MEMBER')
+        past=db.execute('SELECT m.user_id,u.role,u.active FROM account_members m JOIN security_users u ON u.user_id=m.user_id WHERE m.account_id=? AND m.business_id=?',(member[0],invitation[0])).fetchone()
+        if past and (past[2] or past[1]=='owner'):sec.fail(409,'ALREADY_A_WORKSPACE_MEMBER')
         creator=db.execute('SELECT role,active FROM security_users WHERE user_id=?',(invitation[2],)).fetchone()
         if not creator or tuple(creator)!=('owner',1):sec.fail(409,'INVITATION_INVALID_OR_EXPIRED')
-        user='user-'+uuid.uuid4().hex
-        db.execute('INSERT INTO security_users VALUES (?,?,?,1)',(user,invitation[0],invitation[1]))
-        db.execute('INSERT INTO account_members VALUES (?,?,?)',(member[0],invitation[0],user))
+        if past:
+            # Someone the owner removed (or who left) and who was invited again: switch their old seat back on with the new role.
+            user=past[0]
+            db.execute('UPDATE security_users SET active=1,role=? WHERE user_id=?',(invitation[1],user))
+        else:
+            user='user-'+uuid.uuid4().hex
+            db.execute('INSERT INTO security_users VALUES (?,?,?,1)',(user,invitation[0],invitation[1]))
+            db.execute('INSERT INTO account_members VALUES (?,?,?)',(member[0],invitation[0],user))
         db.execute('UPDATE workspace_invites SET used_by=? WHERE code_hash=?',(member[0],hashlib.sha256(body.code.encode()).hexdigest()))
         token=issue(db,user,ttl)
         sec.audit(db,sec.authenticate(db,token),'join-'+uuid.uuid4().hex,'WORKSPACE_JOINED',{'role':invitation[1],'invited_by':invitation[2]})
@@ -388,6 +394,7 @@ def new_workspace(body:NewWorkspace,request:Request,response:Response,actor=Depe
 
 class RecoveryRequest(Credentials):
     recovery_code: str = Field(min_length=20,max_length=100)
+    second_factor: str | None = Field(default=None,max_length=12)
 
     @model_validator(mode='after')
     def not_weak(self):
@@ -405,6 +412,14 @@ def recover(body:RecoveryRequest,request:Request,response:Response,db=Depends(db
     if row is None or not hmac.compare_digest(supplied,row[1]):
         record_failure(db,scopes)
         sec.fail(401,'INVALID_RECOVERY_DETAILS')
+    # The recovery key is one static secret: with two-step sign-in on it must not be a way around the second step
+    # (same rule as the email reset path). Checked before the key is spent, so a missing code costs nothing.
+    from api.app import profile
+    if profile.mfa_enabled(db,row[0]):
+        if not body.second_factor:sec.fail(401,'SECOND_FACTOR_REQUIRED')
+        if not profile.check_second_factor(db,row[0],body.second_factor):
+            record_failure(db,scopes)
+            sec.fail(401,'INVALID_CODE')
     hashed=password_hash(body.password);code=secrets.token_urlsafe(24)
     with sec.transaction(db):
         current=db.execute('SELECT code_hash FROM auth_recovery WHERE account_id=?',(row[0],)).fetchone()

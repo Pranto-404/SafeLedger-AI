@@ -14,7 +14,7 @@ from api.app.routes import router
 from api.app.agents.schema import create_schema as agent_schema
 from api.app.agents.errors import ProviderError
 from api.app.database import connect
-from api.app import accounts, inputs, financing, profile, workspaces, fx, assist, i18n
+from api.app import accounts, inputs, financing, profile, workspaces, fx, assist, i18n, mailer
 
 def _cors_origins() -> list[str]:
     """Read allowed origins from env; default to localhost dev ports only."""
@@ -30,6 +30,7 @@ SCHEMA_VERSION = 1
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     limiter.reset()
+    mailer.reset_budget()
     with closing(connect()) as db:
         with db:
             db.execute("CREATE TABLE IF NOT EXISTS schema_meta (version INTEGER PRIMARY KEY)")
@@ -42,7 +43,7 @@ async def lifespan(app: FastAPI):
         accounts.archive_legacy_examples(db)
     yield
 
-app = FastAPI(title="Capzoryx Copilot", version="0.7.5", lifespan=lifespan)
+app = FastAPI(title="Capzoryx Copilot", version="0.7.6", lifespan=lifespan)
 app.add_middleware(BodyLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -103,7 +104,7 @@ async def headers(request, call_next):
 @app.get("/api/health")
 def health():
     configured=all(os.environ.get(key) for key in ("SAFELEDGER_LLM_BASE_URL","SAFELEDGER_LLM_MODEL","SAFELEDGER_LLM_API_KEY"))
-    return {"status": "ok", "version": "0.7.5", "build_commit": (os.environ.get("RENDER_GIT_COMMIT") or os.environ.get("VERCEL_GIT_COMMIT_SHA") or os.environ.get("SAFELEDGER_BUILD_COMMIT", "development")), "simulation_only": True, "release": "accounts-and-assistant", "ai_status": "configured_not_verified" if configured else "not_configured"}
+    return {"status": "ok", "version": "0.7.6", "build_commit": (os.environ.get("RENDER_GIT_COMMIT") or os.environ.get("VERCEL_GIT_COMMIT_SHA") or os.environ.get("SAFELEDGER_BUILD_COMMIT", "development")), "simulation_only": True, "release": "accounts-and-assistant", "ai_status": "configured_not_verified" if configured else "not_configured"}
 
 @app.get("/api/ready")
 def ready():

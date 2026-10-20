@@ -149,6 +149,8 @@ def agent_task(body: TaskRequest,actor=Depends(principal),db=Depends(db_connecti
     from api.app.accounts import PUBLIC_TEMPLATES
     if actor.business_id in PUBLIC_TEMPLATES:sec.fail(403,'CREATE_ACCOUNT_FOR_ASSISTANT')
     if not body.external_ai_consent:sec.fail(403,'EXTERNAL_AI_CONSENT_REQUIRED')
+    from api.app.assist import owner_allows_cloud
+    if actor.role!='owner' and not owner_allows_cloud(db,actor.business_id):sec.fail(403,'WORKSPACE_OWNER_SMART_ASSIST_OFF')
     if db.execute('SELECT 1 FROM account_members WHERE user_id=?',(actor.user_id,)).fetchone():
         sec.budget(db,'public-ai-global',8)
     from api.app.agents import runner

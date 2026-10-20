@@ -69,4 +69,6 @@ export function CurrencyControls({ready}:{ready:boolean}){
   {error&&<p className="error" role="alert">{error}</p>}
  </section>;
 }
-export function CurrencySelect({value,onChange,id,disabled=false}:{value:string;onChange:(code:string)=>void;id:string;disabled?:boolean}){return <select id={id} value={value} onChange={e=>onChange(e.target.value)} disabled={disabled}>{currencies.map(c=><option key={c.code} value={c.code}>{c.code} — {c.name}</option>)}</select>;}
+/** ISO 4217 fund and accounting units (not everyday money): kept valid on the server, left out of the pick lists. */
+const FUND_CODES=new Set(['BOV','CHE','CHW','CLF','COU','MXV','USN','UYI','UYW','XAD']);
+export function CurrencySelect({value,onChange,id,disabled=false}:{value:string;onChange:(code:string)=>void;id:string;disabled?:boolean}){return <select id={id} value={value} onChange={e=>onChange(e.target.value)} disabled={disabled}>{currencies.filter(c=>!FUND_CODES.has(c.code)||c.code===value).map(c=><option key={c.code} value={c.code}>{c.code} — {c.name}</option>)}</select>;}
