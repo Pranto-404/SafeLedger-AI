@@ -889,7 +889,7 @@ Test data is synthetic. The earlier documents quoted 414 tests (release 0.4.1) a
 
 ## 8.2 CI and the live site
 
-GitHub Actions ran **CI** successfully on commits `ba3ddb1`, `0e3a545`, `72d544e`, `4fb35fa`, `c846cd5` and `db000b8` (checked through GitHub's public interface on 20 October). The live API reported `version 0.7.6`, `build_commit db000b8…`, `status ok` in 0.44 seconds. The documentation-day changes of section 12 are pushed after these checks; CI will run on them too.
+GitHub Actions ran **CI** successfully on commits `ba3ddb1`, `0e3a545`, `72d544e`, `4fb35fa`, `c846cd5` and `db000b8` (checked through GitHub's public interface on 20 October). The live API reported `version 0.7.6`, `build_commit db000b8…`, `status ok` in 0.44 seconds. The documentation-day changes of section 12 were pushed afterwards as commits `1ca03ea` and `84d416a`; CI also passed on `84d416a`.
 
 ## 8.3 Front-end checks
 
