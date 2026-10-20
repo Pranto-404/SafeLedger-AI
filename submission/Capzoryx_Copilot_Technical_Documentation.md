@@ -19,7 +19,7 @@
 | Live application | <https://capzoryx-copilot.vercel.app> |
 | Source code | <https://github.com/Pranto-404/capzoryx-copilot> (branch `main`) |
 | First submitted tag | `submission-2026-10-20` (release 0.4.1) |
-| Team members and roles | **[TO BE FILLED BY THE TEAM: names, institutions, roles. The repository does not record them.]** |
+| Team members | Md Mahin Ahmed Bhuiyan, Md Fahim Ali, Md Habibuzzaman and Kamrul Islam (Bangladesh University of Business and Technology, Computer Science and Engineering); Keya Akter Soma (Gono Bishwabidyalay, Computer Science and Engineering). All from Bangladesh. |
 
 ---
 
