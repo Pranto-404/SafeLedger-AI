@@ -6,6 +6,7 @@ from datetime import datetime, timezone, timedelta, date
 import hashlib
 import hmac
 import json
+import logging
 import os
 from pathlib import Path
 import re
@@ -33,6 +34,9 @@ ACCOUNT_CAP = 5000
 SIGNUP_HOURLY_CAP = 200
 SIGNUP_HOURLY_CAP_WINDOW = 60
 DUMMY_SALT = '0'*32
+SESSION_TTL = 86400
+REMEMBER_TTL = 30*86400
+SLOW_SECONDS = 20
 
 
 def schema(db):
@@ -48,6 +52,21 @@ def schema(db):
         db.execute('ALTER TABLE workspace_meta ADD COLUMN archived_at INTEGER')
     if 'created_at' not in {r[1] for r in db.execute('PRAGMA table_info(workspace_invites)').fetchall()}:
         db.execute('ALTER TABLE workspace_invites ADD COLUMN created_at INTEGER')
+    canonicalize_usernames(db)
+
+
+def canonicalize_usernames(db):
+    """Usernames are stored in canonical lowercase form. Rewrite any older mixed-case rows, skipping (and reporting)
+    a row whose lowercase form is already taken, then make the database itself refuse case-variant duplicates."""
+    skipped=[]
+    for account,name in db.execute("SELECT account_id,username FROM auth_accounts WHERE username<>lower(trim(username)) ORDER BY created_at").fetchall():
+        canonical=name.strip().lower()
+        if db.execute('SELECT 1 FROM auth_accounts WHERE username=? AND account_id<>?',(canonical,account)).fetchone():skipped.append(account);continue
+        db.execute('UPDATE auth_accounts SET username=? WHERE account_id=?',(canonical,account))
+    if skipped:logging.getLogger('safeledger').warning('Username collision: %d account(s) keep a mixed-case name and can sign in only with that exact spelling',len(skipped))
+    try:db.execute('CREATE UNIQUE INDEX IF NOT EXISTS auth_accounts_username_nocase ON auth_accounts(username COLLATE NOCASE)')
+    except sqlite3.Error:pass
+    db.commit()
 
 
 def archive_legacy_examples(db):
@@ -85,7 +104,7 @@ def failure_scopes(kind, name, edge, per_pair, per_name, per_edge):
 def locked_out(db, scopes):
     """Failed-attempt lockout over a rolling 15-minute window, in memory. Runs before any password hashing."""
     for scope, limit in scopes:
-        if limiter.failure_total(scope) >= limit:sec.fail(429,'TOO_MANY_FAILED_ATTEMPTS')
+        if limiter.failure_total(scope) >= limit:sec.fail(429,'TOO_MANY_FAILED_ATTEMPTS',limiter.retry_after(scope,limit) or 60)
 
 
 def record_failure(db, scopes):
@@ -124,15 +143,22 @@ def password_hash(password, salt=None):
     return 'scrypt-v1$'+salt+'$'+digest
 
 
-def issue(db, user_id):
+def issue(db, user_id, ttl=SESSION_TTL):
     token=secrets.token_urlsafe(32)
-    db.execute('INSERT INTO security_sessions VALUES (?,?,?)',(hashlib.sha256(token.encode()).hexdigest(),user_id,sec.now()+86400))
+    db.execute('INSERT INTO security_sessions VALUES (?,?,?)',(hashlib.sha256(token.encode()).hexdigest(),user_id,sec.now()+ttl))
     return token
 
 
-def set_cookie(response, token):
+def set_cookie(response, token, ttl=SESSION_TTL):
     secure = bool(os.environ.get('RENDER') or os.environ.get('VERCEL') or os.environ.get('SAFELEDGER_COOKIE_SECURE')=='1')
-    response.set_cookie(COOKIE,token,max_age=86400,httponly=True,secure=secure,samesite='lax',path='/')
+    response.set_cookie(COOKIE,token,max_age=ttl,httponly=True,secure=secure,samesite='lax',path='/')
+
+
+def current_ttl(db, request):
+    """Lifetime left on the presented session, so switching workspace keeps a 'keep me signed in' session long."""
+    token=request.cookies.get(COOKIE)
+    row=db.execute('SELECT expires_at FROM security_sessions WHERE token_hash=?',(hashlib.sha256(token.encode()).hexdigest(),)).fetchone() if token else None
+    return min(REMEMBER_TTL,max(SESSION_TTL,row[0]-sec.now())) if row else SESSION_TTL
 
 
 def identity(db, actor):
@@ -157,6 +183,19 @@ class Credentials(Contract):
         value=value.lower().strip()
         if not re.fullmatch(r'[a-z0-9_]{3,32}',value):raise ValueError('Use 3–32 letters, numbers or underscores')
         return value
+
+
+class LoginCredentials(Contract):
+    """Sign-in is lenient about the username so that a typo is an ordinary wrong-credentials answer, never a format error."""
+    model_config = {"extra":"forbid", "str_strip_whitespace":False}
+    username: str = Field(min_length=1,max_length=64)
+    password: str = Field(min_length=1,max_length=128,strict=True)
+    remember: bool = False
+
+    @field_validator('username')
+    @classmethod
+    def canonical(cls,value):
+        return value.strip().lower()
 
 
 class SignupCredentials(Credentials):
@@ -204,32 +243,40 @@ def signup(body:SignupCredentials, request:Request, response:Response, db=Depend
 
 
 @router.post('/auth/login')
-def login(body:Credentials,request:Request,response:Response,db=Depends(db_connection)):
+def login(body:LoginCredentials,request:Request,response:Response,db=Depends(db_connection)):
     browser_origin(request);edge=rate(request,db,'login',12,120,300)
     scopes=failure_scopes('login',body.username,edge,8,40,40)
-    locked_out(db,scopes)
-    row=db.execute('SELECT account_id,password_hash FROM auth_accounts WHERE username=?',(body.username,)).fetchone()
+    pair,(name_scope,name_limit),per_edge=scopes
+    locked_out(db,[pair,per_edge])
+    # Many failures against one name (possibly an attacker, not the owner): slow it to one attempt per few seconds
+    # instead of shutting the real owner out for the whole window. Guessing speed stays capped either way.
+    if limiter.failure_total(name_scope)>=name_limit:
+        wait=limiter.space('login-slow:'+name_scope,SLOW_SECONDS)
+        if wait:sec.fail(429,'TOO_MANY_FAILED_ATTEMPTS',wait)
+    row=db.execute('SELECT account_id,password_hash FROM auth_accounts WHERE username=? COLLATE NOCASE',(body.username,)).fetchone()
     stored=row[1] if row else 'scrypt-v1$'+DUMMY_SALT+'$'+'0'*64
     computed=password_hash(body.password,stored.split('$')[1])
     if not row or not hmac.compare_digest(computed,stored):
         record_failure(db,scopes)
         sec.fail(401,'INVALID_USERNAME_OR_PASSWORD')
+    limiter.clear_failures([pair[0]])
     from api.app import profile
     if profile.mfa_enabled(db,row[0]):return profile.begin_challenge(db,row[0])
-    return complete_login(db,response,row[0])
+    return complete_login(db,response,row[0],body.remember)
 
 
-def complete_login(db,response,account_id):
+def complete_login(db,response,account_id,remember=False):
     """Issue the session after every required factor has been checked."""
+    ttl=REMEMBER_TTL if remember else SESSION_TTL
     with sec.transaction(db):
         sec.prune_expired_sessions(db)
         member=personal_member(db,account_id)
-        token=issue(db,member)
+        token=issue(db,member,ttl)
         code=None
         if not db.execute('SELECT 1 FROM auth_recovery WHERE account_id=?',(account_id,)).fetchone():
             code=secrets.token_urlsafe(24)
             db.execute('INSERT INTO auth_recovery VALUES (?,?)',(account_id,hashlib.sha256(code.encode()).hexdigest()))
-    set_cookie(response,token)
+    set_cookie(response,token,ttl)
     result=identity(db,sec.authenticate(db,token))
     if code:result['recovery_code']=code
     return result
@@ -255,13 +302,14 @@ class WorkspaceChoice(Contract):
 
 
 @router.post('/account/switch')
-def switch(body:WorkspaceChoice,response:Response,actor=Depends(principal),db=Depends(db_connection)):
+def switch(body:WorkspaceChoice,request:Request,response:Response,actor=Depends(principal),db=Depends(db_connection)):
     member=db.execute('SELECT account_id FROM account_members WHERE user_id=?',(actor.user_id,)).fetchone()
     if not member:sec.fail(403,'ACCOUNT_REQUIRED')
     user=db.execute('SELECT m.user_id FROM account_members m JOIN security_users u ON u.user_id=m.user_id WHERE m.account_id=? AND m.business_id=? AND u.active=1 AND EXISTS (SELECT 1 FROM workspace_meta w WHERE w.business_id=m.business_id AND w.kind="personal" AND w.archived_at IS NULL)',(member[0],body.business_id)).fetchone()
     if not user:sec.fail(403,'WORKSPACE_ACCESS_DENIED')
-    with db:token=issue(db,user[0])
-    set_cookie(response,token);return identity(db,sec.authenticate(db,token))
+    ttl=current_ttl(db,request)
+    with db:token=issue(db,user[0],ttl)
+    set_cookie(response,token,ttl);return identity(db,sec.authenticate(db,token))
 
 
 class AcceptRequest(Contract):
@@ -269,10 +317,11 @@ class AcceptRequest(Contract):
 
 
 @router.post('/account/join')
-def join(body:AcceptRequest,response:Response,actor=Depends(principal),db=Depends(db_connection)):
+def join(body:AcceptRequest,request:Request,response:Response,actor=Depends(principal),db=Depends(db_connection)):
     member=db.execute('SELECT account_id FROM account_members WHERE user_id=?',(actor.user_id,)).fetchone()
     if not member:sec.fail(403,'ACCOUNT_REQUIRED')
     sec.budget(db,'join:'+actor.user_id,10)
+    ttl=current_ttl(db,request)
     with sec.transaction(db):
         invitation=db.execute('SELECT business_id,role,created_by FROM workspace_invites WHERE code_hash=? AND expires_at>? AND used_by IS NULL',(hashlib.sha256(body.code.encode()).hexdigest(),sec.now())).fetchone()
         if not invitation or not db.execute("SELECT 1 FROM workspace_meta WHERE business_id=? AND kind='personal' AND archived_at IS NULL",(invitation[0],)).fetchone():sec.fail(409,'INVITATION_INVALID_OR_EXPIRED')
@@ -283,9 +332,9 @@ def join(body:AcceptRequest,response:Response,actor=Depends(principal),db=Depend
         db.execute('INSERT INTO security_users VALUES (?,?,?,1)',(user,invitation[0],invitation[1]))
         db.execute('INSERT INTO account_members VALUES (?,?,?)',(member[0],invitation[0],user))
         db.execute('UPDATE workspace_invites SET used_by=? WHERE code_hash=?',(member[0],hashlib.sha256(body.code.encode()).hexdigest()))
-        token=issue(db,user)
+        token=issue(db,user,ttl)
         sec.audit(db,sec.authenticate(db,token),'join-'+uuid.uuid4().hex,'WORKSPACE_JOINED',{'role':invitation[1],'invited_by':invitation[2]})
-    set_cookie(response,token);return identity(db,sec.authenticate(db,token))
+    set_cookie(response,token,ttl);return identity(db,sec.authenticate(db,token))
 
 
 def today_bd():
@@ -320,19 +369,20 @@ class NewWorkspace(Contract):
 
 
 @router.post('/account/workspaces',status_code=201)
-def new_workspace(body:NewWorkspace,response:Response,actor=Depends(principal),db=Depends(db_connection)):
+def new_workspace(body:NewWorkspace,request:Request,response:Response,actor=Depends(principal),db=Depends(db_connection)):
     member=db.execute('SELECT account_id FROM account_members WHERE user_id=?',(actor.user_id,)).fetchone()
     if not member:sec.fail(403,'ACCOUNT_REQUIRED')
     sec.budget(db,'new-workspace:'+member[0],3)
+    ttl=current_ttl(db,request)
     with sec.transaction(db):
         if db.execute('SELECT count(*) FROM account_members WHERE account_id=?',(member[0],)).fetchone()[0]>=20:sec.fail(409,'WORKSPACE_LIMIT_REACHED')
         business='workspace-'+uuid.uuid4().hex;user='user-'+uuid.uuid4().hex
         db.execute("INSERT INTO security_users VALUES (?,?,'owner',1)",(user,business))
         db.execute('INSERT INTO account_members VALUES (?,?,?)',(member[0],business,user))
         create_workspace_data(db,business,body.kind,body.name,body.currency)
-        token=issue(db,user)
+        token=issue(db,user,ttl)
         sec.audit(db,sec.authenticate(db,token),'workspace-'+business,'WORKSPACE_CREATED',{'sample_data':False})
-    set_cookie(response,token)
+    set_cookie(response,token,ttl)
     return identity(db,sec.authenticate(db,token))
 
 
@@ -350,7 +400,7 @@ def recover(body:RecoveryRequest,request:Request,response:Response,db=Depends(db
     browser_origin(request);edge=rate(request,db,'recover',4,20,40)
     scopes=failure_scopes('recover',body.username,edge,5,20,30)
     locked_out(db,scopes)
-    row=db.execute('SELECT a.account_id,r.code_hash FROM auth_accounts a JOIN auth_recovery r ON r.account_id=a.account_id WHERE a.username=?',(body.username,)).fetchone()
+    row=db.execute('SELECT a.account_id,r.code_hash FROM auth_accounts a JOIN auth_recovery r ON r.account_id=a.account_id WHERE a.username=? COLLATE NOCASE',(body.username,)).fetchone()
     supplied=hashlib.sha256(body.recovery_code.encode()).hexdigest()
     if row is None or not hmac.compare_digest(supplied,row[1]):
         record_failure(db,scopes)

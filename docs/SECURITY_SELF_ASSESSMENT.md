@@ -64,6 +64,7 @@ We do not describe Capzoryx Copilot as bank-grade, breach-proof, certified, comp
 New controls
 - **Two-step sign-in:** TOTP (RFC 6238) with replay protection, hashed one-time backup codes and a sealed secret; enabling and disabling need the password. Reset by email also asks for the second factor when it is on.
 - **Email codes:** six digits, HMAC-hashed, ten-minute expiry, five attempts; replies for unknown addresses are identical to known ones. Mail goes through a relay that checks a shared secret; failures never log addresses.
+- **Sign-in (0.7.5):** usernames are canonical lowercase and trimmed (any capitalisation signs in; signup and the database refuse case-variant duplicates, and a one-time migration lowercases older rows and reports collisions). Failed sign-ins always return the same generic answer, whether or not the account exists. "Keep me signed in" gives a 30-day server session and matching HttpOnly, SameSite=Lax (Secure in production) cookie; otherwise 24 hours. Logout and password change revoke sessions on the server, and switching workspace keeps the session's remaining lifetime. Lockouts report how long to wait (Retry-After): 8 failures from one client and name lock that client for up to 15 minutes, and a success clears it; 40 failures against one name from many clients slow that name to one attempt per 20 seconds instead of locking out the real owner, so an attacker cannot lock someone out, and guessing speed stays capped. The browser may offer to save the login through the standard password manager; the password is never stored by the app, only the last username on the device.
 - **Sessions:** logout ends the server session; a password change signs every other device out; per-account failure lockouts and address-independent request budgets.
 - **Sharing:** roles are enforced on the server; invitation links are single use, expire, and the public preview reveals only the workspace name, role and inviter name for a valid link.
 - **Clearing data:** owner-only, soft archive with a 30-day restore (the ledger itself stays append-only).
@@ -71,8 +72,8 @@ New controls
 - **Languages:** `/api/i18n` is public but bounded: allow-listed languages only, only strings from a fixed server-side list are translated, outputs are sanitised (no markup, placeholders preserved), and the work is cached so it runs at most once per language.
 
 Evidence and how to repeat it
-- `python -m pytest api/tests -q`: 468 tests (465 pass on Windows; the other two are a POSIX file-mode check and a CRLF hash check that pass on Linux CI).
-- `python scripts/security_probe.py http://127.0.0.1:8000`: 53 black-box checks (anonymous access, origin enforcement, hostile input on public endpoints, error shape, cookie flags, oversized bodies, session replay and revocation, lockout, cross-account isolation). Local servers only.
+- `python -m pytest api/tests -q`: 479 tests (477 pass on Windows and one is skipped; the remaining failure is a POSIX file-mode check, and a CRLF hash check can also fail on Windows; both pass on Linux CI).
+- `python scripts/security_probe.py http://127.0.0.1:8000`: 57 black-box checks (anonymous access, origin enforcement, hostile input on public endpoints, error shape, cookie flags, oversized bodies, session replay and revocation, lockout, cross-account isolation). Local servers only.
 - `python scripts/security_scan.py` (secret scan over the full history), `npm audit --omit=dev` and `pip-audit` on the lock file: clean at the time of writing.
 - Frontend: no inline script or style, no `innerHTML`, `eval` or dynamic code; CSP `default-src 'self'`.
 

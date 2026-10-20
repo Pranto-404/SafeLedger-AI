@@ -64,8 +64,11 @@ def test_distributed_guessing_hits_per_account_ceiling(world, fast):
     c, _ = world
     signup(c, 'popular_target'); c.post('/api/auth/logout', json={})
     results = [login(c, 'popular_target', 'wrong-guess-%d' % i, f'192.0.2.{i + 1}').status_code for i in range(45)]
-    assert results[:40] == [401] * 40 and set(results[40:]) == {429}
-    assert login(c, 'popular_target', PASSWORD, '192.0.2.200').status_code == 429
+    # Past 40 failures the account is slowed to one attempt per few seconds rather than shut for 15 minutes.
+    assert results[:41] == [401] * 41 and set(results[41:]) == {429}
+    blocked = login(c, 'popular_target', PASSWORD, '192.0.2.200')
+    assert blocked.status_code == 429 and 1 <= blocked.json()['error']['retry_after'] <= accounts.SLOW_SECONDS + 1
+    assert int(blocked.headers['Retry-After']) == blocked.json()['error']['retry_after']
 
 
 def test_signup_flood_is_limited_per_edge_despite_rotating_forwarded_for(world, fast):
@@ -203,7 +206,7 @@ def test_forged_addresses_without_infrastructure_header_still_hit_account_and_si
     c, _ = world
     signup(c, 'forged_target'); c.post('/api/auth/logout', json={})
     codes = [c.post('/api/auth/login', json={'username': 'forged_target', 'password': 'wrong-guess-%d' % i}, headers={'x-forwarded-for': '10.1.%d.%d' % (i // 250, i % 250)}).status_code for i in range(45)]
-    assert codes[:40] == [401] * 40 and set(codes[40:]) == {429}, codes
+    assert codes[:41] == [401] * 41 and set(codes[41:]) == {429}, codes  # slowed (one try per few seconds), not locked
     monkeypatch.setattr(accounts, 'SIGNUP_HOURLY_CAP', 3)
     made = [c.post('/api/auth/signup', json={'username': 'hourly_%d' % i, 'password': PASSWORD}, headers={'x-forwarded-for': '172.16.%d.1' % i}).status_code for i in range(5)]
     assert made == [201, 201, 429, 429, 429], made  # one account was already created above

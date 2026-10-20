@@ -56,7 +56,7 @@ export function parseMinor(text:string,currency='BDT'):number {
 }
 
 const friendly: Record<string,string> = {
-  INVALID_USERNAME_OR_PASSWORD: 'That username and password do not match. Please try again.',
+  INVALID_USERNAME_OR_PASSWORD: 'Check your username and password. Usernames are not case sensitive.',
   USERNAME_UNAVAILABLE: 'That username is already in use. Try another one.',
   REQUEST_BUDGET_EXCEEDED: 'A few too many requests. Please wait a minute and try again.',
   INVITATION_INVALID_OR_EXPIRED: 'This invitation has expired or was already used. Ask the workspace owner for a new one.',
@@ -94,11 +94,27 @@ const friendly: Record<string,string> = {
   ACCOUNT_CAPACITY_REACHED: 'New sign-ups are temporarily full. Please try again later.',
   UNTRUSTED_BROWSER_ORIGIN: 'This request came from an unrecognised site. Open Capzoryx Copilot from its official address.',
 };
+/** Sign-in and account errors carry their code so screens can translate them and show how long to wait. */
+export class AuthError extends Error {
+  constructor(message:string,public code:string,public status:number,public retryAfter=0){super(message);}
+}
 export async function accountRequest<T>(path:string, body?:unknown, signal?:AbortSignal):Promise<T> {
-  const r = await fetch('/api'+path,{method:body===undefined?'GET':'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-SafeLedger-Client':'web'},body:body===undefined?undefined:JSON.stringify(body),signal:signal?AbortSignal.any([signal,AbortSignal.timeout(90000)]):AbortSignal.timeout(90000)});
+  let r:Response;
+  try{
+    r = await fetch('/api'+path,{method:body===undefined?'GET':'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-SafeLedger-Client':'web'},body:body===undefined?undefined:JSON.stringify(body),signal:signal?AbortSignal.any([signal,AbortSignal.timeout(90000)]):AbortSignal.timeout(90000)});
+  }catch(error){
+    if(signal?.aborted)throw error;
+    throw new AuthError('Could not reach the server. Check your connection and try again.','CONNECTION_FAILED',0);
+  }
   const data=await r.json().catch(()=>null);
-  if(!r.ok) throw new Error(friendly[data?.error?.code] || (r.status===422&&data?.error?.fields?.some((f:{field?:string})=>/email/.test(f.field||''))?'Enter a valid email address.':null) || (r.status===422?(data?.error?.fields?.some((f:{message?:string})=>/less common/i.test(f.message||''))?'That password is too easy to guess. Choose a longer, less predictable one that is not your username.':'Check your username and use a password of at least 8 characters.'):data?.error?.code?.replaceAll('_',' ') || 'The server is unavailable. Please try again.'));
-  if(data?.simulation_only!==true)throw new Error('Unexpected server response. Please try again.');
+  if(!r.ok){
+    const code=typeof data?.error?.code==='string'?data.error.code:'';
+    // A bare 502/503/504 with no JSON error is the free server still waking behind the proxy, not a wrong password.
+    if(!code&&[502,503,504].includes(r.status))throw new AuthError('The server is waking up. Please try again in a moment.','SERVER_WAKING',r.status);
+    const retryAfter=typeof data?.error?.retry_after==='number'?data.error.retry_after:0;
+    throw new AuthError(friendly[code] || (r.status===422&&data?.error?.fields?.some((f:{field?:string})=>/email/.test(f.field||''))?'Enter a valid email address.':null) || (r.status===422?(data?.error?.fields?.some((f:{message?:string})=>/less common/i.test(f.message||''))?'That password is too easy to guess. Choose a longer, less predictable one that is not your username.':'Check your username and use a password of at least 8 characters.'):code.replaceAll('_',' ') || 'The server is unavailable. Please try again.'),code,r.status,retryAfter);
+  }
+  if(data?.simulation_only!==true)throw new AuthError('Unexpected server response. Please try again.','INVALID_SERVER_RESPONSE',r.status);
   return data as T;
 }
 

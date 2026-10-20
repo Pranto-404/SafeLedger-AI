@@ -59,6 +59,13 @@ check('unknown JSON fields refused', client().post('/api/auth/signup', json={'us
 wrong = client().post('/api/auth/login', json={'username': 'probe_o_' + RUN, 'password': 'wrong-password-xyz'})
 ghost = client().post('/api/auth/login', json={'username': 'no_such_user_zz', 'password': 'wrong-password-xyz'})
 check('login errors do not reveal whether an account exists', wrong.status_code == ghost.status_code == 401 and wrong.json() == ghost.json())
+mixed = client().post('/api/auth/login', json={'username': ('probe_o_' + RUN).upper(), 'password': 'Zq7-long-unique-pass-41'})
+check('sign-in ignores username capitalisation', mixed.status_code == 200, mixed.status_code)
+kept = client().post('/api/auth/login', json={'username': 'probe_o_' + RUN, 'password': 'Zq7-long-unique-pass-41', 'remember': True})
+cookie = kept.headers.get('set-cookie', '').lower()
+check('keep me signed in lasts 30 days and stays HttpOnly', kept.status_code == 200 and 'max-age=2592000' in cookie and 'httponly' in cookie and 'samesite=lax' in cookie, cookie[:120])
+brief = client().post('/api/auth/login', json={'username': 'probe_o_' + RUN, 'password': 'Zq7-long-unique-pass-41'})
+check('a normal sign-in lasts 24 hours', 'max-age=86400' in brief.headers.get('set-cookie', '').lower())
 reset = client().post('/api/auth/reset/request', json={'email': 'nobody@example.com'})
 check('password reset request is the same for unknown emails', reset.status_code in (200, 202) and 'nobody' not in reset.text)
 # 5. A second account cannot see or change the first one's data.
@@ -99,6 +106,7 @@ check('password change signs other devices out', d3.get('/api/workspace').status
 codes = [client().post('/api/auth/login', json={'username': 'probe_o_' + RUN, 'password': 'wrong-pass-%d-xx' % i}).status_code for i in range(12)]
 check('repeated wrong passwords are slowed or locked', any(c in (423, 429) for c in codes), codes)
 right = client().post('/api/auth/login', json={'username': 'probe_o_' + RUN, 'password': 'Zq7-long-unique-pass-41'})
+check('a lockout says how long to wait', right.headers.get('Retry-After', '').isdigit() and right.json().get('error', {}).get('retry_after', 0) > 0, right.headers.get('Retry-After'))
 check('a locked account does not accept even the right password during the lock', right.status_code in (423, 429), right.status_code)
 failed = [n for n, ok, _ in results if not ok]
 print(f'\n{len(results) - len(failed)} of {len(results)} checks passed')

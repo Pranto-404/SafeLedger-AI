@@ -309,6 +309,7 @@ def begin_challenge(db, account):
 class Challenge(Exact):
     challenge: str = Field(min_length=20, max_length=100)
     code: str = Field(min_length=4, max_length=12)
+    remember: bool = False
 
 
 @router.post('/auth/login/2fa')
@@ -324,7 +325,7 @@ def login_second_factor(body: Challenge, request: Request, response: Response, d
         sec.fail(401, 'INVALID_CODE')
     with sec.transaction(db):
         db.execute('DELETE FROM mfa_challenges WHERE token_hash=?', (digest,))
-    return complete_login(db, response, row[0])
+    return complete_login(db, response, row[0], body.remember)
 
 
 # ---------- password reset by email ----------

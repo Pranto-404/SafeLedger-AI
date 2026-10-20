@@ -462,3 +462,6 @@ main.welcome>.welcome-story>.scroll-cue{order:8;align-self:flex-start;margin-top
 :root:not([data-theme=dark]) .welcome-story h1 em{background-image:linear-gradient(100deg,#0b7a62,#3b5bdb,#0b7a62)}
 :root:not([data-theme=dark]) .pg-result.bad{color:#b3351f}
 .land-signin{background:#0b6b57;border-color:#0b6b57;color:#fff}
+/* Sign-in: keep-me-signed-in row and a reserved status area so messages never push the form around. */
+.keep-signed-in{display:flex;align-items:flex-start;gap:10px;margin:14px 0 4px;font-weight:600;cursor:pointer}.keep-signed-in span{min-width:0}.keep-signed-in small{display:block;font-weight:400;margin-top:2px;line-height:1.4}.keep-signed-in input{width:20px;min-height:20px;height:20px;margin:2px 0 0;flex:0 0 20px}
+.auth-status.reserve{min-height:64px}.auth-status .notice,.auth-status .error{margin:12px 0 0}.auth-status:empty{display:none}.auth-status.reserve:empty{display:block}

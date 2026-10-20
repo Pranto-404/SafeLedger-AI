@@ -22,12 +22,14 @@ class RateLimiter:
         self._lock = threading.Lock()
         self._counts = {}
         self._failures = {}
+        self._spaced = {}
         self._pruned_at = None
 
     def reset(self):
         with self._lock:
             self._counts.clear()
             self._failures.clear()
+            self._spaced.clear()
             self._pruned_at = None
 
     def _minute(self):
@@ -41,6 +43,7 @@ class RateLimiter:
                 kept = {m: c for m, c in self._failures[scope].items() if m > cutoff}
                 if kept:self._failures[scope] = kept
                 else:del self._failures[scope]
+            self._spaced = {k: v for k, v in self._spaced.items() if v > self._clock()}
             if len(self._counts) > MAX_KEYS:self._counts.clear()
             self._pruned_at = minute
 
@@ -61,6 +64,32 @@ class RateLimiter:
         minute = self._minute()
         with self._lock:
             return sum(c for m, c in self._failures.get(scope, {}).items() if m > minute - minutes)
+
+    def retry_after(self, scope, limit, minutes=FAILURE_WINDOW_MINUTES):
+        """Seconds until the failure count for this scope falls below limit (0 when it already is)."""
+        minute = self._minute()
+        with self._lock:
+            buckets = sorted((m, c) for m, c in self._failures.get(scope, {}).items() if m > minute - minutes)
+        total = sum(c for _, c in buckets)
+        for m, c in buckets:
+            if total < limit:break
+            total -= c
+            if total < limit:return max(1, int((m + minutes) * 60 - self._clock()) + 1)
+        return 0
+
+    def clear_failures(self, scopes):
+        with self._lock:
+            for scope in scopes:self._failures.pop(scope, None)
+
+    def space(self, scope, seconds):
+        """Allow one event per `seconds` for this scope. Returns 0 (and starts the wait) or the seconds still to wait."""
+        now = self._clock()
+        with self._lock:
+            self._prune(self._minute())
+            until = self._spaced.get(scope, 0)
+            if until > now:return max(1, int(until - now) + 1)
+            self._spaced[scope] = now + seconds
+            return 0
 
     def add_failure(self, scopes):
         minute = self._minute()

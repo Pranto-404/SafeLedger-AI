@@ -6,7 +6,7 @@ import uuid
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import Field
 from api.app import mailer, security as sec
-from api.app.accounts import (browser_origin, create_workspace_data, identity, issue, personal_member, set_cookie)
+from api.app.accounts import (browser_origin, create_workspace_data, current_ttl, identity, issue, personal_member, set_cookie)
 from api.app.contracts import Contract
 from api.app.profile import Exact, account_of
 from api.app.routes import db_connection, principal
@@ -162,12 +162,13 @@ def leave(request: Request, response: Response, actor=Depends(principal), db=Dep
     browser_origin(request)
     account = account_of(db, actor)
     if actor.role == 'owner':sec.fail(409, 'OWNER_CANNOT_LEAVE')
+    ttl = current_ttl(db, request)
     with sec.transaction(db):
         sec.audit(db, actor, 'member-' + uuid.uuid4().hex, 'MEMBER_LEFT', {'user': actor.user_id})
         db.execute('UPDATE security_users SET active=0 WHERE user_id=?', (actor.user_id,))
         db.execute('DELETE FROM security_sessions WHERE user_id=?', (actor.user_id,))
-        token = issue(db, personal_member(db, account))
-    set_cookie(response, token)
+        token = issue(db, personal_member(db, account), ttl)
+    set_cookie(response, token, ttl)
     return identity(db, sec.authenticate(db, token))
 
 
@@ -183,6 +184,7 @@ def clear(body: ClearRequest, request: Request, response: Response, actor=Depend
     account = account_of(db, actor)
     sec.budget(db, 'clear:' + account, 6)
     ids = list(dict.fromkeys(body.business_ids))
+    ttl = current_ttl(db, request)
     with sec.transaction(db):
         owned = {r[0]: r[1] for r in db.execute("SELECT m.business_id,u.role FROM account_members m JOIN security_users u ON u.user_id=m.user_id JOIN workspace_meta w ON w.business_id=m.business_id WHERE m.account_id=? AND u.active=1 AND w.archived_at IS NULL AND w.kind='personal'", (account,)).fetchall()}
         if any(owned.get(b) != 'owner' for b in ids):sec.fail(403, 'WORKSPACE_OWNER_REQUIRED')
@@ -197,8 +199,8 @@ def clear(body: ClearRequest, request: Request, response: Response, actor=Depend
             db.execute('INSERT INTO account_members VALUES (?,?,?)', (account, business, user))
             create_workspace_data(db, business, 'personal', 'My workspace', currencies[0])
             remaining = user
-        token = issue(db, remaining)
-    set_cookie(response, token)
+        token = issue(db, remaining, ttl)
+    set_cookie(response, token, ttl)
     return dict(identity(db, sec.authenticate(db, token)), cleared=len(ids))
 
 

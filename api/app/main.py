@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
         accounts.archive_legacy_examples(db)
     yield
 
-app = FastAPI(title="Capzoryx Copilot", version="0.7.4", lifespan=lifespan)
+app = FastAPI(title="Capzoryx Copilot", version="0.7.5", lifespan=lifespan)
 app.add_middleware(BodyLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -68,7 +68,10 @@ async def ai_error(request,exc):
 @app.exception_handler(security.PolicyError)
 async def policy_error(request,exc):
     headers={"WWW-Authenticate":"Bearer"} if exc.status==401 else {}
-    return JSONResponse(status_code=exc.status,content={"error":{"code":exc.code}},headers=headers)
+    error={"code":exc.code}
+    if exc.retry_after:
+        headers["Retry-After"]=str(exc.retry_after);error["retry_after"]=exc.retry_after
+    return JSONResponse(status_code=exc.status,content={"error":error},headers=headers)
 
 @app.exception_handler(RequestValidationError)
 async def validation_error(request,exc):
@@ -100,7 +103,7 @@ async def headers(request, call_next):
 @app.get("/api/health")
 def health():
     configured=all(os.environ.get(key) for key in ("SAFELEDGER_LLM_BASE_URL","SAFELEDGER_LLM_MODEL","SAFELEDGER_LLM_API_KEY"))
-    return {"status": "ok", "version": "0.7.4", "build_commit": (os.environ.get("RENDER_GIT_COMMIT") or os.environ.get("VERCEL_GIT_COMMIT_SHA") or os.environ.get("SAFELEDGER_BUILD_COMMIT", "development")), "simulation_only": True, "release": "accounts-and-assistant", "ai_status": "configured_not_verified" if configured else "not_configured"}
+    return {"status": "ok", "version": "0.7.5", "build_commit": (os.environ.get("RENDER_GIT_COMMIT") or os.environ.get("VERCEL_GIT_COMMIT_SHA") or os.environ.get("SAFELEDGER_BUILD_COMMIT", "development")), "simulation_only": True, "release": "accounts-and-assistant", "ai_status": "configured_not_verified" if configured else "not_configured"}
 
 @app.get("/api/ready")
 def ready():

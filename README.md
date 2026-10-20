@@ -29,7 +29,7 @@ Interface languages: 37, including Chinese, Japanese, Hindi, Urdu, Arabic and Ba
 - **Frontend:** React 19 + TypeScript + Vite on Vercel. Strict CSP (`default-src 'self'`, no inline script or style). `/api` is proxied to the backend.
 - **Backend:** FastAPI on Render (free tier) with Turso (libSQL over HTTPS) as the database; SQLite locally.
 - **Money and approvals:** integer minor units, exact decimals, independent approval, append-only ledger, signed audit chain.
-- **Accounts:** scrypt password hashes, server-side sessions in HttpOnly cookies, TOTP two-step sign-in, email codes through a Google Apps Script relay (Render's free tier blocks SMTP), per-account lockouts and address-independent rate limits.
+- **Accounts:** scrypt password hashes, server-side sessions in HttpOnly cookies, TOTP two-step sign-in, email codes through a Google Apps Script relay (Render's free tier blocks SMTP), case-insensitive usernames, optional 30-day "Keep me signed in" sessions, browser password-manager support, lockouts that show the wait time and slow an attacked account down rather than locking out its owner, and address-independent rate limits.
 - **Translations:** English is the source. A fixed list of interface strings is translated once (Google Translate when `SAFELEDGER_GOOGLE_TRANSLATE_KEY` is set, otherwise the cloud model), cached in the database and exported as static files in `web/public/locales/`.
 
 ## Configuration (environment variables on the backend)
@@ -54,7 +54,7 @@ python -m pytest api/tests -q
 npm run build --prefix web
 node scripts/check_local_assistant.cjs && node scripts/check_site_guide.cjs && node scripts/check_record_parser.cjs
 node scripts/extract_ui_strings.cjs --check          # keeps the translatable string list in sync
-python scripts/security_probe.py http://127.0.0.1:8000   # 53 black-box checks, local servers only
+python scripts/security_probe.py http://127.0.0.1:8000   # 57 black-box checks, local servers only
 python scripts/security_scan.py                       # secret scan over the full git history
 ```
 

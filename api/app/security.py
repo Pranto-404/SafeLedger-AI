@@ -25,13 +25,13 @@ def canonical(value):
 
 
 class PolicyError(Exception):
-    def __init__(self, status, code):
-        self.status, self.code = status, code
+    def __init__(self, status, code, retry_after=None):
+        self.status, self.code, self.retry_after = status, code, retry_after
         super().__init__(code)
 
 
-def fail(status, code):
-    raise PolicyError(status, code)
+def fail(status, code, retry_after=None):
+    raise PolicyError(status, code, retry_after)
 
 
 def signature(kind, value):
@@ -157,7 +157,7 @@ def budgets(db, items):
     so existing call sites do not change.
     """
     if limiter.hit(items):
-        fail(429,'REQUEST_BUDGET_EXCEEDED')
+        fail(429,'REQUEST_BUDGET_EXCEEDED',60 - int(time.time()) % 60)
 
 
 def budget(db, scope, limit):
