@@ -5,7 +5,7 @@ Send to the organizer address in the official rules (wangyr@pbcsf.tsinghua.edu.c
 | # | Organizer requirement | Our artifact | Status |
 | --- | --- | --- | --- |
 | 0 | Registration form + passport bio pages, all members | Official form (Appendix 3) | **Owner action**: confirm it was sent and acknowledged; if not, send it first |
-| 1 | Technical documentation (architecture, core algorithms, security design) | `submission/TECHNICAL_REPORT.md` → export to PDF, plus the 42-page Technical Work Report | Updated for 0.4.0 |
+| 1 | Technical documentation (architecture, core algorithms, security design) | `submission/Capzoryx_Copilot_Technical_Documentation.pdf` (and `.md` with `submission/figures/`) | Written for release 0.7.6 on 20 Oct 2026 |
 | 2 | Presentation deck ≤ 10 minutes | 10–12 slides (outline in the strategy PDF) | **To build and rehearse** |
 | 3 | Demo video ≤ 5 minutes | `submission/DEMO_SCRIPT.md` | **To record** on the live 0.4.0 build |
 | 4 | Source code: README, GitHub link, deployment instructions, test cases | GitHub repo, `README.md`, `api/tests`, CI badge | Ready; tag the submitted commit |

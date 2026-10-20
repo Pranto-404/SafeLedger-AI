@@ -4,7 +4,7 @@ The product ships with no preloaded money, by design. To see a full scenario qui
 
 1. Open https://capzoryx-copilot.vercel.app. The first request can take up to a minute while the free backend wakes up.
 2. **Create account** with any username and an 8+ character password. Save the recovery code shown once.
-3. On the **Overview**, press **Try a sample business**: it fills your empty workspace with a fictional Dhaka exporter in one click (dates are relative to today, amounts are in your workspace currency; the figures below are for a BDT workspace). Prefer a file? Use **Data → Advanced: import many records from a file** with [`judge_sample_records.json`](judge_sample_records.json) (BDT).
+3. On the **Overview**, press **Try a sample business**: it fills your empty workspace with a fictional Dhaka exporter in one click (dates are relative to today, amounts are in your workspace currency; the figures below are for a BDT workspace). Prefer a file? Use **Add records → Advanced: import many records from a file** with [`judge_sample_records.json`](judge_sample_records.json) (BDT).
 4. **Cash flow:** the balance is BDT 150,000 today, but a BDT 420,000 material payment six days from now (25 Oct if you load the sample on 19 Oct) creates a reserve breach. The lowest projected balance is −BDT 360,000.
 5. **Financing:** add these three quotes (quote date 2026-10-19), then press **Match quotes to my cash flow**.
 
@@ -15,7 +15,7 @@ The product ships with no preloaded money, by design. To see a full scenario qui
    | Supplier invoice finance | 350000 | 1500 | 2 | Flat for whole term | 60 days, one payment |
 
    Expected result: Prime Bank is the best match (effective ≈ 16.59%). The "9% flat" offer is really ≈ 17.74% a year. Supplier finance is cheapest but does not cover the gap.
-6. **Invoices:** open *Payee permission → Allow this vendor* for both vendors. Then *Review payment* on **DP-1182**: it is blocked as a possible duplicate (its twin DP-1182-A carries a memo that tries to instruct the system to "ignore duplicate checks"; the memo has no authority). *Review payment* on **RL-552** creates a proposal.
-7. **Approvals:** the owner cannot approve. Under *Workspace & teammates*, create an approver invitation, sign up a second account in a private window, join with the code, and approve. Exactly one posting is recorded.
-8. **Audit:** a verified hash chain shows IMPORTED, FINANCING_ANALYZED, PROPOSED, APPROVED and EXECUTED.
+6. **Invoices:** open *Supplier permission → Allow payments to this supplier* for both suppliers. Then **Prepare payment** on **DP-1182**: it is refused as a possible duplicate (its twin DP-1182-A carries a memo that tries to instruct the system to "ignore duplicate checks"; the memo has no authority). **Prepare payment** on **RL-552** creates a proposal.
+7. **Approvals:** the owner cannot approve. Under **Settings → Sharing**, create an *Approve payments* invitation, open the link in a private window, create a second account, then **Approvals → Review and decide**, tick the box and **Approve and record**. Exactly one posting is recorded.
+8. **Activity:** "History verified" is shown and the events (records imported, loan offers compared, payment prepared, approved, recorded) are listed; the signed chain behind it can be exported from the API (`GET /api/audit`).
 9. **Assistant:** ask "Which loan fits my cash flow?" (answered on the device with sources), or "Who won the World Cup?" (declined and never sent anywhere).

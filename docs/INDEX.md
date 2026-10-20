@@ -6,7 +6,7 @@
 | --- | --- |
 | What Capzoryx Copilot is, how to run and configure it | `README.md` |
 | Current status and upcoming features | `PROJECT_STATUS.md`, `NEXT_STEPS.md` |
-| Technical documentation for judges (architecture, algorithms, security) | `submission/TECHNICAL_REPORT.md` |
+| Technical documentation for judges (architecture, algorithms, security, evidence) | `submission/Capzoryx_Copilot_Technical_Documentation.pdf` (and `.md`) |
 | Permission tiers and known-risk list | `docs/SECURITY_SELF_ASSESSMENT.md` |
 | Security review findings and fixes (20 Oct) | `docs/SECURITY_REVIEW_20261020.md` |
 | Financing-option matching methods and worked example | `docs/FINANCING_MATCH_RELEASE.md` |

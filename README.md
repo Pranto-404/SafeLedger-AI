@@ -20,7 +20,7 @@ Live: https://capzoryx-copilot.vercel.app (the older `safeledger-ai.vercel.app` 
 | Assistant | Answers on the device first (balance, bills, how the site works); smart assist, when on, helps with the rest and reads photos. |
 | Reports | A PDF report with balance, bills, cash activity and payment decisions; a full backup file in Settings. |
 
-Interface languages: 37, including Chinese, Japanese, Hindi, Urdu, Arabic and Bangla (right-to-left layouts supported). Over 170 currencies with live exchange rates.
+Interface languages: 37, including Chinese, Japanese, Hindi, Urdu, Arabic and Bangla (right-to-left layouts supported). Over 150 currencies with live exchange rates.
 
 **Coming soon:** import from bank or wallet messages and statement files, a live payment feed for businesses, install on a phone, and bill reminders. Nothing connects to a bank today.
 
@@ -53,7 +53,9 @@ Python 3.12 and Node 22. Install `api/requirements.txt`, `api/requirements-dev.t
 python -m pytest api/tests -q
 npm run build --prefix web
 node scripts/check_local_assistant.cjs && node scripts/check_site_guide.cjs && node scripts/check_record_parser.cjs
+node scripts/check_i18n.cjs                           # language helpers: detection, default currency, merge rule
 node scripts/extract_ui_strings.cjs --check          # keeps the translatable string list in sync
+node scripts/axe_scan.cjs                            # accessibility scan (WCAG 2 A/AA), local app only
 python scripts/security_probe.py http://127.0.0.1:8000   # 60 black-box checks, local servers only
 python scripts/security_scan.py                       # secret scan over the full git history
 ```
@@ -64,4 +66,4 @@ Two tests are Windows-only failures (POSIX file mode and CRLF line endings) and 
 
 See `docs/SECURITY_SELF_ASSESSMENT.md` for controls and limits, and `docs/SECURITY_REVIEW_20261020.md` for the last review. Never run load or probe scripts against the live site; use a local server.
 
-Documentation map: `docs/INDEX.md`. Judges: `submission/JUDGE_QUICKSTART.md`.
+Documentation map: `docs/INDEX.md`. Technical documentation (PDF): `submission/Capzoryx_Copilot_Technical_Documentation.pdf`. Judges: `submission/JUDGE_QUICKSTART.md`.

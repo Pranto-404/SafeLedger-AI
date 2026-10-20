@@ -1,6 +1,6 @@
 # On-device assistant: independent evaluation (20 October 2026)
 
-The on-device assistant is a small hashed TF-IDF nearest-centroid intent classifier (36 intents, 347 synthetic training utterances in English, Bangla and Banglish) plus high-precision rules and a finance-domain gate. It is not a generative model. Its original acceptance suite (36/36 supported, 22/22 off-topic, 8/8 security prompts) was written by the same people who trained it, so it says little about unseen phrasing. This evaluation measures that.
+The on-device assistant is a small hashed TF-IDF nearest-centroid intent classifier (43 intents, 442 synthetic training utterances in English, Bangla and Banglish; the figures in this document were first written for 36 intents and 347 utterances, before the website-guide intents were added) plus high-precision rules and a finance-domain gate. It is not a generative model. Its original acceptance suite (36/36 supported, 22/22 off-topic, 8/8 security prompts) was written by the same people who trained it, so it says little about unseen phrasing. This evaluation measures that.
 
 ## Method
 
@@ -17,7 +17,7 @@ The engine only ever answers from the user's own loaded figures and cannot act: 
 
 | Set | Role | First run, before tuning | After tuning |
 | --- | --- | --- | --- |
-| `heldout_eval` (110 prompts) | development | **72.7%** (80/110) | 99.1% |
+| `heldout_eval` (110 prompts) | development | **72.7%** (80/110) | 97.3% (107/110, re-run on 20 Oct after the site guide was added; 99.1% before) |
 | `heldout_eval_v2` (93 prompts) | development | **66.7%** (62/93) | 97.8% |
 | `heldout_eval_v3` (95 prompts) | **fresh, evaluated once, never tuned** | **73.7%** (70/95) | not tuned |
 

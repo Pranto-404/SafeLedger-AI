@@ -94,3 +94,9 @@ python -m pytest api/tests/test_security_hardening.py api/tests/test_financing_f
 npm audit --prefix web && pip-audit -r api/requirements.lock.txt --no-deps --disable-pip
 python scripts/security_scan.py
 ```
+
+## Addendum: evening checks on 20 October 2026
+
+The scope line above names the retired address `safeledger-ai.vercel.app`; the live site is now https://capzoryx-copilot.vercel.app (the old address redirects). Results of re-running the checks for the technical documentation on the same day: `python -m pytest api/tests -q` gives 487 passed, 1 skipped and the two known Windows-only failures (490 collected); `scripts/security_probe.py` against a local server passes 60 of 60; `scripts/security_scan.py` passes (77 reachable commits); `npm audit` reports 0 vulnerabilities and `pip-audit` on the lock file reports none.
+
+New findings of that evening, fixed the same day: the interface-language cache could be emptied by a server without translations; four accessibility issue types (axe-core) on the current build, now clean on 20 views; three user-facing statements that overclaimed (training use of submitted data, backup restore, number of currencies). See `docs/SECURITY_SELF_ASSESSMENT.md`, section 12.

@@ -1,6 +1,6 @@
 # Security self-assessment: permission tiers and known-risk register
 
-Release 0.7.6 (accounts, languages, photo reading, landing page), 20 October 2026. Earlier text describes the 0.4.1 baseline; section 10 lists what changed and section 11 the full review of 20 October. This is an internal assessment by the team, not an independent penetration test or certification. Evidence: `api/tests/` (414 backend tests plus a 14,000-scenario randomized check of the financing engine (see `docs/SECURITY_REVIEW_20261020.md`)), `.github/workflows/ci.yml`, `scripts/security_scan.py` and the release notes in `docs/`.
+Release 0.7.6 (accounts, languages, photo reading, landing page), 20 October 2026. Earlier text describes the 0.4.1 baseline; section 10 lists what changed and section 11 the full review of 20 October. This is an internal assessment by the team, not an independent penetration test or certification. Evidence: `api/tests/` (490 backend tests, 487 passing on Windows with 2 Windows-only failures and 1 skip, plus a 14,000-scenario randomized check of the financing engine (see `docs/SECURITY_REVIEW_20261020.md`)), `.github/workflows/ci.yml`, `scripts/security_scan.py` and the release notes in `docs/`.
 
 ## 1. Design principle: the AI is never the authority for money
 
@@ -35,7 +35,7 @@ Roles come from authenticated server state, never from a request body. Invitatio
 | Duplicate invoice payment | Canonical vendor + normalized reference; similarity ≥ 0.85 flags possible duplicates; execution blocked until reviewed | Heuristic: may over-flag similar references or miss unrelated-number duplicates. |
 | Prompt injection (memo, task text) | Memos are escaped untrusted data; model can only pick from finite typed read/propose tools; second stage may return only fact IDs and reason codes, validated against server facts | Injection tests in suite. Finite evaluation, not proof that every attack fails. |
 | AI fabricating numbers | All displayed amounts come from deterministic objects; model output with invented amounts, IDs or prose fails validation | Mocked and live synthetic diagnostics. No statistical accuracy claim. |
-| Private data sent to AI provider | On-device intent model answers first; out-of-domain and security prompts are never sent; in-scope questions ask permission before the first share; only the current question and relevant verified facts leave | Own acceptance script: 36/36 supported, 22/22 off-topic kept local, 8/8 security prompts refused, zero external calls. Independent fresh set (95 prompts): off-topic 100% kept local, 41.7% of security prompts recognised by the on-device layer; the server, not the assistant, enforces authority (`docs/LOCAL_ASSISTANT_EVALUATION.md`). Finance questions wrongly judged off-topic can be sent only through an explicit user choice plus the permission card. Free provider terms may allow training on submissions; the UI warns users. |
+| Private data sent to AI provider | On-device intent model answers first; out-of-domain and security prompts are never sent unless the owner insists; the cloud is used only while the owner's **smart assist** switch is on (it is on by default for a new account, and the owner's switch also governs invited teammates); only the current question, a short text of figures (no supplier names or memos) or the photo leave. Agent runs need an explicit consent flag and send the chosen invoice | Own acceptance script: 36/36 supported, 22/22 off-topic kept local, 8/8 security prompts refused, zero external calls. Independent fresh set (95 prompts): off-topic 100% kept local, 41.7% of security prompts recognised by the on-device layer; the server, not the assistant, enforces authority (`docs/LOCAL_ASSISTANT_EVALUATION.md`). Finance questions wrongly judged off-topic can be sent only through an explicit user choice plus the permission card. Free provider terms may allow the provider to keep and use submissions; until 20 Oct the Settings text said the opposite, and it now says the free service may keep what it receives. |
 | Misleading financing advice | Quotes are labelled user-supplied; exact integer schedules; effective annual rate is an IRR estimate; suspect terms (> 100% effective or fees > 20%) are excluded from best match; no eligibility or approval claims | 18 financing tests with independent arithmetic. Not financial advice; repayment capacity ignores unrecorded future sales. |
 | Financing analysis tampering | Reserve and cash flow are read from the server, not the request; result fingerprint stored in a signed audit event | Analysis never writes to the ledger (asserted in tests). |
 | Audit tampering | Tenant hash chain + HMAC-SHA256; database triggers reject update/delete on audit, approvals, postings and ledger | Tamper test detects a modified event. An administrator holding both database and key is outside HMAC protection; no external anchor yet. |
@@ -53,7 +53,10 @@ Roles come from authenticated server state, never from a request body. Invitatio
 5. **Duplicate detection is heuristic.**
 6. **Administrator trust.** Whoever controls the database and the signing key could rewrite history; external anchoring and key rotation are future work.
 7. **Two-step sign-in is optional** (off until a person turns it on). Recovery is by a one-time recovery key or, when the site's mail relay is configured, by an emailed code; with two-step on, both also need an authenticator or backup code, so losing the phone *and* the backup codes means losing the account.
-8. **Testing is finite.** No independent penetration test, physical iOS/Android device lab or full WCAG audit has been performed.
+8. **Testing is finite.** No independent penetration test, physical iOS/Android device lab or full WCAG audit has been performed. An automated axe-core scan (`scripts/axe_scan.cjs`) found four issue types on 20 Oct, all fixed; it is clean on 20 views, which is not a substitute for screen-reader testing.
+9. **Reserve and payment limit are fixed.** Each workspace starts with reserve 0 and a payment limit of 100,000 currency units and no screen changes them.
+10. **No erasure, no record editing, no restore.** Clearing data hides it for 30 days; saved records cannot be edited or deleted; the JSON backup has no import path.
+11. **Interface translations are machine-made and unreviewed**; some static language files miss the newest phrases (English shows until the server translates them).
 
 ## 5. What we will not claim
 
@@ -72,7 +75,7 @@ New controls
 - **Languages:** `/api/i18n` is public but bounded: allow-listed languages only, only strings from a fixed server-side list are translated, outputs are sanitised (no markup, placeholders preserved), and the work is cached so it runs at most once per language.
 
 Evidence and how to repeat it
-- `python -m pytest api/tests -q`: 490 tests (487 pass on Windows and one is skipped; the two Windows-only failures are a POSIX file-mode check and a CRLF fixture-hash check, both of which pass on Linux CI).
+- `python -m pytest api/tests -q`: 490 tests; on Windows 487 pass, 1 is skipped and 2 fail (a POSIX file-mode check and a CRLF fixture-hash check), and all pass on Linux CI.
 - `python scripts/security_probe.py http://127.0.0.1:8000`: 60 black-box checks (anonymous access, origin enforcement, hostile input on public endpoints, error shape, cookie flags, oversized bodies, session replay and revocation, lockout, cross-account isolation). Local servers only.
 - `python scripts/security_scan.py` (secret scan over the full history), `npm audit --omit=dev` and `pip-audit` on the lock file: clean at the time of writing.
 - Frontend: no inline script or style, no `innerHTML`, `eval` or dynamic code; CSP `default-src 'self'`.
@@ -98,3 +101,10 @@ An internal white-box and local black-box review of every route, the mail relay,
 - Documentation corrected: invitation expiry (owner-chosen, default 72 hours) and the optional two-step sign-in.
 
 Remaining limits, in plain terms: a determined attacker who knows a username can still slow that account's sign-in (one attempt every 20 seconds once 40 recent attempts failed) and can keep the single password-hashing slot busy, delaying everyone's sign-in; this is the cost of free hosting with forgeable client addresses and no CAPTCHA or WAF. Independent approval is per account, not per person (one person can register two accounts). Rate-limit counters are in memory and reset when the server restarts. Invitation links carry the code in the web address, so it can appear in hosting logs until it expires or is used.
+
+## 12. Additions on 20 October 2026 (evening, while writing the technical documentation)
+
+- **Language files could be erased by the server.** When the server had no translations (a fresh database or no model key), its empty answer replaced the shipped static translation file in the browser and the emptiness was cached. Fixed: server answers are merged into what the browser already has (`web/src/i18n.tsx`, `scripts/check_i18n.cjs`).
+- **Accessibility scan of the current build** found four issue types the earlier review had not seen (dimmed landing steps, a profile button whose spoken name omitted its visible text, a low-contrast phone menu and scrollable tables that could not be reached by keyboard). All four were fixed; `scripts/axe_scan.cjs` is clean on the sign-in page and nine workspace pages at desktop and phone width.
+- **Wording that overclaimed was corrected:** "nothing is kept for training" (Settings), "backup file for restoring" (Settings) and "over 170 currencies" (landing page, README; the code has 165, the list shows 155, 152 had a live rate that day).
+- Full detail and the complete cross-check: `submission/Capzoryx_Copilot_Technical_Documentation.pdf`, sections 7.9 and 13.
