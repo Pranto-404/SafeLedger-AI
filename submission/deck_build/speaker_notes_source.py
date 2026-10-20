@@ -1,0 +1,61 @@
+TITLES = {1: 'Title', 2: 'The problem', 3: 'The approach', 4: 'Product overview', 5: 'Add records', 6: 'Demo scenario', 7: 'Financing intelligence',
+          8: 'Safety as a feature', 9: 'Built for real use', 10: 'Local-first assistant', 11: 'Architecture', 12: 'Evidence and limits', 13: 'Close'}
+TIMING = {1: 40, 2: 45, 3: 40, 4: 45, 5: 45, 6: 45, 7: 55, 8: 50, 9: 45, 10: 40, 11: 35, 12: 55, 13: 35}
+NOTES = {
+ 1: "Good day. We are Team Capzoryx from Bangladesh, and this is Capzoryx Copilot, our entry for Topic E, the SME Finance Copilot. "
+    "The theme is AI as a financial participant, so we asked what a small business owner really needs from an AI. "
+    "Not a robot that moves money. A copilot that helps them decide, and never takes control of their money. "
+    "Everything you will see today is real, running software. The live product and the source code are linked on this slide.",
+ 2: "A small business can look profitable on paper and still run out of cash. The owner faces three questions, usually too late. "
+    "When will cash run short? Which financing really fits? Which payment is safe? "
+    "Receipts and supplier deadlines rarely line up, the lowest advertised rate can hide a higher real cost, and a duplicate invoice paid in a hurry drains working capital. "
+    "The gap is not a lack of data. It is the lack of a trusted next decision. We start with Bangladeshi small businesses, but the engine speaks 37 languages and more than 150 currencies.",
+ 3: "Our approach has three verbs: see, decide, control. See: bills, balances, due dates and a seven and thirty day cash outlook. "
+    "Decide: compare loans by effective annual rate, total cost and how well they fit the cash flow. "
+    "Control: a second person approves every payment, and every step is written into a signed audit trail. "
+    "The chain at the bottom is the point. Evidence first, then exact math, then policy and approval, then audit. "
+    "The AI may propose. Deterministic code calculates. People approve.",
+ 4: "This is the real Overview screen, from a local copy of our app, using the built-in sample business. All data is fictional. "
+    "At a glance: a cleared balance of 150,000 taka, with an approximate dollar value beside it, and a cash outlook that flags the first reserve breach. "
+    "Notice the navigation: Add records, Invoices, Cash flow, Loans, Assistant, Approvals, Activity. "
+    "And for judges, there is a one-click button, Try a sample business, so you can test every feature in seconds without entering anything.",
+ 5: "Small business owners do not want to fill in forms, so records can arrive three ways. A photo of a bill or receipt, which uses an optional cloud model. "
+    "A typed sentence, like: I paid Rahman 5000 for freight yesterday. That becomes a draft, and it works even without cloud AI. "
+    "Or a plain form. In every case, the app shows a draft card and the owner checks it before anything is saved. "
+    "Amounts are kept exactly, and recording something never sends money. The human stays in charge from the very first step.",
+ 6: "Here is our demo story, a fictional exporter. It has 150,000 taka in cleared cash today. "
+    "But a material bill of 420,000 is due in six days. The chart shows the dip: the lowest projected balance is minus 360,000, and the first reserve breach is on the 26th. "
+    "Customers will pay 600,000 on day 25, so the business is not failing. It is short of cash for almost three weeks. "
+    "The forecast is a deterministic scenario, not a prediction, and it shows the problem six days early, while there is still time to act.",
+ 7: "Now the decision. The owner types in three offers from lenders. We calculate every repayment exactly and convert each offer to an effective annual rate. "
+    "The bank term loan at 13.5 percent reducing balance has an effective rate of 16.59 percent, and it fits the cash flow. It is the best match. "
+    "The offer that says nine percent flat is actually 17.74 percent a year, a rate trap. "
+    "Supplier finance is the cheapest at 15.79 percent, but it is too small to cover the gap. These quotes are entered by the user, and we do not check eligibility.",
+ 8: "Safety is a feature, and this is the slide we care about most. Every consequential action crosses a deterministic policy boundary. "
+    "The source is an invoice and a payee. Exact math checks the amount and the reserve. The AI may only propose, through typed, bounded tools. "
+    "Then a different human account must approve, and the ledger entry is posted once and signed. "
+    "On the left, a resent invoice carrying a hidden instruction to ignore duplicate checks is simply paused. On the right, a payment waits for a second person. "
+    "No bank credentials, no AI payment execution, no self-approval.",
+ 9: "We built this for real use, not only for a demo. People sign up with accounts and can switch on two-step sign-in with an authenticator app. "
+    "They can share a workspace with an accountant or a teammate, as an approver or as view-only. "
+    "The interface comes in 37 languages, including Chinese, and right-to-left layouts such as Arabic. It works on a phone-sized screen. "
+    "Records come by photo, chat or form, there is a PDF report and a backup file, and conversion between currencies uses live rates. "
+    "Everything stays free to start.",
+ 10: "The assistant is local first. Questions about the balance, the bills, or how the site works are answered on the device, from the owner's own figures, with the numbers shown. "
+     "A smarter online model is optional, and it asks permission before anything is shared. "
+     "Anything off topic is declined and never sent anywhere: on our fresh test, 25 of 25 off-topic prompts were handled that way. "
+     "The assistant has no approve or pay tool. Even if it misunderstood a request, the server enforces roles and approvals.",
+ 11: "A quick look at the architecture, because trust boundaries matter. The front end is React and TypeScript on Vercel. "
+     "The policy and finance engine is FastAPI on Render, where money is exact, roles are enforced and approvals happen. "
+     "State lives in a libSQL database with a signed, linked audit chain. "
+     "The optional cloud AI sits to the side. It can only explain, using typed tools and consent. It has no approve or execute tool. "
+     "Financial authority stays inside the policy engine, never inside the model.",
+ 12: "Here is our evidence, from internal checks that we re-ran on the 20th of October. We have 490 backend tests. "
+     "Sixty of sixty black-box probes passed against a local server. A randomized check of 14,280 financing scenarios found money conserved exactly. "
+     "And on 95 fresh, unseen prompts, the on-device assistant was right 73.7 percent of the time. We say that number plainly, because it is the honest one, and the failures are safe ones. "
+     "What we do not claim: no bank connection, user-entered quotes, scenarios not predictions, decision support not autonomy, and no independent certification.",
+ 13: "To close: AI should improve financial judgment, not replace human control. "
+     "Next, when governance is ready, we would add bank and wallet statement import, bill reminders, and validated integrations with a security review. "
+     "You can scan the code now to open the live product, with the sample business one click away, or visit our GitHub page. "
+     "Thank you, from Team Capzoryx in Bangladesh. We would be glad to take your questions.",
+}
