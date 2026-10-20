@@ -1,0 +1,12 @@
+{
+ "date": "20 October 2026",
+ "commit": "3868598",
+ "pytest_collected": "490",
+ "pytest_text": "490 collected: <b>487 passed, 1 skipped, 2 failed</b> in 251 seconds (4 min 11 s).",
+ "pytest_note": "About the two failures: both are Windows-only and are not security failures. <code>test_deployment_review.py::test_private_seed_and_expired_session_recovery_preserve_data</code> and <code>test_intake_storage.py::test_source_manifest_matches_bytes_and_recipe_reproducible</code> fail on this Windows machine (a POSIX file-permission check and a line-ending fixture hash). Both are documented since the earlier runs; the project's CI on Linux runs the full suite. We have not re-run them on Linux today, so that part is taken from the earlier documented CI result, not from today's run.",
+ "probe_text": "60 of 60 checks passed.",
+ "probe_short": "60/60",
+ "scan_text": "Passed: 86 reachable commits and 1,146 unique history blobs scanned for known GitHub token, provider key, private key and AWS key patterns; no match. It checks known patterns only and cannot prove that no secret exists.",
+ "npm_text": "found 0 vulnerabilities.",
+ "pip_text": "No known vulnerabilities found (checked the lock file with --no-deps)."
+}
