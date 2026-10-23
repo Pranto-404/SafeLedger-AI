@@ -67,3 +67,7 @@ Two tests are Windows-only failures (POSIX file mode and CRLF line endings) and 
 See `docs/SECURITY_SELF_ASSESSMENT.md` for controls and limits, and `docs/SECURITY_REVIEW_20261020.md` for the last review. Never run load or probe scripts against the live site; use a local server.
 
 Documentation map: `docs/INDEX.md`. Technical documentation (PDF): `submission/Capzoryx_Copilot_Technical_Documentation.pdf`. Judges: `submission/JUDGE_QUICKSTART.md`.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Copyright (c) 2026 Team Capzoryx.
