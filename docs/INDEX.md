@@ -19,4 +19,4 @@
 | Demo video script | `submission/DEMO_SCRIPT.md` |
 | Submission checklist | `submission/SUBMISSION_CHECKLIST.md` |
 
-**Historical (superseded; kept for provenance):** `docs/MILESTONES.md`, `docs/M1_BUG_LOG.md` … `docs/M6_PREPARATION_REPORT.md`, `docs/ARCHITECTURE.md` (pre-public design), `docs/PUBLIC_ACCESS.md`, `docs/DEPLOYMENT_STATUS.md`, `docs/HISTORICAL_README.md`, `docs/PROJECT_STATUS.md`, `docs/NEXT_STEPS.md`, `FINALIZATION_CHECKPOINT.md`, `REAL_DATA_CHECKPOINT.md`, and everything under `evidence/` older than this release. Where these conflict with the current documents, the current documents win.
+**Historical (superseded; kept for provenance):** `docs/MILESTONES.md`, `docs/M1_BUG_LOG.md` … `docs/M6_PREPARATION_REPORT.md`, `docs/ARCHITECTURE.md` (pre-public design), `docs/PUBLIC_ACCESS.md`, `docs/DEPLOYMENT_STATUS.md`, `docs/HISTORICAL_README.md`, `docs/PROJECT_STATUS.md`, `docs/NEXT_STEPS.md`, `docs/archive_FINALIZATION_CHECKPOINT.md`, `docs/archive_REAL_DATA_CHECKPOINT.md`, and everything under `evidence/` older than this release. Where these conflict with the current documents, the current documents win.
