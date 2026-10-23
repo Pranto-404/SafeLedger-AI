@@ -22,4 +22,4 @@ The connected Vercel authorization must provide access to the intended scope,or 
 2. Create/reuse Git-linked Vercel project with rootweb; inspect production branchmain and actual Git integration. Use explicit authorized team/project. Configure same-origin /api reverse proxy to verified HTTPS backend; leave origins locked down.
 3. Trigger deployment from exact verified Git commit; inspect READY/build logs,HTTPS/browser/API/session/approval/audit/persistence end-to-end. Do not call a connectivity-only page a finished live app.
 4. Verify an actual subsequent GitHub update triggers the new build and source commit matches deployment. Keep commit/deployment URL/status in evidence. Automatic updates are not enabled/verified yet.
-5. Publish only verified milestones; maintain PROJECT_STATUS/NEXT_STEPS and rollback reference. Production release remains gated by correct financial execution,full E2E and documented limits.
+5. Publish only verified milestones; maintain docs/PROJECT_STATUS.md and docs/NEXT_STEPS.md and rollback reference. Production release remains gated by correct financial execution,full E2E and documented limits.

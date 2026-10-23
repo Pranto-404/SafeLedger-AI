@@ -1,10 +1,44 @@
-# Capzoryx Copilot
+<p align="center">
+  <img src="web/public/favicon.svg" width="84" alt="Capzoryx Copilot logo">
+</p>
 
-[![CI](https://github.com/Pranto-404/capzoryx-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/Pranto-404/capzoryx-copilot/actions/workflows/ci.yml)
+<h1 align="center">Capzoryx Copilot</h1>
 
-**SME Finance Copilot** by team Capzoryx (Topic E, 2026 Shenzhen International FinTechathon). A free, multilingual web app that helps small businesses record bills and payments, see their cash outlook, compare loan offers and keep payments safe with a second approver. It never holds a bank credential and never moves money.
+<p align="center"><b>A free, multilingual AI finance copilot for small businesses.</b><br>
+It shows when cash will run short, compares loan offers against your own cash flow, and keeps every payment behind a second person's approval. It never moves money.</p>
+
+<p align="center">
+  <a href="https://capzoryx-copilot.vercel.app"><b>Try it live</b></a> &nbsp;·&nbsp;
+  <a href="submission/Capzoryx_Copilot_Technical_Documentation.pdf">Technical documentation (PDF)</a> &nbsp;·&nbsp;
+  <a href="submission/JUDGE_QUICKSTART.md">5-minute walkthrough</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Pranto-404/capzoryx-copilot/actions/workflows/ci.yml"><img src="https://github.com/Pranto-404/capzoryx-copilot/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/license-MIT-0f9b7c" alt="MIT license">
+  <img src="https://img.shields.io/badge/languages-37-3b5bdb" alt="37 languages">
+  <img src="https://img.shields.io/badge/backend%20tests-490-0f9b7c" alt="490 backend tests">
+</p>
+
+<p align="center"><img src="web/public/og-image.png" alt="Capzoryx Copilot overview with cash outlook, loans and approvals" width="780"></p>
+
+**SME Finance Copilot** by team Capzoryx (Topic E, 2026 Shenzhen International FinTech Competition, International Track).
+
+## Why it is different
+
+- **The AI suggests, people decide.** The model can read a photo or a sentence into a *draft*; the owner confirms it, the server re-validates it, and a different person must approve any payment.
+- **Numbers you can check.** Money is exact integers; the 7 and 30 day outlook is deterministic; every posting sits in an append-only ledger with a signed audit chain.
+- **Loans compared on the true cost.** Exact schedules and the effective annual rate (fees included), tested against the business's own cash flow, so a low advertised rate cannot hide a bad fit.
+- **Local first.** The assistant answers on the device; the online model is optional and only used with permission.
+- **Built for real use.** Accounts with two-step sign-in, sharing with roles, PDF reports, 37 languages (including right-to-left) and over 150 currencies with live rates.
 
 Live: https://capzoryx-copilot.vercel.app (the older `safeledger-ai.vercel.app` address has been retired).
+
+<p align="center">
+  <img src="submission/deck_build/shots/cashflow.png" width="31%" alt="Cash flow outlook">
+  <img src="submission/deck_build/shots/loans_result.png" width="31%" alt="Loan comparison">
+  <img src="submission/deck_build/shots/approvals_panel.png" width="31%" alt="Payment approval">
+</p>
 
 ## What it does
 
@@ -64,9 +98,9 @@ Two tests are Windows-only failures (POSIX file mode and CRLF line endings) and 
 
 ## Security
 
-See `docs/SECURITY_SELF_ASSESSMENT.md` for controls and limits, and `docs/SECURITY_REVIEW_20261020.md` for the last review. Never run load or probe scripts against the live site; use a local server.
+See [SECURITY.md](SECURITY.md) to report a problem, `docs/SECURITY_SELF_ASSESSMENT.md` for controls and limits, and `docs/SECURITY_REVIEW_20261020.md` for the last review. Never run load or probe scripts against the live site; use a local server.
 
-Documentation map: `docs/INDEX.md`. Technical documentation (PDF): `submission/Capzoryx_Copilot_Technical_Documentation.pdf`. Judges: `submission/JUDGE_QUICKSTART.md`.
+Documentation map: `docs/INDEX.md`; current status and plans: `docs/PROJECT_STATUS.md`, `docs/NEXT_STEPS.md`. Technical documentation (PDF): `submission/Capzoryx_Copilot_Technical_Documentation.pdf`. Judges: `submission/JUDGE_QUICKSTART.md`.
 
 ## License
 
