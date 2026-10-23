@@ -49,9 +49,15 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={'width': 1280, 'height': 640})
     pg.goto(tmp.as_uri())
     pg.wait_for_timeout(800)
-    for out in OUTS:
-        out.parent.mkdir(parents=True, exist_ok=True)
-        pg.screenshot(path=str(out), clip={'x': 0, 'y': 0, 'width': 1280, 'height': 640})
-        print('wrote', out, round(out.stat().st_size / 1024), 'KB')
+    github = OUTS[1]
+    pg.screenshot(path=str(github), clip={'x': 0, 'y': 0, 'width': 1280, 'height': 640})
+    print('wrote', github, round(github.stat().st_size / 1024), 'KB')
+    # The link-preview version for the website: 1200x630 (1.91:1), which WhatsApp, Facebook, LinkedIn and X show as a large card.
+    pg.set_viewport_size({'width': 1200, 'height': 630})
+    pg.add_style_tag(content='body{width:1200px;height:630px}.left{left:60px;top:48px;width:600px}.name{font-size:62px}.tag{font-size:24px}.shot{right:-90px;top:112px;width:560px}.url{left:60px;bottom:30px}')
+    pg.wait_for_timeout(300)
+    site = OUTS[0]
+    pg.screenshot(path=str(site), clip={'x': 0, 'y': 0, 'width': 1200, 'height': 630})
+    print('wrote', site, round(site.stat().st_size / 1024), 'KB')
     b.close()
 tmp.unlink()
